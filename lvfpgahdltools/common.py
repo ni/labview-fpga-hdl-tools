@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: MIT
 #
 
-from dataclasses import dataclass
 import configparser
 import os
 import re
 import subprocess
 import sys
 import traceback
+from dataclasses import dataclass
 
 
 @dataclass
@@ -45,9 +45,7 @@ class FileConfiguration:
     window_vhdl_output: str  # Output path for TheWindow.vhd
     window_instantiation_example: str  # Path for instantiation example output
     target_xml_templates: list  # Templates for target XML generation
-    include_clip_socket_ports: (
-        bool  # Whether to include CLIP socket ports in generated files
-    )
+    include_clip_socket_ports: bool  # Whether to include CLIP socket ports in generated files
     include_custom_io: bool  # Whether to include custom I/O in generated files
     lv_target_plugin_folder: str  # Destination folder for plugin generation
     lv_target_name: str  # Name of the LabVIEW FPGA target (e.g., "PXIe-7903")
@@ -61,9 +59,7 @@ class FileConfiguration:
     clip_instance_path: str  # HDL hierarchy path for CLIP instance (not a file path)
     clip_xdc_paths: list  # List of paths to XDC constraint files
     updated_xdc_folder: str  # Folder where updated XDC files will be written
-    clip_to_window_signal_definitions: (
-        str  # Path for CLIP-to-Window signal definitions file
-    )
+    clip_to_window_signal_definitions: str  # Path for CLIP-to-Window signal definitions file
 
 
 def parse_bool(value, default=False):
@@ -154,9 +150,7 @@ def load_config(config_path=None):
     # Load LV WINDOW NETLIST settings
     # -----------------------------------------------------------------------
     settings = config["LVWindowNetlistSettings"]
-    files.vivado_project_export_folder = resolve_path(
-        settings.get("VivadoProjectExportFolder")
-    )
+    files.vivado_project_export_folder = resolve_path(settings.get("VivadoProjectExportFolder"))
     files.vivado_project_export_name = settings.get("VivadoProjectName")
     files.the_window_folder = resolve_path(settings.get("TheWindowFolder"))
 
@@ -169,16 +163,12 @@ def load_config(config_path=None):
     files.clock_output = resolve_path(settings.get("ClockXML"))
     files.window_vhdl_template = resolve_path(settings.get("WindowVhdlTemplate"))
     files.window_vhdl_output = resolve_path(settings.get("WindowVhdlOutput"))
-    files.window_instantiation_example = resolve_path(
-        settings.get("WindowInstantiationExample")
-    )
+    files.window_instantiation_example = resolve_path(settings.get("WindowInstantiationExample"))
     files.lv_target_name = settings.get("LVTargetName")
     files.lv_target_guid = settings.get("LVTargetGUID")
     files.lv_target_plugin_folder = resolve_path(settings.get("LVTargetPluginFolder"))
     files.lv_target_install_folder = settings.get("LVTargetInstallFolder")
-    files.include_clip_socket_ports = parse_bool(
-        settings.get("IncludeCLIPSocket"), True
-    )
+    files.include_clip_socket_ports = parse_bool(settings.get("IncludeCLIPSocket"), True)
     files.include_custom_io = parse_bool(settings.get("IncludeLVTargetBoardIO"), True)
 
     # Load XML templates
@@ -443,9 +433,7 @@ def get_vivado_project_files(lists_of_files):
             with open(file_list_path, "r") as f:
                 for line in f:
                     line = line.strip()
-                    if line and not line.startswith(
-                        "#"
-                    ):  # Skip empty lines and comments
+                    if line and not line.startswith("#"):  # Skip empty lines and comments
                         if os.path.isdir(line):
                             print(f"Directory found: {line}")
                             # This is a directory, add all relevant files recursively
@@ -469,9 +457,7 @@ def get_vivado_project_files(lists_of_files):
                         else:
                             file_list.append(fix_file_slashes(line))
         else:
-            raise FileNotFoundError(
-                f"File list path '{file_list_path}' does not exist."
-            )
+            raise FileNotFoundError(f"File list path '{file_list_path}' does not exist.")
 
     # Sort the final file list
     file_list = sorted(file_list)
@@ -494,9 +480,7 @@ def process_constraints_template(config):
     # Define source and destination directories
     xdc_template_folder = os.path.join(os.getcwd(), "xdc")
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
-    window_constraints_path = os.path.join(
-        config.the_window_folder, "TheWindowConstraints.xdc"
-    )
+    window_constraints_path = os.path.join(config.the_window_folder, "TheWindowConstraints.xdc")
 
     # Create output directory if it doesn't exist
     os.makedirs(output_folder, exist_ok=True)
@@ -509,11 +493,11 @@ def process_constraints_template(config):
 
             # Extract content between markers
             period_clip_pattern = r"# BEGIN_LV_HDL_PERIOD_AND_CLIP_CONSTRAINTS(.*?)# END_LV_HDL_PERIOD_AND_CLIP_CONSTRAINTS"
-            from_to_pattern = r"# BEGIN_LV_HDL_FROM_TO_CONSTRAINTS(.*?)# END_LV_HDL_FROM_TO_CONSTRAINTS"
-
-            period_clip_match = re.search(
-                period_clip_pattern, constraints_content, re.DOTALL
+            from_to_pattern = (
+                r"# BEGIN_LV_HDL_FROM_TO_CONSTRAINTS(.*?)# END_LV_HDL_FROM_TO_CONSTRAINTS"
             )
+
+            period_clip_match = re.search(period_clip_pattern, constraints_content, re.DOTALL)
             from_to_match = re.search(from_to_pattern, constraints_content, re.DOTALL)
 
             if not period_clip_match or not from_to_match:
@@ -532,9 +516,7 @@ def process_constraints_template(config):
     # Find all files in xdc folder that contain "_template"
     template_files = []
     for file in os.listdir(xdc_template_folder):
-        if "_template" in file and os.path.isfile(
-            os.path.join(xdc_template_folder, file)
-        ):
+        if "_template" in file and os.path.isfile(os.path.join(xdc_template_folder, file)):
             template_files.append(file)
 
     if not template_files:
@@ -590,9 +572,7 @@ def run_command(cmd, cwd=None, capture_output=True):
 
     if capture_output:
         # Capture and return output
-        result = subprocess.run(
-            cmd, shell=True, text=True, capture_output=True, **kwargs
-        )
+        result = subprocess.run(cmd, shell=True, text=True, capture_output=True, **kwargs)
         # Check if stdout is None before calling strip()
         return result.stdout.strip() if result.stdout is not None else ""
     else:

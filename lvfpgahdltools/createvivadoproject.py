@@ -16,14 +16,15 @@ The tool supports:
 - Handling duplicate file detection
 """
 
+import argparse
 import os
 import shutil
-import argparse
 import subprocess
 from collections import defaultdict
 from enum import Enum
-import genlvtargetsupport
+
 import common
+import genlvtargetsupport
 
 
 def has_spaces(file_path):
@@ -69,18 +70,14 @@ def get_TCL_add_files_text(file_list, file_dir):
     # Strip the \\?\ prefix and compute relative paths
     stripped_file_list = [strip_long_path_prefix(file) for file in file_list]
     replacement_list = [os.path.relpath(file, file_dir) for file in stripped_file_list]
-    replacement_list = [
-        f'"{file}"' if has_spaces(file) else file for file in replacement_list
-    ]
+    replacement_list = [f'"{file}"' if has_spaces(file) else file for file in replacement_list]
 
     # Generate TCL commands
     replacement_text = "\n".join([f"add_files {{{file}}}" for file in replacement_list])
     return replacement_text
 
 
-def replace_placeholders_in_file(
-    file_path, new_file_path, add_files, project_name, top_entity
-):
+def replace_placeholders_in_file(file_path, new_file_path, add_files, project_name, top_entity):
     """
     Replaces placeholders in a template file with actual values.
 
@@ -299,13 +296,9 @@ def create_project(mode: ProjectMode, config):
         ValueError: If an unsupported mode is specified
     """
     current_dir = os.getcwd()
-    new_proj_template_path = os.path.join(
-        current_dir, "TCL/CreateNewProjectTemplate.tcl"
-    )
+    new_proj_template_path = os.path.join(current_dir, "TCL/CreateNewProjectTemplate.tcl")
     new_proj_path = os.path.join(current_dir, "objects/TCL/CreateNewProject.tcl")
-    update_proj_template_path = os.path.join(
-        current_dir, "TCL/UpdateProjectFilesTemplate.tcl"
-    )
+    update_proj_template_path = os.path.join(current_dir, "TCL/UpdateProjectFilesTemplate.tcl")
     update_proj_path = os.path.join(current_dir, "objects/TCL/UpdateProjectFiles.tcl")
 
     # Get the lists of Vivado project files from the configuration
@@ -407,9 +400,7 @@ def create_project_handler(config, overwrite=False, updatefiles=False):
     # Get project name from VivadoProjectSettings section
     project_name = config.vivado_project_name
 
-    project_file_path = os.path.join(
-        os.getcwd(), "VivadoProject", project_name + ".xpr"
-    )
+    project_file_path = os.path.join(os.getcwd(), "VivadoProject", project_name + ".xpr")
     print(f"Project file path: {project_file_path}")
 
     if not overwrite and not updatefiles:
@@ -471,9 +462,7 @@ def main():
     # Process the xdc_template to ensure that we have one for the Vivado project
     common.process_constraints_template(config)
 
-    create_project_handler(
-        config, overwrite=args.overwrite, updatefiles=args.updatefiles
-    )
+    create_project_handler(config, overwrite=args.overwrite, updatefiles=args.updatefiles)
 
 
 if __name__ == "__main__":

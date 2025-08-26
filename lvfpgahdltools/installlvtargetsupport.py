@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: MIT
 #
 import os  # For file and directory operations
-import sys  # For command-line arguments and error handling
-import common  # For shared utilities across tools
 import shutil  # For file copying and directory removal
+import sys  # For command-line arguments and error handling
+
+import common  # For shared utilities across tools
 
 
 def is_admin():
@@ -58,9 +59,7 @@ def install_lv_target_support():
     # Load configuration
     config = common.load_config()
 
-    install_folder = os.path.join(
-        config.lv_target_install_folder, config.lv_target_name
-    )
+    install_folder = os.path.join(config.lv_target_install_folder, config.lv_target_name)
 
     # Verify configuration
     if not config.lv_target_plugin_folder or not install_folder:
@@ -69,9 +68,7 @@ def install_lv_target_support():
 
     # Check if source exists
     if not os.path.exists(config.lv_target_plugin_folder):
-        print(
-            f"Error: Source plugin folder not found: {config.lv_target_plugin_folder}"
-        )
+        print(f"Error: Source plugin folder not found: {config.lv_target_plugin_folder}")
         sys.exit(1)
 
     # Check if we need admin rights (typically for Program Files)

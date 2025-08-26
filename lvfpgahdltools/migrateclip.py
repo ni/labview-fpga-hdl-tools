@@ -13,11 +13,12 @@ The tool handles migration between different FPGA development environments and
 helps in integrating CLIP IP into LabVIEW FPGA projects.
 """
 
-import xml.etree.ElementTree as ET
+import csv
 import os
 import sys
-import csv
 import traceback
+import xml.etree.ElementTree as ET
+
 import common
 
 
@@ -45,10 +46,7 @@ def find_case_insensitive(element, xpath):
         for elem in element.iter():
             if elem.tag.lower() == tag_name.lower():
                 for attr, value in elem.attrib.items():
-                    if (
-                        attr.lower() == attr_name.lower()
-                        and value.lower() == attr_value.lower()
-                    ):
+                    if attr.lower() == attr_name.lower() and value.lower() == attr_value.lower():
                         return elem
         return None
 
@@ -78,9 +76,7 @@ def findall_case_insensitive(element, xpath):
         if len(path_parts) == 1:
             # Simple case like ".//Signal"
             tag_name = path_parts[0]
-            return [
-                elem for elem in element.iter() if elem.tag.lower() == tag_name.lower()
-            ]
+            return [elem for elem in element.iter() if elem.tag.lower() == tag_name.lower()]
         else:
             # Complex case like ".//SignalList/Signal"
             # First find all elements matching the first part
@@ -134,11 +130,7 @@ def extract_data_type(element):
     if fxp is not None:
         word_length = get_element_text(fxp, "WordLength", "?")
         int_word_length = get_element_text(fxp, "IntegerWordLength", "?")
-        signed = (
-            "Unsigned"
-            if find_case_insensitive(fxp, "Unsigned") is not None
-            else "Signed"
-        )
+        signed = "Unsigned" if find_case_insensitive(fxp, "Unsigned") is not None else "Signed"
         return f"FXP({word_length},{int_word_length},{signed})"
 
     # Check for Array
@@ -248,9 +240,7 @@ def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
                 data_type = extract_data_type(
                     signal.find("DataType") or find_case_insensitive(signal, "DataType")
                 )
-                use_in_scl = get_element_text(
-                    signal, "UseInLabVIEWSingleCycleTimedLoop"
-                )
+                use_in_scl = get_element_text(signal, "UseInLabVIEWSingleCycleTimedLoop")
                 clock_domain = get_element_text(signal, "RequiredClockDomain")
 
                 if direction == "input" or use_in_scl == "Required":
@@ -511,9 +501,7 @@ def map_lv_type_to_vhdl(lv_type):
         return f"std_logic_vector({int(size) * 32 - 1} downto 0)"
 
     else:
-        print(
-            f"Warning: Unrecognized LabVIEW type '{lv_type}', defaulting to std_logic_vector"
-        )
+        print(f"Warning: Unrecognized LabVIEW type '{lv_type}', defaulting to std_logic_vector")
         return "std_logic_vector(0 downto 0)"
 
 
@@ -587,15 +575,11 @@ def main():
         generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
 
         # Generate entity instantiation
-        common.generate_entity_instantiation(
-            config.clip_hdl_path, config.clip_inst_example_path
-        )
+        common.generate_entity_instantiation(config.clip_hdl_path, config.clip_inst_example_path)
 
         # Process all constraint files
         for xdc_path in config.clip_xdc_paths:
-            process_constraint_file(
-                xdc_path, config.updated_xdc_folder, config.clip_instance_path
-            )
+            process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
 
         # Generate CLIP to Window signal definitions
         generate_clip_to_window_signals(

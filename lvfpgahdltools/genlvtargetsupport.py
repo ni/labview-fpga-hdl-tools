@@ -17,13 +17,14 @@ Key functionalities:
 
 import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
+import re  # For regular expression operations
+import shutil  # For file copying operations
 import sys  # For command-line arguments and error handling
 import xml.etree.ElementTree as ET  # For XML generation and manipulation
-from mako.template import Template  # For template-based file generation
 from xml.dom.minidom import parseString  # For pretty-formatted XML output
+
 import common  # For shared utilities across tools
-import shutil  # For file copying operations
-import re  # For regular expression operations
+from mako.template import Template  # For template-based file generation
 
 # Constants
 BOARDIO_WRAPPER_NAME = "BoardIO"  # Top-level wrapper name in the BoardIO XML hierarchy
@@ -108,9 +109,7 @@ def get_or_create_resource_list(parent, name):
 def create_boardio_structure():
     """Create the initial boardio XML structure"""
     boardio_top = ET.Element("boardio")
-    boardio_resources = ET.SubElement(
-        boardio_top, "ResourceList", {"name": BOARDIO_WRAPPER_NAME}
-    )
+    boardio_resources = ET.SubElement(boardio_top, "ResourceList", {"name": BOARDIO_WRAPPER_NAME})
     return boardio_top, boardio_resources
 
 
@@ -212,26 +211,16 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
 
                 elif signal_type.lower() == "clock" and direction.lower() == "input":
                     # Process clock signal
-                    clock = ET.SubElement(
-                        clock_list_top, "Clock", {"name": dot_separated_name}
-                    )
+                    clock = ET.SubElement(clock_list_top, "Clock", {"name": dot_separated_name})
                     ET.SubElement(clock, "VHDLName").text = hdl_name
 
                     # Add clock parameters from CSV columns
-                    duty_cycle_range = ET.SubElement(
-                        clock, "DutyCycleRangeInPercentHigh"
-                    )
-                    ET.SubElement(duty_cycle_range, "Max").text = row[
-                        "DutyCycleHighMax"
-                    ]
-                    ET.SubElement(duty_cycle_range, "Min").text = row[
-                        "DutyCycleHighMin"
-                    ]
+                    duty_cycle_range = ET.SubElement(clock, "DutyCycleRangeInPercentHigh")
+                    ET.SubElement(duty_cycle_range, "Max").text = row["DutyCycleHighMax"]
+                    ET.SubElement(duty_cycle_range, "Min").text = row["DutyCycleHighMin"]
 
                     accuracy_in_ppm = ET.SubElement(clock, "AccuracyInPPM")
-                    ET.SubElement(accuracy_in_ppm, "DefaultValue").text = row[
-                        "AccuracyInPPM"
-                    ]
+                    ET.SubElement(accuracy_in_ppm, "DefaultValue").text = row["AccuracyInPPM"]
 
                     jitter_in_picoseconds = ET.SubElement(clock, "JitterInPicoSeconds")
                     ET.SubElement(jitter_in_picoseconds, "DefaultValue").text = row[
@@ -252,9 +241,7 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                     # Create resource hierarchy
                     current_parent = boardio_resources
                     for part in parts[:-1]:
-                        current_parent = get_or_create_resource_list(
-                            current_parent, part
-                        )
+                        current_parent = get_or_create_resource_list(current_parent, part)
 
                     # Create IO resource
                     io_resource = ET.SubElement(
@@ -268,9 +255,7 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                         )
 
                     if use_in_scl:
-                        ET.SubElement(io_resource, "UseInSingleCycleTimedLoop").text = (
-                            use_in_scl
-                        )
+                        ET.SubElement(io_resource, "UseInSingleCycleTimedLoop").text = use_in_scl
 
                     io_direction = {"output": "Output", "input": "Input"}.get(
                         direction.lower(), "Unknown"
@@ -290,9 +275,7 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                         io_output_readback = ""
 
                     # Handle data type and prototype
-                    data_type_name = (
-                        data_type.split("(")[0] if "(" in data_type else data_type
-                    )
+                    data_type_name = data_type.split("(")[0] if "(" in data_type else data_type
 
                     if data_type_name in DATA_TYPE_PROTOTYPES:
                         prototype = DATA_TYPE_PROTOTYPES[data_type_name].format(
@@ -313,13 +296,9 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                                     "true" if "Unsigned" in data_type else "false",
                                 )
                             except Exception as e:
-                                print(
-                                    f"Error parsing FXP parameters for {lv_name}: {e}"
-                                )
+                                print(f"Error parsing FXP parameters for {lv_name}: {e}")
                     else:
-                        io_resource.set(
-                            "prototype", f"{DOCUMENT_ROOT_PREFIX}unknownSignal"
-                        )
+                        io_resource.set("prototype", f"{DOCUMENT_ROOT_PREFIX}unknownSignal")
 
         # Write the XML files
         write_tree_to_xml(boardio_top, boardio_output_path)
@@ -361,10 +340,7 @@ def generate_window_vhdl_from_csv(
         with open(csv_path, "r", newline="") as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                if (
-                    row["SignalType"].lower() == "clock"
-                    and row["Direction"] == "output"
-                ):
+                if row["SignalType"].lower() == "clock" and row["Direction"] == "output":
                     # Clocks going to the CLIP are not driven from TheWindow.  They are connected
                     # manually when the CLIP HDL is instantiated in the top level HDL design
                     continue
@@ -564,10 +540,7 @@ def copy_fpgafiles(hdl_file_lists, plugin_folder, target_family, base_target):
             # Only on the 7903 target.  As other targets are added they may also opt in to this
             # customization.  We will likely find a better way to enumerate targets that need this
             # in the future.
-            if (
-                base_target.lower() == "pxie-7903"
-                and base_filename == "constraints.xdc"
-            ):
+            if base_target.lower() == "pxie-7903" and base_filename == "constraints.xdc":
                 target_filename = "constraints.xdc_template"
             else:
                 target_filename = base_filename
@@ -582,9 +555,7 @@ def copy_fpgafiles(hdl_file_lists, plugin_folder, target_family, base_target):
 def copy_otherfiles(plugin_folder, target_family):
     # There are some other files that need to be added to the plugin folder in order to make things work
     if target_family.lower() == "flexrio":
-        common_plugin_src = common.resolve_path(
-            "../common/lvFpgaTarget/targetpluginmisc"
-        )
+        common_plugin_src = common.resolve_path("../common/lvFpgaTarget/targetpluginmisc")
     else:
         raise ValueError(f"Unsupported target family: {target_family}.")
 
@@ -594,9 +565,7 @@ def copy_otherfiles(plugin_folder, target_family):
         # Calculate relative path to maintain directory structure
         rel_path = os.path.relpath(root, common_plugin_src)
         # Create corresponding directory in destination
-        dest_dir = (
-            os.path.join(plugin_folder, rel_path) if rel_path != "." else plugin_folder
-        )
+        dest_dir = os.path.join(plugin_folder, rel_path) if rel_path != "." else plugin_folder
         os.makedirs(dest_dir, exist_ok=True)
         # Copy each file
         for file in files:
@@ -634,9 +603,7 @@ def gen_lv_target_support():
 
     # Only generate custom IO files if the plugin is configured to include them
     if config.include_custom_io:
-        generate_xml_from_csv(
-            config.custom_signals_csv, config.boardio_output, config.clock_output
-        )
+        generate_xml_from_csv(config.custom_signals_csv, config.boardio_output, config.clock_output)
 
     generate_window_vhdl_from_csv(
         config.custom_signals_csv,

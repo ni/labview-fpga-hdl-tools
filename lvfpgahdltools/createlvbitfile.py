@@ -2,11 +2,12 @@
 #
 # SPDX-License-Identifier: MIT
 #
-import os  # For file and directory operations
-import sys  # For access to sys.exit
-import common  # For shared utilities across tools
-import subprocess  # For executing external programs
 import datetime  # For timestamps in logs
+import os  # For file and directory operations
+import subprocess  # For executing external programs
+import sys  # For access to sys.exit
+
+import common  # For shared utilities across tools
 
 
 def create_lv_bitfile():
@@ -29,9 +30,7 @@ def create_lv_bitfile():
     print(f"LV path from config: {config.lv_path}")
 
     # Construct path to createBitfile.exe
-    createbitfile_exe = os.path.join(
-        config.lv_path, "vi.lib", "rvi", "CDR", "createBitfile.exe"
-    )
+    createbitfile_exe = os.path.join(config.lv_path, "vi.lib", "rvi", "CDR", "createBitfile.exe")
 
     # Check if the executable exists
     if not os.path.exists(createbitfile_exe):
