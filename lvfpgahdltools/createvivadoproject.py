@@ -428,33 +428,34 @@ def create_project_handler(config, overwrite=False, updatefiles=False):
         raise ValueError("Invalid combination of arguements.")
 
 
-def main():
+def main(overwrite=None, updatefiles=None):
     """
     Main entry point for the script.
 
-    This function:
-    1. Sets up the command-line argument parser
-    2. Loads the configuration using the common module
-    3. Calls the project handler with appropriate parameters
-
-    Command-line arguments:
-    --overwrite (-o): Force creation of a new project, overwriting existing
-    --updatefiles (-u): Update files in an existing project
+    This function can be called directly with parameters or via command-line arguments.
+    
+    Args:
+        overwrite (bool, optional): Force creation of a new project, overwriting existing
+        updatefiles (bool, optional): Update files in an existing project
     """
-    parser = argparse.ArgumentParser(description="Vivado Project Tools")
-    parser.add_argument(
-        "--overwrite",
-        "-o",
-        action="store_true",
-        help="Overwrite and create a new project",
-    )
-    parser.add_argument(
-        "--updatefiles",
-        "-u",
-        action="store_true",
-        help="Update files in the existing project",
-    )
-    args = parser.parse_args()
+    # If parameters weren't provided directly, parse from command line
+    if overwrite is None or updatefiles is None:
+        parser = argparse.ArgumentParser(description="Vivado Project Tools")
+        parser.add_argument(
+            "--overwrite",
+            "-o",
+            action="store_true",
+            help="Overwrite and create a new project",
+        )
+        parser.add_argument(
+            "--updatefiles",
+            "-u",
+            action="store_true",
+            help="Update files in the existing project",
+        )
+        args = parser.parse_args()
+        overwrite = args.overwrite if overwrite is None else overwrite
+        updatefiles = args.updatefiles if updatefiles is None else updatefiles
 
     # Use common.load_config() instead of direct ConfigParser usage
     config = common.load_config()
@@ -462,7 +463,7 @@ def main():
     # Process the xdc_template to ensure that we have one for the Vivado project
     common.process_constraints_template(config)
 
-    create_project_handler(config, overwrite=args.overwrite, updatefiles=args.updatefiles)
+    create_project_handler(config, overwrite=overwrite, updatefiles=updatefiles)
 
 
 if __name__ == "__main__":

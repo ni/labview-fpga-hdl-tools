@@ -13,8 +13,8 @@ target support generation, and Vivado project creation/management.
 """
 
 import sys
-import argparse
 import traceback
+import click
 
 # Import main functions from all the tool modules
 from . import migrateclip
@@ -25,103 +25,91 @@ from . import createvivadoproject
 from . import common
 
 
-def create_parser():
-    """Create the command-line argument parser with all subcommands"""
-    parser = argparse.ArgumentParser(
-        description="LVFPGAHDLTools - LabVIEW FPGA HDL Tools"
-    )
-    subparsers = parser.add_subparsers(dest="command", help="Commands")
+@click.group(help="LVFPGAHDLTools - LabVIEW FPGA HDL Tools")
+@click.option('--config', '-c', help="Path to configuration file (optional)")
+@click.pass_context
+def cli(ctx, config):
+    """Command-line interface for LabVIEW FPGA HDL Tools."""
+    # Initialize context object to share data between commands
+    ctx.ensure_object(dict)
+    ctx.obj['CONFIG'] = config
+    
+    # Set configuration path if provided
+    if config:
+        common.CONFIG_PATH = config
 
-    # Config option for all commands
-    parser.add_argument(
-        "--config", "-c", help="Path to configuration file (optional)"
-    )
 
-    # Migrate CLIP command
-    migrate_parser = subparsers.add_parser(
-        "migrate-clip", help="Migrate CLIP files for FlexRIO custom devices"
-    )
+@cli.command('migrate-clip', help="Migrate CLIP files for FlexRIO custom devices")
+@click.pass_context
+def migrate_clip(ctx):
+    """Migrate CLIP files for FlexRIO custom devices."""
+    try:
+        return migrateclip.main()
+    except Exception as e:
+        handle_exception(e)
+        return 1
 
-    # Install LV Target Support command
-    install_parser = subparsers.add_parser(
-        "install-target", help="Install LabVIEW FPGA target support files"
-    )
 
-    # Get Window Netlist command
-    netlist_parser = subparsers.add_parser(
-        "get-netlist", help="Extract window netlist from Vivado project"
-    )
+@cli.command('install-target', help="Install LabVIEW FPGA target support files")
+@click.pass_context
+def install_target(ctx):
+    """Install LabVIEW FPGA target support files."""
+    try:
+        installlvtargetsupport.main()
+        return 0
+    except Exception as e:
+        handle_exception(e)
+        return 1
 
-    # Generate LV Target Support command
-    gen_target_parser = subparsers.add_parser(
-        "gen-target", help="Generate LabVIEW FPGA target support files"
-    )
 
-    # Create Vivado Project command
-    vivado_parser = subparsers.add_parser(
-        "create-project", help="Create or update Vivado project"
-    )
-    vivado_parser.add_argument(
-        "--overwrite", "-o", action="store_true", 
-        help="Overwrite and create a new project"
-    )
-    vivado_parser.add_argument(
-        "--updatefiles", "-u", action="store_true", 
-        help="Update files in the existing project"
-    )
+@cli.command('get-netlist', help="Extract window netlist from Vivado project")
+@click.pass_context
+def get_netlist(ctx):
+    """Extract window netlist from Vivado project."""
+    try:
+        getwindownetlist.main()
+        return 0
+    except Exception as e:
+        handle_exception(e)
+        return 1
 
-    return parser
+
+@cli.command('gen-target', help="Generate LabVIEW FPGA target support files")
+@click.pass_context
+def gen_target(ctx):
+    """Generate LabVIEW FPGA target support files."""
+    try:
+        genlvtargetsupport.main()
+        return 0
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command('create-project', help="Create or update Vivado project")
+@click.option('--overwrite', '-o', is_flag=True, help="Overwrite and create a new project")
+@click.option('--updatefiles', '-u', is_flag=True, help="Update files in the existing project")
+@click.pass_context
+def create_project(ctx, overwrite, updatefiles):
+    """Create or update Vivado project."""
+    try:
+        # Call the main function directly with parameters
+        createvivadoproject.main(overwrite=overwrite, updatefiles=updatefiles)
+        return 0
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+def handle_exception(e):
+    """Handle exceptions with consistent error output."""
+    click.echo(f"Error: {str(e)}", err=True)
+    traceback.print_exc()
 
 
 def main():
-    """Main entry point for the command-line interface"""
-    parser = create_parser()
-    args = parser.parse_args()
-
-    if not args.command:
-        parser.print_help()
-        return 1
-
-    try:
-        # Set configuration path if provided
-        if args.config:
-            common.CONFIG_PATH = args.config
-
-        # Execute the appropriate command
-        if args.command == "migrate-clip":
-            return migrateclip.main()
-        
-        elif args.command == "install-target":
-            installlvtargetsupport.main()
-            return 0
-        
-        elif args.command == "get-netlist":
-            getwindownetlist.main()
-            return 0
-        
-        elif args.command == "gen-target":
-            genlvtargetsupport.main()
-            return 0
-        
-        elif args.command == "create-project":
-            # Load configuration
-            config = common.load_config()
-            
-            # Process the xdc_template to ensure we have one for the Vivado project
-            common.process_constraints_template(config)
-            
-            # Create or update the project
-            createvivadoproject.create_project_handler(
-                config, 
-                overwrite=args.overwrite, 
-                updatefiles=args.updatefiles
-            )
-            return 0
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        traceback.print_exc()
-        return 1
+    """Main entry point for the command-line interface."""
+    return cli(standalone_mode=False)
 
 
 if __name__ == "__main__":
