@@ -564,35 +564,28 @@ def extract_clock_parameters(element):
 
 def main():
     """Main program entry point"""
-    try:
-        # Load configuration
-        config = common.load_config()
+    # Load configuration
+    config = common.load_config()
 
-        # Handle long paths on Windows - fixes path length limitations
-        long_input_xml_path = common.handle_long_path(config.input_xml_path)
+    # Handle long paths on Windows - fixes path length limitations
+    long_input_xml_path = common.handle_long_path(config.input_xml_path)
 
-        # Process XML
-        generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
+    # Process XML
+    generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
 
-        # Generate entity instantiation
-        common.generate_entity_instantiation(config.clip_hdl_path, config.clip_inst_example_path)
+    # Generate entity instantiation
+    common.generate_entity_instantiation(config.clip_hdl_path, config.clip_inst_example_path)
 
-        # Process all constraint files
-        for xdc_path in config.clip_xdc_paths:
-            process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
+    # Process all constraint files
+    for xdc_path in config.clip_xdc_paths:
+        process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
 
-        # Generate CLIP to Window signal definitions
-        generate_clip_to_window_signals(
-            long_input_xml_path, config.clip_to_window_signal_definitions
-        )
+    # Generate CLIP to Window signal definitions
+    generate_clip_to_window_signals(
+        long_input_xml_path, config.clip_to_window_signal_definitions
+    )
 
-        print("CLIP migration completed successfully.")
-        return 0
-
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
-        traceback.print_exc()
-        return 1
+    print("CLIP migration completed successfully.")
 
 
 if __name__ == "__main__":

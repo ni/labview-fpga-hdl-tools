@@ -19,8 +19,9 @@ or other external sources.
 import os
 import shutil
 
+DEPS_FOLDER = "githubdeps"
 
-def extract_deps_from_zip(deps_folder):
+def extract_deps_from_zip():
     """
     Extracts the contents of all ZIP files in the current directory into the specified folder.
 
@@ -33,10 +34,6 @@ def extract_deps_from_zip(deps_folder):
     This approach ensures consistent dependency structure by extracting from
     a known clean state, avoiding partial or mixed dependency versions.
 
-    Args:
-        deps_folder (str): Target folder where ZIP contents will be extracted.
-                          Will be created if it doesn't exist, or cleared if it does.
-
     Note:
         The function handles Windows long path limitations by using the \\?\ prefix
         when needed for deeply nested directories.
@@ -44,13 +41,13 @@ def extract_deps_from_zip(deps_folder):
     # Handle long paths on Windows
     # The \\?\ prefix allows paths over 260 characters on Windows systems
     if os.name == "nt":
-        deps_folder_long = f"\\\\?\\{os.path.abspath(deps_folder)}"
+        deps_folder_long = f"\\\\?\\{os.path.abspath(DEPS_FOLDER)}"
     else:
-        deps_folder_long = deps_folder
+        deps_folder_long = DEPS_FOLDER
 
     # Delete the target directory once before extracting any files
     # This ensures a clean extraction environment with no leftover files
-    print(f"Cleaning target directory: {deps_folder}")
+    print(f"Cleaning target directory: {DEPS_FOLDER}")
     shutil.rmtree(deps_folder_long, ignore_errors=True)
     os.makedirs(deps_folder_long, exist_ok=True)
 
@@ -62,7 +59,7 @@ def extract_deps_from_zip(deps_folder):
     # Process files sequentially, reporting success or failure for each
     for zip_file in zip_files:
         try:
-            print(f"Extracting '{zip_file}' into '{deps_folder}'...")
+            print(f"Extracting '{zip_file}' into '{DEPS_FOLDER}'...")
             shutil.unpack_archive(zip_file, deps_folder_long, "zip")
             print(f"Successfully extracted '{zip_file}'")
         except Exception as e:
@@ -70,17 +67,15 @@ def extract_deps_from_zip(deps_folder):
 
     # Check if any files were extracted
     # This helps verify that the extraction process produced output files
-    extracted_files = os.listdir(deps_folder)
-    print(f"Extracted {len(extracted_files)} items to {deps_folder}")
+    extracted_files = os.listdir(DEPS_FOLDER)
+    print(f"Extracted {len(extracted_files)} items to {DEPS_FOLDER}")
 
 
 def main():
     """
     Main entry point for the script.
     """
-    deps_folder = "githubdeps"
-    extract_deps_from_zip(deps_folder)
-
+    extract_deps_from_zip()
 
 if __name__ == "__main__":
     main()

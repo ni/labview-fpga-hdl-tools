@@ -22,6 +22,9 @@ from . import installlvtargetsupport
 from . import getwindownetlist
 from . import genlvtargetsupport
 from . import createvivadoproject
+from . import extractdependencies
+from . import launchvivado
+from . import createlvbitfile
 from . import common
 
 
@@ -44,7 +47,8 @@ def cli(ctx, config):
 def migrate_clip(ctx):
     """Migrate CLIP files for FlexRIO custom devices."""
     try:
-        return migrateclip.main()
+        migrateclip.main()
+        return 0
     except Exception as e:
         handle_exception(e)
         return 1
@@ -93,7 +97,6 @@ def gen_target(ctx):
 def create_project(ctx, overwrite, updatefiles):
     """Create or update Vivado project."""
     try:
-        # Call the main function directly with parameters
         createvivadoproject.main(overwrite=overwrite, updatefiles=updatefiles)
         return 0
     except Exception as e:
@@ -105,9 +108,33 @@ def create_project(ctx, overwrite, updatefiles):
 @click.pass_context
 def launch_vivado_cmd(ctx):
     """Launch Vivado with the current project."""
+    try: 
+        launchvivado.main()
+        return 0
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command('extract-deps', help="Extract dependency ZIP files")
+@click.pass_context
+def extract_deps(ctx):
+    """Extract dependency ZIP files from current directory."""
     try:
-        from . import launchvivado
-        return launchvivado.launch_vivado()
+        extractdependencies.main()
+        return 0
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command('create-lvbitfile', help="Create LabVIEW FPGA bitfile from Vivado output")
+@click.pass_context
+def create_lvbitfile(ctx):
+    """Create LabVIEW FPGA bitfile from Vivado output."""
+    try:
+        createlvbitfile.main()
+        return 0
     except Exception as e:
         handle_exception(e)
         return 1
