@@ -101,6 +101,18 @@ def create_project(ctx, overwrite, updatefiles):
         return 1
 
 
+@cli.command('launch-vivado', help="Launch Vivado with the current project")
+@click.pass_context
+def launch_vivado_cmd(ctx):
+    """Launch Vivado with the current project."""
+    try:
+        from . import launchvivado
+        return launchvivado.launch_vivado()
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
 def handle_exception(e):
     """Handle exceptions with consistent error output."""
     click.echo(f"Error: {str(e)}", err=True)
