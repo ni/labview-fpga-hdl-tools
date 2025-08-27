@@ -19,7 +19,7 @@ import sys
 import traceback
 import xml.etree.ElementTree as ET
 
-import common
+from . import common
 
 
 def find_case_insensitive(element, xpath):

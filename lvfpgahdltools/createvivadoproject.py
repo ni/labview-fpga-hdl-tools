@@ -23,8 +23,8 @@ import subprocess
 from collections import defaultdict
 from enum import Enum
 
-import common
-import genlvtargetsupport
+from . import common
+from . import genlvtargetsupport
 
 
 def has_spaces(file_path):

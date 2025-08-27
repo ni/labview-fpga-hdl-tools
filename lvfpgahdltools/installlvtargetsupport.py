@@ -6,7 +6,7 @@ import os  # For file and directory operations
 import shutil  # For file copying and directory removal
 import sys  # For command-line arguments and error handling
 
-import common  # For shared utilities across tools
+from . import common  # For shared utilities across tools
 
 
 def is_admin():

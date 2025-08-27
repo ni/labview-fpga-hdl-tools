@@ -23,7 +23,7 @@ import sys  # For command-line arguments and error handling
 import xml.etree.ElementTree as ET  # For XML generation and manipulation
 from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
-import common  # For shared utilities across tools
+from . import common  # For shared utilities across tools
 from mako.template import Template  # For template-based file generation
 
 # Constants

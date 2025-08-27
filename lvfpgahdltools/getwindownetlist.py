@@ -11,7 +11,7 @@ import os
 import shutil
 import subprocess
 
-import common
+from . import common
 
 
 def get_window_netlist(config):

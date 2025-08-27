@@ -7,7 +7,7 @@ import os  # For file and directory operations
 import subprocess  # For executing external programs
 import sys  # For access to sys.exit
 
-import common  # For shared utilities across tools
+from . import common  # For shared utilities across tools
 
 
 def create_lv_bitfile():
