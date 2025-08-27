@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "lvfpgahdltools"
-version = "0.0.4"
+version = "0.0.5"
 description = "LabVIEW FPGA HDL Tools"
 authors = [
   "Salvador Santolucito <salvador.santolucito@gmail.com>"
@@ -23,4 +23,4 @@ mypy = ">=1.0"
 pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 
 [tool.poetry.scripts]
-lvfpgahdltools = "lvfpgahdltools.__main__:main"
+nihdl = "lvfpgahdltools.__main__:main"
