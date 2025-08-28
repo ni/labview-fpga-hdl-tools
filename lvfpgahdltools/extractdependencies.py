@@ -78,10 +78,16 @@ def main():
     """
     Main entry point for the script.
     """
-    config = common.load_config()
-    # The source directory containng the zip file is one level up from the dependencies folder
-    source_dir = os.path.dirname(config.dependencies_folder)
-    extract_deps_from_zip(config.dependencies_folder, source_dir)
+    # Define fixed relative paths
+    #
+    # This script must be run from the targets folder of the repository
+    #
+    cwd = os.getcwd()
+    deps_folder = os.path.join(cwd, "..", "dependencies", "github")
+    source_folder = os.path.join(cwd, "..", "dependencies")
+  
+    # Extract dependencies
+    extract_deps_from_zip(deps_folder, source_folder)
 
 
 if __name__ == "__main__":

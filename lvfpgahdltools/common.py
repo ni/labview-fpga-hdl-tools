@@ -30,7 +30,6 @@ class FileConfiguration:
     vivado_project_name: str  # Name of the Vivado project (no spaces allowed)
     vivado_tools_path: str  # Path to Vivado tools
     hdl_file_lists: list  # List of HDL file list paths for Vivado project generation
-    dependencies_folder: str  # Path to folder containing GitHub dependencies
     use_gen_lv_window_files: (
         bool  # Use files from the_window_folder to override what is in hdl_file_lists
     )
@@ -93,7 +92,6 @@ def load_config(config_path=None):
         vivado_project_name=None,
         vivado_tools_path=None,
         hdl_file_lists=[],
-        dependencies_folder=None,
         use_gen_lv_window_files=None,
         # ----- LV WINDOW NETLIST settings -----
         vivado_project_export_folder=None,
@@ -145,8 +143,7 @@ def load_config(config_path=None):
             file_list = file_list.strip()
             if file_list:
                 abs_file_list = resolve_path(file_list)
-                files.hdl_file_lists.append(abs_file_list)
-    files.dependencies_folder = resolve_path(settings.get("DependenciesFolder"))  
+                files.hdl_file_lists.append(abs_file_list) 
     files.use_gen_lv_window_files = parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
 
     # -----------------------------------------------------------------------
