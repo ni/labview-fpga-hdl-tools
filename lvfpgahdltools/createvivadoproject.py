@@ -275,7 +275,7 @@ class ProjectMode(Enum):
 def create_project(mode: ProjectMode, config):
     """
     Creates or updates a Vivado project based on the specified mode.
-
+    
     This function:
     1. Resolves paths to template and output TCL scripts
     2. Gathers all project files based on configuration
@@ -283,15 +283,11 @@ def create_project(mode: ProjectMode, config):
     4. Creates customized TCL scripts for project creation or updating
     5. Runs LabVIEW target support generation to create required files
     6. Executes Vivado in batch mode with the appropriate script
-
-    The function handles two main operations:
-    - Creating a new project from scratch (NEW mode)
-    - Updating files in an existing project (UPDATE mode)
-
+    
     Args:
         mode (ProjectMode): Operation mode (NEW or UPDATE)
         config (FileConfiguration): Parsed configuration settings
-
+        
     Raises:
         ValueError: If an unsupported mode is specified
     """
@@ -342,8 +338,9 @@ def create_project(mode: ProjectMode, config):
     project_file_path = os.path.join(os.getcwd(), project_name + ".xpr")
     print(f"Project file path: {project_file_path}")
 
-    vivado_path = os.getenv("XILINX")
-
+    # Use the vivado_tools_path from the config instead of the XILINX environment variable
+    vivado_path = config.vivado_tools_path
+    
     if vivado_path:
         # Determine the Vivado executable based on the operating system
         if os.name == "nt":  # Windows
@@ -368,7 +365,7 @@ def create_project(mode: ProjectMode, config):
 
         os.chdir(current_dir)
     else:
-        print("Environment variable 'XILINX' is not set.")
+        print("Vivado tools path not found in configuration.")
 
 
 def create_project_handler(config, overwrite=False, updatefiles=False):

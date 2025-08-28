@@ -83,7 +83,7 @@ def main():
     # This script must be run from the targets folder of the repository
     #
     cwd = os.getcwd()
-    deps_folder = os.path.join(cwd, "..", "dependencies", "github")
+    deps_folder = os.path.join(cwd, "..", "dependencies", "githubdeps")
     source_folder = os.path.join(cwd, "..", "dependencies")
   
     # Extract dependencies
