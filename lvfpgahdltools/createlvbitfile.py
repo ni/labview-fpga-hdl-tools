@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 #
-import datetime  # For timestamps in logs
 import os  # For file and directory operations
 import subprocess  # For executing external programs
 import sys  # For access to sys.exit
@@ -17,14 +16,13 @@ def create_lv_bitfile():
     This function:
     1. Locates the createBitfile.exe relative to LabVIEW installation path
     2. Executes it with the required parameters to generate the .lvbitx file
-
     """
     # Load configuration
     print("Loading configuration")
     print("Current working directory: " + os.getcwd())
 
-    print(sys.version)
-
+    # This script is run by Vivado in the Vivado project directory so we need to back up a few folders
+    # to where the projectsettings.ini folder lives
     config_path = "../../../projectsettings.ini"
     config = common.load_config(config_path)
     print(f"LV path from config: {config.lv_path}")
@@ -37,12 +35,19 @@ def create_lv_bitfile():
         print(f"Error: createBitfile.exe not found at {createbitfile_exe}")
         return
 
-    code_gen_results_path = os.path.abspath(
-        "../../../objects/TheWindow/CodeGenerationResults.lvtxt"
-    )
+    # Determine the path to CodeGenerationResults.lvtxt based on the UseGeneratedLVWindowFiles setting
+    if config.use_gen_lv_window_files:
+        # Use the TheWindow folder from config
+        code_gen_results_path = os.path.abspath(
+            os.path.join("../../../", config.the_window_folder, "CodeGenerationResults.lvtxt")
+        )
+    else:
+        # Use the default path in lvFpgaTarget
+        code_gen_results_path = os.path.abspath("../../../lvFpgaTarget/CodeGenerationResultsStub.lvtxt")
+
     print(f"LabVIEW code generation results path: {code_gen_results_path}")
 
-    vivado_bitstream_path = os.path.abspath("SasquatchTopTemplate.bin")
+    vivado_bitstream_path = os.path.abspath(f"{config.top_level_entity}.bin")
     print(f"Vivado bitstream path: {vivado_bitstream_path}")
 
     lvbitx_output_path = os.path.abspath(
@@ -63,7 +68,6 @@ def create_lv_bitfile():
     print(f"Executing: {' '.join(cmd)}")
 
     # Execute the command
-
     subprocess.run(cmd, capture_output=True, text=True, check=False)
 
 

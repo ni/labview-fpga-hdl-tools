@@ -28,18 +28,12 @@ from . import createlvbitfile
 from . import common
 
 
-@click.group(help="LVFPGAHDLTools - LabVIEW FPGA HDL Tools")
-@click.option('--config', '-c', help="Path to configuration file (optional)")
+@click.group(help="LabVIEW FPGA HDL Tools")
 @click.pass_context
-def cli(ctx, config):
+def cli(ctx):
     """Command-line interface for LabVIEW FPGA HDL Tools."""
     # Initialize context object to share data between commands
     ctx.ensure_object(dict)
-    ctx.obj['CONFIG'] = config
-    
-    # Set configuration path if provided
-    if config:
-        common.CONFIG_PATH = config
 
 
 @cli.command('migrate-clip', help="Migrate CLIP files for FlexRIO custom devices")
@@ -116,7 +110,7 @@ def launch_vivado_cmd(ctx):
         return 1
 
 
-@cli.command('extract-deps', help="Extract dependency ZIP files")
+@cli.command('extract-deps', help="Extract dependency ZIP files (run from 'targets' folder)")
 @click.pass_context
 def extract_deps(ctx):
     """Extract dependency ZIP files from current directory."""
