@@ -86,12 +86,12 @@ def gen_target(ctx):
 
 @cli.command('create-project', help="Create or update Vivado project")
 @click.option('--overwrite', '-o', is_flag=True, help="Overwrite and create a new project")
-@click.option('--updatefiles', '-u', is_flag=True, help="Update files in the existing project")
+@click.option('--update', '-u', is_flag=True, help="Update files in the existing project")
 @click.pass_context
-def create_project(ctx, overwrite, updatefiles):
+def create_project(ctx, overwrite, update):
     """Create or update Vivado project."""
     try:
-        createvivadoproject.main(overwrite=overwrite, updatefiles=updatefiles)
+        createvivadoproject.main(overwrite=overwrite, update=update)
         return 0
     except Exception as e:
         handle_exception(e)

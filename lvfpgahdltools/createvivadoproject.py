@@ -16,10 +16,9 @@ The tool supports:
 - Handling duplicate file detection
 """
 
-import argparse
 import os
 import shutil
-import subprocess
+
 from collections import defaultdict
 from enum import Enum
 
@@ -368,7 +367,7 @@ def create_project(mode: ProjectMode, config):
         print("Vivado tools path not found in configuration.")
 
 
-def create_project_handler(config, overwrite=False, updatefiles=False):
+def create_project_handler(config, overwrite=False, update=False):
     """
     Handles command line arguments and performs the desired create Vivado project operation.
 
@@ -381,13 +380,13 @@ def create_project_handler(config, overwrite=False, updatefiles=False):
     The function implements the following logic:
     - With no flags: Create new project (fails if project exists)
     - With --overwrite: Create new project (overwrites existing)
-    - With --updatefiles: Update existing project (fails if project doesn't exist)
+    - With --update: Update existing project (fails if project doesn't exist)
     - With both flags: Error (invalid combination)
 
     Args:
         config (FileConfiguration): Parsed configuration settings
         overwrite (bool): Whether to overwrite an existing project
-        updatefiles (bool): Whether to update files in an existing project
+        update (bool): Whether to update files in an existing project
 
     Raises:
         FileExistsError: If the project exists and neither overwrite nor update was requested
@@ -400,68 +399,50 @@ def create_project_handler(config, overwrite=False, updatefiles=False):
     project_file_path = os.path.join(os.getcwd(), "VivadoProject", project_name + ".xpr")
     print(f"Project file path: {project_file_path}")
 
-    if not overwrite and not updatefiles:
+    if not overwrite and not update:
         # User wants to create a new project
         if os.path.exists(project_file_path):
             # Throw error if the project already exists and they didn't ask to overwrite or update
             raise FileExistsError(
-                f"The project file '{project_file_path}' already exists. Use the --overwrite or --updatefiles flag to modify the project."
+                f"The project file '{project_file_path}' already exists. Use the --overwrite or --update flag to modify the project."
             )
         else:
             create_project(ProjectMode.NEW, config)
-    elif updatefiles and not overwrite:
+    elif update and not overwrite:
         if not os.path.exists(project_file_path):
             # Throw error if the project does not exist and they want to update it
             raise FileNotFoundError(
-                f"The project file '{project_file_path}' does not exist. Run without the --updatefiles flag to create a new project."
+                f"The project file '{project_file_path}' does not exist. Run without the --update flag to create a new project."
             )
         else:
             create_project(ProjectMode.UPDATE, config)
-    elif overwrite and not updatefiles:
+    elif overwrite and not update:
         # Overwrite the project by creating a new one
         create_project(ProjectMode.NEW, config)
     else:
-        # Error case if both overwrite and updatefiles are set
-        raise ValueError("Invalid combination of arguements.")
+        # Error case if both overwrite and update are set
+        raise ValueError("Invalid combination of arguments.")
 
 
-def main(overwrite=None, updatefiles=None):
+def main(overwrite=False, update=False):
     """
     Main entry point for the script.
-
-    This function can be called directly with parameters or via command-line arguments.
-    
+        
     Args:
-        overwrite (bool, optional): Force creation of a new project, overwriting existing
-        updatefiles (bool, optional): Update files in an existing project
+        overwrite (bool): Force creation of a new project, overwriting existing
+        update (bool): Update files in an existing project
     """
-    # If parameters weren't provided directly, parse from command line
-    if overwrite is None or updatefiles is None:
-        parser = argparse.ArgumentParser(description="Vivado Project Tools")
-        parser.add_argument(
-            "--overwrite",
-            "-o",
-            action="store_true",
-            help="Overwrite and create a new project",
-        )
-        parser.add_argument(
-            "--updatefiles",
-            "-u",
-            action="store_true",
-            help="Update files in the existing project",
-        )
-        args = parser.parse_args()
-        overwrite = args.overwrite if overwrite is None else overwrite
-        updatefiles = args.updatefiles if updatefiles is None else updatefiles
-
-    # Use common.load_config() instead of direct ConfigParser usage
+    # Load configuration
     config = common.load_config()
-
+    
     # Process the xdc_template to ensure that we have one for the Vivado project
     common.process_constraints_template(config)
-
-    create_project_handler(config, overwrite=overwrite, updatefiles=updatefiles)
+    
+    # Execute the project handler with the provided options
+    create_project_handler(config, overwrite=overwrite, update=update)
+    
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    main() 

@@ -84,7 +84,7 @@ This runs the createvivadoproject.py script to generate the Vivado project.  It 
 
 If this is not the first time creating the Vivado project, one of these command line options are required:
 > -- overwrite - Overwrites the existing Vivado project and creates a new one </br>
-> -- updatefiles - Only updates the files in the existing Vivado project </br>
+> -- update - Only updates the files in the existing Vivado project </br>
 
 ## Migrate CLIP
 In LabVIEW FPGA, the CLIP HDL is defined by an XML file that specifies its  ports.  The ports are grouped into three interfaces:

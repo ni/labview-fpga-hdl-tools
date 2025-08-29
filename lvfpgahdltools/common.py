@@ -34,8 +34,7 @@ class FileConfiguration:
         bool  # Use files from the_window_folder to override what is in hdl_file_lists
     )
     # ----- LV WINDOW NETLIST SETTINGS -----
-    vivado_project_export_folder: str  # Folder containing exported Vivado project
-    vivado_project_export_name: str  # Name of exported Vivado project (.xpr file)
+    vivado_project_export_xpr: str  # Path to exported Vivado project (.xpr file)
     the_window_folder: str  # Destination folder for generated Window files
     # ----- LVFPGA TARGET SETTINGS -----
     custom_signals_csv: str  # Path to CSV containing signal definitions
@@ -94,8 +93,7 @@ def load_config(config_path=None):
         hdl_file_lists=[],
         use_gen_lv_window_files=None,
         # ----- LV WINDOW NETLIST settings -----
-        vivado_project_export_folder=None,
-        vivado_project_export_name=None,
+        vivado_project_export_xpr=None,
         the_window_folder=None,
         # ----- LVFPGA target settings -----
         custom_signals_csv=None,
@@ -150,8 +148,7 @@ def load_config(config_path=None):
     # Load LV WINDOW NETLIST settings
     # -----------------------------------------------------------------------
     settings = config["LVWindowNetlistSettings"]
-    files.vivado_project_export_folder = resolve_path(settings.get("VivadoProjectExportFolder"))
-    files.vivado_project_export_name = settings.get("VivadoProjectName")
+    files.vivado_project_export_xpr = resolve_path(settings.get("VivadoProjectExportXPR"))
     files.the_window_folder = resolve_path(settings.get("TheWindowFolder"))
 
     # -----------------------------------------------------------------------
