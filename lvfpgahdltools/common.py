@@ -489,9 +489,9 @@ def process_constraints_template(config):
             constraints_content = f.read()
 
             # Extract content between markers
-            period_clip_pattern = r"# BEGIN_LV_HDL_PERIOD_AND_CLIP_CONSTRAINTS(.*?)# END_LV_HDL_PERIOD_AND_CLIP_CONSTRAINTS"
+            period_clip_pattern = r"# BEGIN_LV_FPGA_PERIOD_AND_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_AND_CLIP_CONSTRAINTS"
             from_to_pattern = (
-                r"# BEGIN_LV_HDL_FROM_TO_CONSTRAINTS(.*?)# END_LV_HDL_FROM_TO_CONSTRAINTS"
+                r"# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS(.*?)# END_LV_FPGA_FROM_TO_CONSTRAINTS"
             )
 
             period_clip_match = re.search(period_clip_pattern, constraints_content, re.DOTALL)

@@ -26,22 +26,42 @@ def is_admin():
 
 def run_as_admin():
     """
-    Re-launch the current script with administrator privileges
-
+    Re-launch the command with administrator privileges
+    
     This function creates a new process with elevated privileges using
-    the Windows shell's "runas" verb.
+    the Windows shell's "runas" verb. It's designed to work with both
+    direct Python script execution and pip-installed entry points.
     """
     import ctypes
     import sys
-
-    # Get the full path to the Python interpreter and script
-    script = sys.argv[0]
-    args = " ".join(sys.argv[1:])
-
+    
+    # When running via pip-installed entry point (nihdl),
+    # we need to relaunch the entry point rather than the script
+    if sys.argv[0].endswith('nihdl') or sys.argv[0].endswith('nihdl.exe'):
+        # Launch the entry point with the same arguments
+        command = "nihdl"
+        arguments = " ".join(sys.argv[1:])
+    else:
+        # Traditional script execution path
+        command = sys.executable
+        arguments = f'"{sys.argv[0]}" {" ".join(sys.argv[1:])}'
+    
     print("Requesting administrator privileges...")
-    ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", sys.executable, f'"{script}" {args}', None, 1  # SW_SHOWNORMAL
+    print(f"Running: {command} with args: {arguments}")
+    
+    # Execute with elevation
+    result = ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", command, arguments, None, 1  # SW_SHOWNORMAL
     )
+    
+    # Check if the elevation was successful
+    if result <= 32:  # Error codes are 32 or below
+        print(f"Error elevating privileges. Error code: {result}")
+        sys.exit(1)
+    
+    # The original process should exit after launching the elevated one
+    print("Elevated process launched. This process will now exit.")
+    sys.exit(0)
 
 
 def install_lv_target_support():

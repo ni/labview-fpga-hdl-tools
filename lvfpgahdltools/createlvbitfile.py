@@ -4,7 +4,6 @@
 #
 import os  # For file and directory operations
 import subprocess  # For executing external programs
-import sys  # For access to sys.exit
 
 from . import common  # For shared utilities across tools
 
@@ -17,15 +16,16 @@ def create_lv_bitfile():
     1. Locates the createBitfile.exe relative to LabVIEW installation path
     2. Executes it with the required parameters to generate the .lvbitx file
     """
-    # Load configuration
-    print("Loading configuration")
-    print("Current working directory: " + os.getcwd())
+    vivado_impl_folder = os.getcwd()
 
-    # This script is run by Vivado in the Vivado project directory so we need to back up a few folders
-    # to where the projectsettings.ini folder lives
-    config_path = "../../../projectsettings.ini"
-    config = common.load_config(config_path)
-    print(f"LV path from config: {config.lv_path}")
+    # This script is run by a TCL script in Vivado after the bitstream is generated and the directory
+    # that Vivado is in is the implementation run directory.
+    # So we must go up a few directories to the PXIe-7xxx folder where these scripts normally run
+    os.chdir("../../..")
+
+    # Load configuration
+
+    config = common.load_config()
 
     # Construct path to createBitfile.exe
     createbitfile_exe = os.path.join(config.lv_path, "vi.lib", "rvi", "CDR", "createBitfile.exe")
@@ -37,23 +37,27 @@ def create_lv_bitfile():
 
     # Determine the path to CodeGenerationResults.lvtxt based on the UseGeneratedLVWindowFiles setting
     if config.use_gen_lv_window_files:
-        # Use the TheWindow folder from config
-        code_gen_results_path = os.path.abspath(
-            os.path.join("../../../", config.the_window_folder, "CodeGenerationResults.lvtxt")
-        )
+        print(f"Using generated LV window files: {config.the_window_folder}")
+        
+        window_folder = os.path.abspath(config.the_window_folder)
+        print(f"Window folder resolved to: {window_folder}")
+        
+        code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")
     else:
+        print("Using default LV window files")
         # Use the default path in lvFpgaTarget
-        code_gen_results_path = os.path.abspath("../../../lvFpgaTarget/CodeGenerationResultsStub.lvtxt")
+        code_gen_results_path = os.path.abspath("lvFpgaTarget/CodeGenerationResultsStub.lvtxt")
 
     print(f"LabVIEW code generation results path: {code_gen_results_path}")
 
-    vivado_bitstream_path = os.path.abspath(f"{config.top_level_entity}.bin")
+    vivado_bitstream_path = os.path.join(vivado_impl_folder, f"{config.top_level_entity}.bin")
     print(f"Vivado bitstream path: {vivado_bitstream_path}")
 
     lvbitx_output_path = os.path.abspath(
-        f"../../../objects/bitfiles/{config.top_level_entity}.lvbitx"
+        f"objects/bitfiles/{config.top_level_entity}.lvbitx"
     )
     print(f"Output .lvbitx path: {lvbitx_output_path}")
+
     # Create the directory for the new file if it doesn't exist
     os.makedirs(os.path.dirname(lvbitx_output_path), exist_ok=True)
 
@@ -68,12 +72,26 @@ def create_lv_bitfile():
     print(f"Executing: {' '.join(cmd)}")
 
     # Execute the command
-    subprocess.run(cmd, capture_output=True, text=True, check=False)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+
+    # Log the execution results
+    if result.returncode == 0:
+        print("Successfully created LabVIEW bitfile")
+    else:
+        print(f"Error creating LabVIEW bitfile. Return code: {result.returncode}")
+        print(f"STDOUT: {result.stdout}")
+        print(f"STDERR: {result.stderr}")
 
 
 def main():
     """Main function to run the script"""
-    create_lv_bitfile()
+    try:
+        create_lv_bitfile()
+    except Exception as e:
+        print(f"Unhandled exception: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 if __name__ == "__main__":
