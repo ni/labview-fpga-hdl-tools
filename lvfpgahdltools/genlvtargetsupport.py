@@ -473,7 +473,7 @@ def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
     """
     try:
         # Use the common module's function to generate instantiation
-        common.generate_entity_instantiation(vhdl_path, output_path)
+        common.generate_HDL_instantiation_example(vhdl_path, output_path, use_component=True)
         print(f"Generated TheWindow VHDL instantiation example: {output_path}")
 
     except Exception as e:

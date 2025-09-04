@@ -394,18 +394,21 @@ def parse_vhdl_entity(vhdl_path):
         return None, []
 
 
-def generate_entity_instantiation(vhdl_path, output_path, architecture="rtl"):
+def generate_HDL_instantiation_example(vhdl_path, output_path, architecture="rtl", use_component=False):
     """
     Generate VHDL entity instantiation from VHDL file.
 
-    Creates a VHDL file containing an entity instantiation using the
-    entity-architecture syntax (entity work.Entity_Name(architecture_name)).
+    Creates a VHDL file containing an entity instantiation using either:
+    - Entity-architecture syntax (entity work.Entity_Name(architecture_name))
+    - Component syntax (Entity_Name)
+    
     All ports are connected to signals with the same name.
 
     Args:
         vhdl_path (str): Path to input VHDL file containing entity declaration
         output_path (str): Path to output VHDL file where instantiation will be written
-        architecture (str): Architecture name to use in the instantiation (default: 'rtl')
+        architecture (str): Architecture name to use in entity instantiations (default: 'rtl')
+        use_component (bool): If True, generate component-style instantiation (default: False)
 
     Note:
         Signal declarations for ports are not included in the output.
@@ -418,12 +421,16 @@ def generate_entity_instantiation(vhdl_path, output_path, architecture="rtl"):
 
     # Generate entity instantiation
     with open(output_path, "w") as f:
-        f.write(f"-- Entity instantiation for {entity_name}\n")
+        f.write(f"-- Instantiation example for {entity_name}\n")
         f.write(f"-- Generated from {os.path.basename(vhdl_path)}\n\n")
 
-        # Use entity-architecture syntax
-        # Format: entity_label: entity work.entity_name(architecture_name)
-        f.write(f"{entity_name}: entity work.{entity_name} ({architecture})\n")
+        if use_component:
+            # Use component instantiation syntax
+            f.write(f"{entity_name}_inst: {entity_name}\n")
+        else:
+            # Use entity-architecture syntax
+            f.write(f"{entity_name}_inst: entity work.{entity_name} ({architecture})\n")
+            
         f.write("port map (\n")
 
         # Create port mappings
@@ -434,7 +441,7 @@ def generate_entity_instantiation(vhdl_path, output_path, architecture="rtl"):
             f.write(",\n".join(port_mappings))
 
         f.write("\n);\n")
-    print(f"Generated entity instantiation for {entity_name}")
+    print(f"Generated {'component' if use_component else 'entity'} instantiation for {entity_name}")
 
 
 def get_vivado_project_files(lists_of_files):

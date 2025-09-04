@@ -574,7 +574,7 @@ def main():
     generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
 
     # Generate entity instantiation
-    common.generate_entity_instantiation(config.clip_hdl_path, config.clip_inst_example_path)
+    common.generate_HDL_instantiation_example(config.clip_hdl_path, config.clip_inst_example_path, use_component=False)
 
     # Process all constraint files
     for xdc_path in config.clip_xdc_paths:
