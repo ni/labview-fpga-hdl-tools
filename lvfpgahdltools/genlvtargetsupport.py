@@ -481,7 +481,7 @@ def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
         sys.exit(1)
 
 
-def copy_fpgafiles(hdl_file_lists, plugin_folder, target_family, base_target):
+def copy_fpgafiles(hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target):
     """
     Copy HDL files to the FPGA files destination folder
 
@@ -489,7 +489,6 @@ def copy_fpgafiles(hdl_file_lists, plugin_folder, target_family, base_target):
     1. Gets the list of HDL files from the project file lists
     2. Creates the destination folder structure
     3. Copies each HDL file to the destination, handling long paths on Windows
-    4. For constraints.xdc, removes window netlist constraints when needed
 
     Args:
         hdl_file_lists (list): List of HDL file list paths
@@ -500,6 +499,9 @@ def copy_fpgafiles(hdl_file_lists, plugin_folder, target_family, base_target):
     # Get all HDL files from file lists
     print(f"Reading HDL file lists from: {hdl_file_lists}")
     file_list = common.get_vivado_project_files(hdl_file_lists)
+    # Add constraints XDC files listed in the config file
+    file_list = file_list + [common.fix_file_slashes(file) for file in lv_target_constraints_files]
+
     print(f"Found {len(file_list)} files in HDL file lists")
 
     # Create the destination folder with long path support
@@ -536,16 +538,7 @@ def copy_fpgafiles(hdl_file_lists, plugin_folder, target_family, base_target):
             # Get the base filename
             base_filename = os.path.basename(file)
 
-            # Check if the file is constraints.xdc and rename it if needed
-            # Only on the 7903 target.  As other targets are added they may also opt in to this
-            # customization.  We will likely find a better way to enumerate targets that need this
-            # in the future.
-            if base_target.lower() == "pxie-7903" and base_filename == "constraints.xdc":
-                target_filename = "constraints.xdc_template"
-            else:
-                target_filename = base_filename
-
-            target_path = os.path.join(dest_deps_folder, target_filename)
+            target_path = os.path.join(dest_deps_folder, base_filename)
 
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
@@ -630,6 +623,7 @@ def gen_lv_target_support():
 
     copy_fpgafiles(
         config.hdl_file_lists,
+        config.lv_target_constraints_files,
         config.lv_target_plugin_folder,
         config.target_family,
         config.base_target,

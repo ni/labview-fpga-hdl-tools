@@ -299,6 +299,9 @@ def create_project(mode: ProjectMode, config):
     # Get the lists of Vivado project files from the configuration
     file_list = common.get_vivado_project_files(config.hdl_file_lists)
 
+    # Add constriants XDC files listed in the config file
+    file_list = file_list + [common.fix_file_slashes(file) for file in config.vivado_project_constraints_files]
+
     # Copy dependency files to the gathereddeps folder
     # Returns the file list with the files from githubdeps having new locations in gathereddeps
     file_list = copy_deps_files(file_list)
@@ -445,4 +448,4 @@ def main(overwrite=False, update=False):
 
 
 if __name__ == "__main__":
-    main() 
+    main()

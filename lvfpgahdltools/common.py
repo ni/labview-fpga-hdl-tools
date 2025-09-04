@@ -30,6 +30,8 @@ class FileConfiguration:
     vivado_project_name: str  # Name of the Vivado project (no spaces allowed)
     vivado_tools_path: str  # Path to Vivado tools
     hdl_file_lists: list  # List of HDL file list paths for Vivado project generation
+    constraints_templates: list  # List of constraint template file paths
+    vivado_project_constraints_files: list  # List of Vivado project constraint file paths
     use_gen_lv_window_files: (
         bool  # Use files from the_window_folder to override what is in hdl_file_lists
     )
@@ -44,6 +46,7 @@ class FileConfiguration:
     window_vhdl_output: str  # Output path for TheWindow.vhd
     window_instantiation_example: str  # Path for instantiation example output
     target_xml_templates: list  # Templates for target XML generation
+    lv_target_constraints_files: list  # List of LabVIEW target constraint file paths
     include_clip_socket_ports: bool  # Whether to include CLIP socket ports in generated files
     include_custom_io: bool  # Whether to include custom I/O in generated files
     lv_target_plugin_folder: str  # Destination folder for plugin generation
@@ -91,6 +94,8 @@ def load_config(config_path=None):
         vivado_project_name=None,
         vivado_tools_path=None,
         hdl_file_lists=[],
+        constraints_templates=[],
+        vivado_project_constraints_files=[],
         use_gen_lv_window_files=None,
         # ----- LV WINDOW NETLIST settings -----
         vivado_project_export_xpr=None,
@@ -103,6 +108,7 @@ def load_config(config_path=None):
         window_vhdl_output=None,
         window_instantiation_example=None,
         target_xml_templates=[],
+        lv_target_constraints_files=[],
         include_clip_socket_ports=True,
         include_custom_io=True,
         lv_target_plugin_folder=None,
@@ -135,6 +141,8 @@ def load_config(config_path=None):
     files.top_level_entity = settings.get("TopLevelEntity")
     files.vivado_project_name = settings.get("VivadoProjectName")
     files.vivado_tools_path = settings.get("VivadoToolsPath")
+    
+    # Load file lists
     hdl_file_lists = settings.get("VivadoProjectFilesLists")
     if hdl_file_lists:
         for file_list in hdl_file_lists.strip().split():
@@ -142,6 +150,25 @@ def load_config(config_path=None):
             if file_list:
                 abs_file_list = resolve_path(file_list)
                 files.hdl_file_lists.append(abs_file_list) 
+    
+    # Load constraints templates
+    constraints_templates = settings.get("ConstraintsTemplates")
+    if constraints_templates:
+        for template in constraints_templates.strip().split("\n"):
+            template = template.strip()
+            if template:
+                abs_template = resolve_path(template)
+                files.constraints_templates.append(abs_template)
+                
+    # Load project constraint files
+    constraint_files = settings.get("VivadoProjectConstraintsFiles")
+    if constraint_files:
+        for file in constraint_files.strip().split("\n"):
+            file = file.strip()
+            if file:
+                abs_file = resolve_path(file)
+                files.vivado_project_constraints_files.append(abs_file)
+                
     files.use_gen_lv_window_files = parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
 
     # -----------------------------------------------------------------------
@@ -176,6 +203,15 @@ def load_config(config_path=None):
             if template_file:
                 abs_template_file = resolve_path(template_file)
                 files.target_xml_templates.append(abs_template_file)
+
+    # Load LV target constraints files
+    lv_constraints = settings.get("LVTargetConstraintsFiles")
+    if lv_constraints:
+        for file in lv_constraints.strip().split("\n"):
+            file = file.strip()
+            if file:
+                abs_file = resolve_path(file)
+                files.lv_target_constraints_files.append(abs_file)
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
