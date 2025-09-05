@@ -12,6 +12,7 @@ import subprocess
 import sys
 import traceback
 from dataclasses import dataclass
+from typing import List, Optional
 
 
 @dataclass
@@ -23,46 +24,44 @@ class FileConfiguration:
     """
 
     # ----- GENERAL SETTINGS -----
-    target_family: str  # Target family (e.g., "FlexRIO")
-    base_target: str  # Base target name (e.g., "PXIe-7903")
-    lv_path: str  # Path to LabVIEW installation
+    target_family: Optional[str] = None  # Target family (e.g., "FlexRIO")
+    base_target: Optional[str] = None  # Base target name (e.g., "PXIe-7903")
+    lv_path: Optional[str] = None  # Path to LabVIEW installation
     # ----- VIVADO PROJECT SETTINGS -----
-    top_level_entity: str  # Top-level entity name for Vivado project
-    vivado_project_name: str  # Name of the Vivado project (no spaces allowed)
-    vivado_tools_path: str  # Path to Vivado tools
-    hdl_file_lists: list  # List of HDL file list paths for Vivado project generation
-    constraints_templates: list  # List of constraint template file paths
-    vivado_project_constraints_files: list  # List of Vivado project constraint file paths
-    use_gen_lv_window_files: (
-        bool  # Use files from the_window_folder to override what is in hdl_file_lists
-    )
+    top_level_entity: Optional[str] = None  # Top-level entity name for Vivado project
+    vivado_project_name: Optional[str] = None  # Name of the Vivado project (no spaces allowed)
+    vivado_tools_path: Optional[str] = None  # Path to Vivado tools
+    hdl_file_lists: List[str] = None  # List of HDL file list paths for Vivado project generation
+    constraints_templates: List[str] = None  # List of constraint template file paths
+    vivado_project_constraints_files: List[str] = None  # List of Vivado project constraint file paths
+    use_gen_lv_window_files: Optional[bool] = None  # Use files from the_window_folder to override what is in hdl_file_lists
     # ----- LV WINDOW NETLIST SETTINGS -----
-    vivado_project_export_xpr: str  # Path to exported Vivado project (.xpr file)
-    the_window_folder: str  # Destination folder for generated Window files
+    vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
+    the_window_folder: Optional[str] = None  # Destination folder for generated Window files
     # ----- LVFPGA TARGET SETTINGS -----
-    custom_signals_csv: str  # Path to CSV containing signal definitions
-    boardio_output: str  # Path where BoardIO XML will be written
-    clock_output: str  # Path where Clock XML will be written
-    window_vhdl_template: str  # Template for TheWindow.vhd generation
-    window_vhdl_output: str  # Output path for TheWindow.vhd
-    window_instantiation_example: str  # Path for instantiation example output
+    custom_signals_csv: Optional[str] = None  # Path to CSV containing signal definitions
+    boardio_output: Optional[str] = None  # Path where BoardIO XML will be written
+    clock_output: Optional[str] = None  # Path where Clock XML will be written
+    window_vhdl_template: Optional[str]  # Template for TheWindow.vhd generation
+    window_vhdl_output: Optional[str]  # Output path for TheWindow.vhd
+    window_instantiation_example: Optional[str]  # Path for instantiation example output
     target_xml_templates: list  # Templates for target XML generation
-    lv_target_constraints_files: list  # List of LabVIEW target constraint file paths
-    include_clip_socket_ports: bool  # Whether to include CLIP socket ports in generated files
-    include_custom_io: bool  # Whether to include custom I/O in generated files
-    lv_target_plugin_folder: str  # Destination folder for plugin generation
-    lv_target_name: str  # Name of the LabVIEW FPGA target (e.g., "PXIe-7903")
-    lv_target_guid: str  # GUID for the LabVIEW FPGA target
-    lv_target_install_folder: str  # Installation folder for target plugins
+    lv_target_constraints_files: List[str] = None  # List of LabVIEW target constraint file paths
+    include_clip_socket_ports: Optional[bool] = None  # Whether to include CLIP socket ports in generated files
+    include_custom_io: Optional[bool] = None  # Whether to include custom I/O in generated files
+    lv_target_plugin_folder: Optional[str] = None  # Destination folder for plugin generation
+    lv_target_name: Optional[str] = None  # Name of the LabVIEW FPGA target (e.g., "PXIe-7903")
+    lv_target_guid: Optional[str] = None  # GUID for the LabVIEW FPGA target
+    lv_target_install_folder: Optional[str] = None  # Installation folder for target plugins
     # ----- CLIP MIGRATION SETTINGS -----
-    input_xml_path: str  # Path to source CLIP XML file
-    output_csv_path: str  # Path where CSV signals will be written
-    clip_hdl_path: str  # Path to top-level CLIP HDL file
-    clip_inst_example_path: str  # Path where instantiation example will be written
-    clip_instance_path: str  # HDL hierarchy path for CLIP instance (not a file path)
-    clip_xdc_paths: list  # List of paths to XDC constraint files
-    updated_xdc_folder: str  # Folder where updated XDC files will be written
-    clip_to_window_signal_definitions: str  # Path for CLIP-to-Window signal definitions file
+    input_xml_path: Optional[str] = None  # Path to source CLIP XML file
+    output_csv_path: Optional[str] = None  # Path where CSV signals will be written
+    clip_hdl_path: Optional[str] = None  # Path to top-level CLIP HDL file
+    clip_inst_example_path: Optional[str] = None  # Path where instantiation example will be written
+    clip_instance_path: Optional[str] = None  # HDL hierarchy path for CLIP instance (not a file path)
+    clip_xdc_paths: List[str] = None  # List of paths to XDC constraint files
+    updated_xdc_folder: Optional[str] = None  # Folder where updated XDC files will be written
+    clip_to_window_signal_definitions: Optional[str] = None  # Path for CLIP-to-Window signal definitions file
 
 
 def parse_bool(value, default=False):
@@ -87,44 +86,44 @@ def load_config(config_path=None):
     # Default configuration
     files = FileConfiguration(
         # ----- General settings -----
-        target_family=None,
-        base_target=None,
-        lv_path=None,
+        target_family=[],
+        base_target=[],
+        lv_path=[],
         # ----- Vivado project settings -----
-        top_level_entity=None,
-        vivado_project_name=None,
-        vivado_tools_path=None,
+        top_level_entity=[],
+        vivado_project_name=[],
+        vivado_tools_path=[],
         hdl_file_lists=[],
         constraints_templates=[],
         vivado_project_constraints_files=[],
-        use_gen_lv_window_files=None,
+        use_gen_lv_window_files=[],
         # ----- LV WINDOW NETLIST settings -----
-        vivado_project_export_xpr=None,
-        the_window_folder=None,
+        vivado_project_export_xpr=[],
+        the_window_folder=[],
         # ----- LVFPGA target settings -----
-        custom_signals_csv=None,
-        boardio_output=None,
-        clock_output=None,
-        window_vhdl_template=None,
-        window_vhdl_output=None,
-        window_instantiation_example=None,
+        custom_signals_csv=[],
+        boardio_output=[],
+        clock_output=[],
+        window_vhdl_template=[],
+        window_vhdl_output=[],
+        window_instantiation_example=[],
         target_xml_templates=[],
         lv_target_constraints_files=[],
-        include_clip_socket_ports=True,
-        include_custom_io=True,
-        lv_target_plugin_folder=None,
-        lv_target_name=None,
-        lv_target_guid=None,
-        lv_target_install_folder=None,
+        include_clip_socket_ports=[],
+        include_custom_io=[],
+        lv_target_plugin_folder=[],
+        lv_target_name=[],
+        lv_target_guid=[],
+        lv_target_install_folder=[],
         # ----- CLIP migration settings -----
-        input_xml_path=None,
-        output_csv_path=None,
-        clip_hdl_path=None,
-        clip_inst_example_path=None,
-        clip_instance_path=None,
+        input_xml_path=[],
+        output_csv_path=[],
+        clip_hdl_path=[],
+        clip_inst_example_path=[],
+        clip_instance_path=[],
         clip_xdc_paths=[],
-        updated_xdc_folder=None,
-        clip_to_window_signal_definitions=None,
+        updated_xdc_folder=[],
+        clip_to_window_signal_definitions=[],
     )
 
     # -----------------------------------------------------------------------
