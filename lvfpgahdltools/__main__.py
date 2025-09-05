@@ -45,7 +45,7 @@ def migrate_clip_cmd(ctx):
 
 @cli.command("install-target", help="Install LabVIEW FPGA target support files")
 @click.pass_context
-def install_target(ctx):
+def install_target_cmd(ctx):
     """Install LabVIEW FPGA target support files."""
     try:
         install_labview_target_plugin.install_lv_target_support()
@@ -57,7 +57,7 @@ def install_target(ctx):
 
 @cli.command("get-window", help="Extract window netlist from Vivado project")
 @click.pass_context
-def get_window(ctx):
+def get_window_cmd(ctx):
     """Extract window netlist from Vivado project."""
     try:
         get_window_netlist.get_window()
@@ -69,7 +69,7 @@ def get_window(ctx):
 
 @cli.command("gen-target", help="Generate LabVIEW FPGA target support files")
 @click.pass_context
-def gen_target(ctx):
+def gen_target_cmd(ctx):
     """Generate LabVIEW FPGA target support files."""
     try:
         gen_labview_target_plugin.gen_lv_target_support()
@@ -83,7 +83,7 @@ def gen_target(ctx):
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
 @click.pass_context
-def create_project(ctx, overwrite, update):
+def create_project_cmd(ctx, overwrite, update):
     """Create or update Vivado project."""
     try:
         create_vivado_project.create_project(overwrite=overwrite, update=update)
@@ -107,7 +107,7 @@ def launch_vivado_cmd(ctx):
 
 @cli.command("extract-deps", help="Extract dependency ZIP files (run from 'targets' folder)")
 @click.pass_context
-def extract_deps(ctx):
+def extract_deps_cmd(ctx):
     """Extract dependency ZIP files from current directory."""
     try:
         extract_dependencies.extract_deps_from_zip()
@@ -119,7 +119,7 @@ def extract_deps(ctx):
 
 @cli.command("create-lvbitx", help="Create LabVIEW FPGA bitfile from Vivado output")
 @click.pass_context
-def create_lvbitx(ctx):
+def create_lvbitx_cmd(ctx):
     """Create LabVIEW FPGA bitfile from Vivado output."""
     try:
         create_lvbitx.create_lv_bitx()
