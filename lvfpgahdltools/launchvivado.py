@@ -1,8 +1,4 @@
-"""Launch Vivado from the command line using project settings from the ini file.
-
-This module reads the VivadoToolsPath and VivadoProjectName from 
-projectsettings.ini and launches Vivado with the project.
-"""
+"""Launch Vivado from the command line."""
 
 # Copyright (c) 2025 National Instruments Corporation
 #

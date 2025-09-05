@@ -1,5 +1,4 @@
-"""Get a LabVIEW Window netlist from the exported Vivado project.
-"""
+"""Get a LabVIEW Window netlist from the exported Vivado project."""
 
 # Copyright (c) 2025 National Instruments Corporation
 #

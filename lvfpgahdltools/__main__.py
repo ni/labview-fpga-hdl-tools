@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""LVFPGAHDLTools - Command-line interface for LabVIEW FPGA HDL Tools.
-
-This module provides a unified command-line interface to execute various tools 
-for LabVIEW FPGA HDL development, including CLIP migration, window netlist generation,
-target support generation, and Vivado project creation/management.
-"""
+"""LVFPGAHDLTools - Command-line interface for LabVIEW FPGA HDL Tools."""
 # Copyright (c) 2025 National Instruments Corporation
 #
 # SPDX-License-Identifier: MIT
