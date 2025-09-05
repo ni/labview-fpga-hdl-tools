@@ -1,3 +1,5 @@
+"""Create LabVIEW bitfile."""
+
 # Copyright (c) 2025 National Instruments Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -9,8 +11,7 @@ from . import common  # For shared utilities across tools
 
 
 def create_lv_bitfile():
-    """
-    Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool
+    """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool.
 
     This function:
     1. Locates the createBitfile.exe relative to LabVIEW installation path
@@ -18,9 +19,9 @@ def create_lv_bitfile():
     """
     vivado_impl_folder = os.getcwd()
 
-    # This script is run by a TCL script in Vivado after the bitstream is generated and the directory
-    # that Vivado is in is the implementation run directory.
-    # So we must go up a few directories to the PXIe-7xxx folder where these scripts normally run
+    # This script is run by a TCL script in Vivado after the bitstream is generated and the
+    # directory that Vivado is in is the implementation run directory. So we must go up a
+    # few directories to the PXIe-7xxx folder where these scripts normally run
     os.chdir("../../..")
 
     # Load configuration
@@ -35,13 +36,13 @@ def create_lv_bitfile():
         print(f"Error: createBitfile.exe not found at {createbitfile_exe}")
         return
 
-    # Determine the path to CodeGenerationResults.lvtxt based on the UseGeneratedLVWindowFiles setting
+    # Determine path to CodeGenerationResults.lvtxt based on UseGeneratedLVWindowFiles setting
     if config.use_gen_lv_window_files:
         print(f"Using generated LV window files: {config.the_window_folder}")
-        
+
         window_folder = os.path.abspath(config.the_window_folder)
         print(f"Window folder resolved to: {window_folder}")
-        
+
         code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")
     else:
         print("Using default LV window files")
@@ -53,9 +54,7 @@ def create_lv_bitfile():
     vivado_bitstream_path = os.path.join(vivado_impl_folder, f"{config.top_level_entity}.bin")
     print(f"Vivado bitstream path: {vivado_bitstream_path}")
 
-    lvbitx_output_path = os.path.abspath(
-        f"objects/bitfiles/{config.top_level_entity}.lvbitx"
-    )
+    lvbitx_output_path = os.path.abspath(f"objects/bitfiles/{config.top_level_entity}.lvbitx")
     print(f"Output .lvbitx path: {lvbitx_output_path}")
 
     # Create the directory for the new file if it doesn't exist
@@ -84,12 +83,13 @@ def create_lv_bitfile():
 
 
 def main():
-    """Main function to run the script"""
+    """Main function to run the script."""
     try:
         create_lv_bitfile()
     except Exception as e:
         print(f"Unhandled exception: {str(e)}")
         import traceback
+
         traceback.print_exc()
         raise
 

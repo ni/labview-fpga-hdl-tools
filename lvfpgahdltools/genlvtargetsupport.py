@@ -1,9 +1,4 @@
-# Copyright (c) 2025 National Instruments Corporation
-#
-# SPDX-License-Identifier: MIT
-#
-"""
-LabVIEW FPGA Target Support Generator
+"""LabVIEW FPGA Target Support Generator.
 
 This script generates support files required for creating a custom LabVIEW FPGA target.
 
@@ -15,16 +10,23 @@ Key functionalities:
 - Creating target XML files for platform-specific configurations
 """
 
+# Copyright (c) 2025 National Instruments Corporation
+#
+# SPDX-License-Identifier: MIT
+#
+
+
 import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
 import re  # For regular expression operations
 import shutil  # For file copying operations
 import sys  # For command-line arguments and error handling
-import xml.etree.ElementTree as ET  # For XML generation and manipulation
+import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
 from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
-from . import common  # For shared utilities across tools
 from mako.template import Template  # For template-based file generation
+
+from . import common  # For shared utilities across tools
 
 # Constants
 BOARDIO_WRAPPER_NAME = "BoardIO"  # Top-level wrapper name in the BoardIO XML hierarchy
@@ -59,8 +61,7 @@ DATA_TYPE_PROTOTYPES = {
 
 
 def write_tree_to_xml(root, output_file):
-    """
-    Write an XML tree to a formatted XML file
+    """Write an XML tree to a formatted XML file.
 
     Converts an ElementTree structure to a properly formatted, indented XML file.
     Creates any necessary directories in the output path if they don't exist.
@@ -86,8 +87,7 @@ def write_tree_to_xml(root, output_file):
 
 
 def get_or_create_resource_list(parent, name):
-    """
-    Find or create a ResourceList element
+    """Find or create a ResourceList element.
 
     Searches for a ResourceList element with the specified name within the parent element.
     If not found, creates a new ResourceList element and returns it.
@@ -107,20 +107,20 @@ def get_or_create_resource_list(parent, name):
 
 
 def create_boardio_structure():
-    """Create the initial boardio XML structure"""
+    """Create the initial boardio XML structure."""
     boardio_top = ET.Element("boardio")
     boardio_resources = ET.SubElement(boardio_top, "ResourceList", {"name": BOARDIO_WRAPPER_NAME})
     return boardio_top, boardio_resources
 
 
 def create_clocklist_structure():
-    """Create the initial ClockList XML structure"""
+    """Create the initial ClockList XML structure."""
     clock_list_top = ET.Element("ClockList")
     return clock_list_top
 
 
 def map_datatype_to_vhdl(data_type):
-    """Map CSV data type to VHDL data type"""
+    """Map CSV data type to VHDL data type."""
     if data_type == "Boolean":
         return "std_logic"
 
@@ -135,7 +135,7 @@ def map_datatype_to_vhdl(data_type):
             params = data_type.split("(")[1].split(")")[0].split(",")
             word_length = int(params[0])
             return f"std_logic_vector({word_length - 1} downto 0)"
-        except:
+        except (ValueError, IndexError):  # Specify the exceptions you're catching
             return "std_logic_vector(31 downto 0)"  # Default if parsing fails
 
     elif data_type.startswith("Array"):
@@ -163,8 +163,7 @@ def map_datatype_to_vhdl(data_type):
 
 
 def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
-    """
-    Generate boardio XML and clock XML files from CSV data
+    """Generate boardio XML and clock XML files from CSV data.
 
     Reads signal definitions from the CSV and creates two XML files:
     1. BoardIO XML: Defines the I/O structure for LabVIEW FPGA
@@ -312,8 +311,7 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
 def generate_window_vhdl_from_csv(
     csv_path, template_path, output_path, include_clip_socket, include_custom_io
 ):
-    """
-    Generate Window VHDL from CSV using a Mako template
+    """Generate Window VHDL from CSV using a Mako template.
 
     Creates the Window VHDL file that serves as the interface between LabVIEW FPGA
     and custom hardware. Uses a template-based approach with Mako templates.
@@ -386,8 +384,7 @@ def generate_target_xml(
     lv_target_name,
     lv_target_guid,
 ):
-    """
-    Generate Target XML files from multiple Mako templates
+    """Generate Target XML files from multiple Mako templates.
 
     Creates target XML files that define the LabVIEW FPGA target configuration.
     This function processes a list of templates, rendering each with the same parameters.
@@ -454,8 +451,7 @@ def generate_target_xml(
 
 
 def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
-    """
-    Generate Window VHDL entity instantiation example from VHDL file
+    """Generate Window VHDL entity instantiation example from VHDL file.
 
     Creates a VHDL file that demonstrates how to instantiate TheWindow entity
     in a larger design. This is useful for integrating the generated VHDL
@@ -473,7 +469,7 @@ def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
     """
     try:
         # Use the common module's function to generate instantiation
-        common.generate_HDL_instantiation_example(vhdl_path, output_path, use_component=True)
+        common.generate_hdl_instantiation_example(vhdl_path, output_path, use_component=True)
         print(f"Generated TheWindow VHDL instantiation example: {output_path}")
 
     except Exception as e:
@@ -481,9 +477,10 @@ def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
         sys.exit(1)
 
 
-def copy_fpgafiles(hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target):
-    """
-    Copy HDL files to the FPGA files destination folder
+def copy_fpgafiles(
+    hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target
+):
+    """Copy HDL files to the FPGA files destination folder.
 
     This function:
     1. Gets the list of HDL files from the project file lists
@@ -492,6 +489,7 @@ def copy_fpgafiles(hdl_file_lists, lv_target_constraints_files, plugin_folder, t
 
     Args:
         hdl_file_lists (list): List of HDL file list paths
+        lv_target_constraints_files (list): List of XDC files to include in target plugin
         plugin_folder (str): Destination folder where the plugin will be installed
         target_family (str): Target family identifier (e.g., "FlexRIO")
         base_target (str): Base target name (e.g., "PXIe-7903")
@@ -546,7 +544,7 @@ def copy_fpgafiles(hdl_file_lists, lv_target_constraints_files, plugin_folder, t
 
 
 def copy_otherfiles(plugin_folder, target_family):
-    # There are some other files that need to be added to the plugin folder in order to make things work
+    """Copy other files needed to make the plugin folder work."""
     if target_family.lower() == "flexrio":
         common_plugin_src = common.resolve_path("../common/lvFpgaTarget/targetpluginmisc")
     else:
@@ -571,8 +569,7 @@ def copy_otherfiles(plugin_folder, target_family):
 
 
 def gen_lv_target_support():
-    """
-    Generate target support files
+    """Generate target support files.
 
     Orchestrates the complete target support generation process by:
     1. Loading configuration from INI file
@@ -635,7 +632,7 @@ def gen_lv_target_support():
 
 
 def main():
-    """Main function to run the script"""
+    """Main function to run the script."""
     gen_lv_target_support()
 
 

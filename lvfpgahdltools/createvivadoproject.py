@@ -1,9 +1,4 @@
-# Copyright (c) 2025 National Instruments Corporation
-#
-# SPDX-License-Identifier: MIT
-#
-"""
-Vivado Project Creation Tool
+"""Vivado Project Creation Tool.
 
 This script automates the creation and updating of Xilinx Vivado projects.
 It handles file collection, dependency management, and TCL script generation to
@@ -16,19 +11,20 @@ The tool supports:
 - Handling duplicate file detection
 """
 
+# Copyright (c) 2025 National Instruments Corporation
+#
+# SPDX-License-Identifier: MIT
+#
 import os
 import shutil
-
 from collections import defaultdict
 from enum import Enum
 
-from . import common
-from . import genlvtargetsupport
+from . import common, genlvtargetsupport
 
 
 def has_spaces(file_path):
-    """
-    Checks if the given file path contains spaces.
+    """Checks if the given file path contains spaces.
 
     TCL scripts require special handling for paths containing spaces,
     so this helper function identifies paths needing additional quoting.
@@ -42,9 +38,8 @@ def has_spaces(file_path):
     return " " in file_path
 
 
-def get_TCL_add_files_text(file_list, file_dir):
-    """
-    Generates TCL commands to add files to a Vivado project.
+def get_tcl_add_files_text(file_list, file_dir):
+    """Generates TCL commands to add files to a Vivado project.
 
     Creates properly formatted 'add_files' TCL commands for each file in the list.
     It handles special cases such as:
@@ -77,8 +72,7 @@ def get_TCL_add_files_text(file_list, file_dir):
 
 
 def replace_placeholders_in_file(file_path, new_file_path, add_files, project_name, top_entity):
-    """
-    Replaces placeholders in a template file with actual values.
+    """Replaces placeholders in a template file with actual values.
 
     This function takes a TCL template file and substitutes key placeholders with
     project-specific values to create a customized Vivado TCL script.
@@ -108,8 +102,7 @@ def replace_placeholders_in_file(file_path, new_file_path, add_files, project_na
 
 
 def find_and_log_duplicates(file_list):
-    """
-    Finds duplicate file names in the file list and logs their full paths to a file.
+    """Finds duplicate file names in the file list and logs their full paths to a file.
 
     Duplicate files can cause compilation issues in Vivado projects, as the tool may
     pick the wrong file version. This function identifies files with the same name but
@@ -160,8 +153,7 @@ def find_and_log_duplicates(file_list):
 
 
 def copy_deps_files(file_list):
-    """
-    Copies files with "githubdeps" in their path to the "objects/gathereddeps" folder.
+    """Copies files with "githubdeps" in their path to the "objects/gathereddeps" folder.
 
     This centralizes external dependencies into the project's local structure, which:
     1. Ensures consistent file locations regardless of development environment
@@ -210,12 +202,10 @@ def copy_deps_files(file_list):
 
 
 def override_lv_window_files(config, file_list):
-    """
-    Replaces entries in file_list with files from the window folder that have the same base name,
-    ignoring file extensions.
+    """Replaces entries in file_list with files from the window folder.
 
-    This function allows generated window files (like TheWindow.edf) to override files with the same name
-    but different extensions (like TheWindow.vhd) in the original file list.
+    This function allows generated window files (like TheWindow.edf) to override files
+    with the same name but different extensions (like TheWindow.vhd) in the original file list.
 
     Args:
         config (FileConfiguration): Configuration settings object
@@ -257,8 +247,7 @@ def override_lv_window_files(config, file_list):
 
 
 class ProjectMode(Enum):
-    """
-    Enum defining the possible modes for project operations.
+    """Enum defining the possible modes for project operations.
 
     NEW: Create a fresh project from scratch
     UPDATE: Update the files in an existing project
@@ -272,9 +261,8 @@ class ProjectMode(Enum):
 
 
 def create_project(mode: ProjectMode, config):
-    """
-    Creates or updates a Vivado project based on the specified mode.
-    
+    """Creates or updates a Vivado project based on the specified mode.
+
     This function:
     1. Resolves paths to template and output TCL scripts
     2. Gathers all project files based on configuration
@@ -282,11 +270,11 @@ def create_project(mode: ProjectMode, config):
     4. Creates customized TCL scripts for project creation or updating
     5. Runs LabVIEW target support generation to create required files
     6. Executes Vivado in batch mode with the appropriate script
-    
+
     Args:
         mode (ProjectMode): Operation mode (NEW or UPDATE)
         config (FileConfiguration): Parsed configuration settings
-        
+
     Raises:
         ValueError: If an unsupported mode is specified
     """
@@ -300,7 +288,9 @@ def create_project(mode: ProjectMode, config):
     file_list = common.get_vivado_project_files(config.hdl_file_lists)
 
     # Add constriants XDC files listed in the config file
-    file_list = file_list + [common.fix_file_slashes(file) for file in config.vivado_project_constraints_files]
+    file_list = file_list + [
+        common.fix_file_slashes(file) for file in config.vivado_project_constraints_files
+    ]
 
     # Copy dependency files to the gathereddeps folder
     # Returns the file list with the files from githubdeps having new locations in gathereddeps
@@ -313,7 +303,7 @@ def create_project(mode: ProjectMode, config):
     # Check for duplicate file names and log them
     find_and_log_duplicates(file_list)
 
-    add_files = get_TCL_add_files_text(file_list, os.path.join(current_dir, "TCL"))
+    add_files = get_tcl_add_files_text(file_list, os.path.join(current_dir, "TCL"))
 
     # Get settings from VivadoProjectSettings section
     project_name = config.vivado_project_name
@@ -342,7 +332,7 @@ def create_project(mode: ProjectMode, config):
 
     # Use the vivado_tools_path from the config instead of the XILINX environment variable
     vivado_path = config.vivado_tools_path
-    
+
     if vivado_path:
         # Determine the Vivado executable based on the operating system
         if os.name == "nt":  # Windows
@@ -371,8 +361,7 @@ def create_project(mode: ProjectMode, config):
 
 
 def create_project_handler(config, overwrite=False, update=False):
-    """
-    Handles command line arguments and performs the desired create Vivado project operation.
+    """Handles command line arguments and performs the desired create Vivado project operation.
 
     This function serves as the main coordination point between command-line arguments
     and the project creation/updating functionality. It:
@@ -428,22 +417,21 @@ def create_project_handler(config, overwrite=False, update=False):
 
 
 def main(overwrite=False, update=False):
-    """
-    Main entry point for the script.
-        
+    """Main entry point for the script.
+
     Args:
         overwrite (bool): Force creation of a new project, overwriting existing
         update (bool): Update files in an existing project
     """
     # Load configuration
     config = common.load_config()
-    
+
     # Process the xdc_template to ensure that we have one for the Vivado project
     common.process_constraints_template(config)
-    
+
     # Execute the project handler with the provided options
     create_project_handler(config, overwrite=overwrite, update=update)
-    
+
     return 0
 
 

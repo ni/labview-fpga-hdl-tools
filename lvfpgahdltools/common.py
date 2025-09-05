@@ -1,3 +1,5 @@
+"""Common functions for LV FPGA HDL tools."""
+
 # Copyright (c) 2025 National Instruments Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -14,8 +16,7 @@ from dataclasses import dataclass
 
 @dataclass
 class FileConfiguration:
-    """
-    Configuration file paths and settings for target support generation
+    """Configuration file paths and settings for target support generation.
 
     This class centralizes all file paths and boolean settings used throughout
     the generation process, ensuring consistent configuration access and validation.
@@ -65,14 +66,14 @@ class FileConfiguration:
 
 
 def parse_bool(value, default=False):
-    """Parse string to boolean"""
+    """Parse string to boolean."""
     if value is None:
         return default
     return value.lower() in ("true", "yes", "1")
 
 
 def load_config(config_path=None):
-    """Load configuration from INI file"""
+    """Load configuration from INI file."""
     if config_path is None:
         config_path = os.path.join(os.getcwd(), "projectsettings.ini")
 
@@ -141,7 +142,7 @@ def load_config(config_path=None):
     files.top_level_entity = settings.get("TopLevelEntity")
     files.vivado_project_name = settings.get("VivadoProjectName")
     files.vivado_tools_path = settings.get("VivadoToolsPath")
-    
+
     # Load file lists
     hdl_file_lists = settings.get("VivadoProjectFilesLists")
     if hdl_file_lists:
@@ -149,8 +150,8 @@ def load_config(config_path=None):
             file_list = file_list.strip()
             if file_list:
                 abs_file_list = resolve_path(file_list)
-                files.hdl_file_lists.append(abs_file_list) 
-    
+                files.hdl_file_lists.append(abs_file_list)
+
     # Load constraints templates
     constraints_templates = settings.get("ConstraintsTemplates")
     if constraints_templates:
@@ -159,7 +160,7 @@ def load_config(config_path=None):
             if template:
                 abs_template = resolve_path(template)
                 files.constraints_templates.append(abs_template)
-                
+
     # Load project constraint files
     constraint_files = settings.get("VivadoProjectConstraintsFiles")
     if constraint_files:
@@ -168,7 +169,7 @@ def load_config(config_path=None):
             if file:
                 abs_file = resolve_path(file)
                 files.vivado_project_constraints_files.append(abs_file)
-                
+
     files.use_gen_lv_window_files = parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
 
     # -----------------------------------------------------------------------
@@ -241,8 +242,8 @@ def load_config(config_path=None):
 
 
 def handle_long_path(path):
-    """
-    Handle Windows long path limitations by prefixing with \\?\ when needed.
+    r"""Handle Windows long path limitations by prefixing with \\?\ when needed.
+
     This allows paths up to ~32K characters instead of the default 260 character limit.
 
     The \\?\ prefix tells Windows API to use extended-length path handling, bypassing
@@ -264,8 +265,7 @@ def handle_long_path(path):
 
 
 def resolve_path(rel_path):
-    """
-    Convert a relative path to an absolute path based on the current working directory.
+    """Convert a relative path to an absolute path based on the current working directory.
 
     This is useful for processing configuration file paths that may be specified
     relative to the location of the configuration file itself.
@@ -281,8 +281,7 @@ def resolve_path(rel_path):
 
 
 def fix_file_slashes(path):
-    """
-    Converts backslashes to forward slashes in file paths.
+    """Converts backslashes to forward slashes in file paths.
 
     Vivado and TCL scripts work better with forward slashes in paths,
     regardless of platform. This ensures consistent path formatting.
@@ -297,8 +296,7 @@ def fix_file_slashes(path):
 
 
 def parse_vhdl_entity(vhdl_path):
-    """
-    Parse VHDL file to extract entity information - port names only.
+    """Parse VHDL file to extract entity information - port names only.
 
     This function analyzes a VHDL file and extracts the entity name and all
     port names from the entity declaration. It handles complex VHDL syntax including
@@ -394,14 +392,15 @@ def parse_vhdl_entity(vhdl_path):
         return None, []
 
 
-def generate_HDL_instantiation_example(vhdl_path, output_path, architecture="rtl", use_component=False):
-    """
-    Generate VHDL entity instantiation from VHDL file.
+def generate_hdl_instantiation_example(
+    vhdl_path, output_path, architecture="rtl", use_component=False
+):
+    """Generate VHDL entity instantiation from VHDL file.
 
     Creates a VHDL file containing an entity instantiation using either:
     - Entity-architecture syntax (entity work.Entity_Name(architecture_name))
     - Component syntax (Entity_Name)
-    
+
     All ports are connected to signals with the same name.
 
     Args:
@@ -430,7 +429,7 @@ def generate_HDL_instantiation_example(vhdl_path, output_path, architecture="rtl
         else:
             # Use entity-architecture syntax
             f.write(f"{entity_name}_inst: entity work.{entity_name} ({architecture})\n")
-            
+
         f.write("port map (\n")
 
         # Create port mappings
@@ -445,8 +444,7 @@ def generate_HDL_instantiation_example(vhdl_path, output_path, architecture="rtl
 
 
 def get_vivado_project_files(lists_of_files):
-    """
-    Processes the configuration to generate the list of files for the Vivado project.
+    """Processes the configuration to generate the list of files for the Vivado project.
 
     This is the main function for file gathering that:
     1. Reads file list references from the config file
@@ -465,7 +463,6 @@ def get_vivado_project_files(lists_of_files):
         FileNotFoundError: If a specified file list path doesn't exist
         ValueError: If duplicate files are found
     """
-
     # Combine all file lists into a single file_list
     file_list = []
     for file_list_path in lists_of_files:
@@ -506,9 +503,7 @@ def get_vivado_project_files(lists_of_files):
 
 
 def process_constraints_template(config):
-    """
-    Process XDC constraint template files by replacing marker sections with
-    content from TheWindowConstraints.xdc.
+    """Process XDC constraint template files.
 
     This function:
     1. Extracts content between HDL markers in TheWindowConstraints.xdc
@@ -603,7 +598,7 @@ def process_constraints_template(config):
 
 
 def run_command(cmd, cwd=None, capture_output=True):
-    """Run a shell command and return its output"""
+    """Run a shell command and return its output."""
     print(f"Running command: {cmd}")
 
     kwargs = {}

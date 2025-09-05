@@ -1,3 +1,5 @@
+"""Install target plugin support."""
+
 # Copyright (c) 2025 National Instruments Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -10,8 +12,7 @@ from . import common  # For shared utilities across tools
 
 
 def is_admin():
-    """
-    Check if the script is running with administrator privileges
+    """Check if the script is running with administrator privileges.
 
     Returns:
         bool: True if running as admin, False otherwise
@@ -20,24 +21,26 @@ def is_admin():
         import ctypes
 
         return ctypes.windll.shell32.IsUserAnAdmin() != 0
-    except:
+    except (AttributeError, ImportError, OSError):
+        # AttributeError: If windll or IsUserAnAdmin doesn't exist (non-Windows)
+        # ImportError: If ctypes can't be imported
+        # OSError: If the function call fails due to OS-level issues
         return False
 
 
 def run_as_admin():
-    """
-    Re-launch the command with administrator privileges
-    
+    """Re-launch the command with administrator privileges.
+
     This function creates a new process with elevated privileges using
     the Windows shell's "runas" verb. It's designed to work with both
     direct Python script execution and pip-installed entry points.
     """
     import ctypes
     import sys
-    
+
     # When running via pip-installed entry point (nihdl),
     # we need to relaunch the entry point rather than the script
-    if sys.argv[0].endswith('nihdl') or sys.argv[0].endswith('nihdl.exe'):
+    if sys.argv[0].endswith("nihdl") or sys.argv[0].endswith("nihdl.exe"):
         # Launch the entry point with the same arguments
         command = "nihdl"
         arguments = " ".join(sys.argv[1:])
@@ -45,28 +48,27 @@ def run_as_admin():
         # Traditional script execution path
         command = sys.executable
         arguments = f'"{sys.argv[0]}" {" ".join(sys.argv[1:])}'
-    
+
     print("Requesting administrator privileges...")
     print(f"Running: {command} with args: {arguments}")
-    
+
     # Execute with elevation
     result = ctypes.windll.shell32.ShellExecuteW(
         None, "runas", command, arguments, None, 1  # SW_SHOWNORMAL
     )
-    
+
     # Check if the elevation was successful
     if result <= 32:  # Error codes are 32 or below
         print(f"Error elevating privileges. Error code: {result}")
         sys.exit(1)
-    
+
     # The original process should exit after launching the elevated one
     print("Elevated process launched. This process will now exit.")
     sys.exit(0)
 
 
 def install_lv_target_support():
-    """
-    Install LabVIEW Target Support files to the target installation folder
+    """Install LabVIEW Target Support files to the target installation folder.
 
     This function:
     1. Loads configuration from the INI file
@@ -112,7 +114,7 @@ def install_lv_target_support():
         os.makedirs(install_folder, exist_ok=True)
 
         def copy_recursively(src, dst):
-            """Helper to copy files and directories recursively"""
+            """Helper to copy files and directories recursively."""
             if os.path.isdir(src):
                 # Create destination directory if it doesn't exist
                 if not os.path.exists(dst):
@@ -147,7 +149,7 @@ def install_lv_target_support():
 
 
 def main():
-    """Main function to run the script"""
+    """Main function to run the script."""
     install_lv_target_support()
 
 

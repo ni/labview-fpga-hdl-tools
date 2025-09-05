@@ -1,9 +1,4 @@
-# Copyright (c) 2025 National Instruments Corporation
-#
-# SPDX-License-Identifier: MIT
-#
-"""
-CLIP Migration Tool
+"""CLIP Migration Tool.
 
 This module provides functionality to migrate CLIP (Component-Level Intellectual Property)
 files for FlexRIO custom devices. It processes XML files, generates signal declarations,
@@ -13,11 +8,18 @@ The tool handles migration between different FPGA development environments and
 helps in integrating CLIP IP into LabVIEW FPGA projects.
 """
 
+# Copyright (c) 2025 National Instruments Corporation
+#
+# SPDX-License-Identifier: MIT
+#
+
+
 import csv
 import os
+import re
 import sys
 import traceback
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # noqa: N817
 
 from . import common
 
@@ -109,13 +111,13 @@ def get_attribute_case_insensitive(element, attr_name, default=""):
 
 
 def get_element_text(element, xpath, default=""):
-    """Safely extract text from an element using case-insensitive matching"""
+    """Safely extract text from an element using case-insensitive matching."""
     child = find_case_insensitive(element, xpath) if element is not None else None
     return child.text if child is not None and child.text else default
 
 
 def extract_data_type(element):
-    """Extract data type from element using case-insensitive matching"""
+    """Extract data type from element using case-insensitive matching."""
     if element is None:
         return "N/A"
 
@@ -151,8 +153,7 @@ def extract_data_type(element):
 
 
 def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
-    """
-    Process CLIP XML and generate CSV with signal information.
+    """Process CLIP XML and generate CSV with signal information.
 
     This function:
     1. Parses the CLIP XML file
@@ -291,8 +292,7 @@ def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
 
 
 def process_constraint_file(input_xml_path, output_folder, instance_path):
-    """
-    Process XDC constraint file and replace %ClipInstancePath% with the instance path.
+    """Process XDC constraint file and replace %ClipInstancePath% with the instance path.
 
     XDC constraint files need to be updated with the correct hierarchical path
     for the CLIP instance. This function performs that replacement and saves
@@ -346,8 +346,7 @@ def process_constraint_file(input_xml_path, output_folder, instance_path):
 
 
 def generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
-    """
-    Generate VHDL signal declarations for CLIP signals to connect to Window component.
+    """Generate VHDL signal declarations for CLIP signals to connect to Window component.
 
     This function:
     1. Extracts signal information from the CLIP XML
@@ -434,8 +433,7 @@ def generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
 
 
 def map_lv_type_to_vhdl(lv_type):
-    """
-    Map LabVIEW data type to VHDL data type.
+    """Map LabVIEW data type to VHDL data type.
 
     Converts LabVIEW data types (like U32, Boolean, FXP) to their
     equivalent VHDL representations (std_logic, std_logic_vector).
@@ -506,8 +504,7 @@ def map_lv_type_to_vhdl(lv_type):
 
 
 def extract_clock_parameters(element):
-    """
-    Extract clock parameter information from signal element using case-insensitive matching
+    """Extract clock parameter information from signal element using case-insensitive matching.
 
     Args:
         element: XML Element containing clock signal information
@@ -563,7 +560,7 @@ def extract_clock_parameters(element):
 
 
 def main():
-    """Main program entry point"""
+    """Main program entry point."""
     # Load configuration
     config = common.load_config()
 
@@ -574,16 +571,16 @@ def main():
     generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
 
     # Generate entity instantiation
-    common.generate_HDL_instantiation_example(config.clip_hdl_path, config.clip_inst_example_path, use_component=False)
+    common.generate_hdl_instantiation_example(
+        config.clip_hdl_path, config.clip_inst_example_path, use_component=False
+    )
 
     # Process all constraint files
     for xdc_path in config.clip_xdc_paths:
         process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
 
     # Generate CLIP to Window signal definitions
-    generate_clip_to_window_signals(
-        long_input_xml_path, config.clip_to_window_signal_definitions
-    )
+    generate_clip_to_window_signals(long_input_xml_path, config.clip_to_window_signal_definitions)
 
     print("CLIP migration completed successfully.")
 

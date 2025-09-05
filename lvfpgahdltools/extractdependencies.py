@@ -1,9 +1,4 @@
-# Copyright (c) 2025 National Instruments Corporation
-#
-# SPDX-License-Identifier: MIT
-#
-"""
-Dependency Extractor for FPGA Projects
+"""Dependency Extractor for FPGA Projects.
 
 This script extracts dependency ZIP files into a specified folder structure,
 facilitating the integration of third-party components and libraries.
@@ -16,23 +11,25 @@ managing external dependencies that may come from GitHub repositories
 or other external sources.
 """
 
+# Copyright (c) 2025 National Instruments Corporation
+#
+# SPDX-License-Identifier: MIT
+#
 import os
 import shutil
-from . import common
 
 
 def extract_deps_from_zip(deps_folder, source_folder=None):
-    """
-    Extracts the contents of all ZIP files from source_folder into the deps_folder.
-    
+    """Extracts the contents of all ZIP files from source_folder into the deps_folder.
+
     Args:
         deps_folder (str): Target folder where ZIP contents will be extracted.
-        source_folder (str, optional): Folder containing ZIP files to extract. 
+        source_folder (str, optional): Folder containing ZIP files to extract.
                                       If None, uses current directory.
     """
     # Ensure the path exists
     deps_folder = os.path.abspath(deps_folder)
-    
+
     # Handle long paths on Windows
     # The \\?\ prefix allows paths over 260 characters on Windows systems
     if os.name == "nt":
@@ -51,7 +48,7 @@ def extract_deps_from_zip(deps_folder, source_folder=None):
     # Determine source directory
     source_dir = source_folder if source_folder else os.getcwd()
     print(f"Looking for ZIP files in: {source_dir}")
-    
+
     # Find all zip files in the source directory
     # This allows batch processing of multiple dependency archives
     zip_files = [f for f in os.listdir(source_dir) if f.endswith(".zip")]
@@ -75,9 +72,7 @@ def extract_deps_from_zip(deps_folder, source_folder=None):
 
 
 def main():
-    """
-    Main entry point for the script.
-    """
+    """Main entry point for the script."""
     # Define fixed relative paths
     #
     # This script must be run from the targets folder of the repository
@@ -85,7 +80,7 @@ def main():
     cwd = os.getcwd()
     deps_folder = os.path.join(cwd, "..", "dependencies", "githubdeps")
     source_folder = os.path.join(cwd, "..", "dependencies")
-  
+
     # Extract dependencies
     extract_deps_from_zip(deps_folder, source_folder)
 
