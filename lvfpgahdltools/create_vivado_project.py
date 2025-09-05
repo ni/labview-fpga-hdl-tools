@@ -20,7 +20,7 @@ import shutil
 from collections import defaultdict
 from enum import Enum
 
-from . import common, genlvtargetsupport
+from . import common, gen_labview_target_plugin
 
 
 def _has_spaces(file_path):
@@ -319,7 +319,7 @@ def _create_project(mode: ProjectMode, config):
 
     # Run (or rerun) generate LV target support - this is needed to generate TheWindow.vhd that goes
     # into the objects directory and which gets used in the Vivado project
-    genlvtargetsupport.gen_lv_target_support()
+    gen_labview_target_plugin.gen_lv_target_support()
 
     vivado_project_path = os.path.join(os.getcwd(), "VivadoProject")
     if not os.path.exists(vivado_project_path):

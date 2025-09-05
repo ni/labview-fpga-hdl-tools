@@ -87,7 +87,7 @@ def _create_lv_bitfile():
         print(f"STDERR: {result.stderr}")
 
 
-def create_lv_bitfile():
+def create_lv_bitx():
     """Main function to run the script."""
     try:
         _create_lv_bitfile()
@@ -100,4 +100,4 @@ def create_lv_bitfile():
 
 
 if __name__ == "__main__":
-    create_lv_bitfile()
+    create_lv_bitx()
