@@ -511,13 +511,23 @@ def copy_fpgafiles(
     exclude_regex_list = []
     if target_family.lower() == "flexrio":
         exclude_script_path = common.resolve_path("../lvfpgaexcludefiles.py")
-        # Get skip files from specified script
-        script_dir = os.path.dirname(exclude_script_path)
-        script_name = os.path.basename(exclude_script_path).split(".")[0]
-        sys.path.insert(0, script_dir)
-        exclude_module = __import__(script_name)
-        exclude_regex_list = exclude_module.get_exclude_regex_list()
-        sys.path.pop(0)
+        if exclude_script_path is None:
+            print("Warning: Could not resolve path to lvfpgaexcludefiles.py")
+            # Use a default empty list for exclude patterns
+            exclude_regex_list = []
+        else:
+            # Get skip files from specified script
+            script_dir = os.path.dirname(exclude_script_path)
+            script_name = os.path.basename(exclude_script_path).split(".")[0]
+            sys.path.insert(0, script_dir)
+            try:
+                exclude_module = __import__(script_name)
+                exclude_regex_list = exclude_module.get_exclude_regex_list()
+            except ImportError:
+                print(f"Warning: Could not import {script_name} module")
+                exclude_regex_list = []
+            finally:
+                sys.path.pop(0)
     else:
         raise ValueError(f"Unsupported target family: {target_family}.")
 
@@ -585,6 +595,11 @@ def gen_lv_target_support():
     """
     # Load configuration
     config = common.load_config()
+
+    # Verify required configuration is present
+    if config.lv_target_plugin_folder is None:
+        print("Error: LV target plugin folder not set in configuration")
+        sys.exit(1)
 
     # Clean fpga plugins folder
     shutil.rmtree(config.lv_target_plugin_folder, ignore_errors=True)
