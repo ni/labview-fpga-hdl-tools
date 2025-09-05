@@ -11,7 +11,7 @@ import re
 import subprocess
 import sys
 import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 
@@ -31,11 +31,15 @@ class FileConfiguration:
     top_level_entity: Optional[str] = None  # Top-level entity name for Vivado project
     vivado_project_name: Optional[str] = None  # Name of the Vivado project (no spaces allowed)
     vivado_tools_path: Optional[str] = None  # Path to Vivado tools
-    hdl_file_lists: List[str] = None  # List of HDL file list paths for Vivado project generation
-    constraints_templates: List[str] = None  # List of constraint template file paths
-    vivado_project_constraints_files: List[str] = (
-        None  # List of Vivado project constraint file paths
-    )
+    hdl_file_lists: List[str] = field(
+        default_factory=list
+    )  # List of HDL file list paths for Vivado project generation
+    constraints_templates: List[str] = field(
+        default_factory=list
+    )  # List of constraint template file paths
+    vivado_project_constraints_files: List[str] = field(
+        default_factory=list
+    )  # List of Vivado project constraint file paths
     use_gen_lv_window_files: Optional[bool] = (
         None  # Use files from the_window_folder to override what is in hdl_file_lists
     )
@@ -46,11 +50,15 @@ class FileConfiguration:
     custom_signals_csv: Optional[str] = None  # Path to CSV containing signal definitions
     boardio_output: Optional[str] = None  # Path where BoardIO XML will be written
     clock_output: Optional[str] = None  # Path where Clock XML will be written
-    window_vhdl_template: Optional[str]  # Template for TheWindow.vhd generation
-    window_vhdl_output: Optional[str]  # Output path for TheWindow.vhd
-    window_instantiation_example: Optional[str]  # Path for instantiation example output
-    target_xml_templates: list  # Templates for target XML generation
-    lv_target_constraints_files: List[str] = None  # List of LabVIEW target constraint file paths
+    window_vhdl_template: Optional[str] = None  # Template for TheWindow.vhd generation
+    window_vhdl_output: Optional[str] = None  # Output path for TheWindow.vhd
+    window_instantiation_example: Optional[str] = None  # Path for instantiation example output
+    target_xml_templates: List[str] = field(
+        default_factory=list
+    )  # Templates for target XML generation
+    lv_target_constraints_files: List[str] = field(
+        default_factory=list
+    )  # List of LabVIEW target constraint file paths
     include_clip_socket_ports: Optional[bool] = (
         None  # Whether to include CLIP socket ports in generated files
     )
@@ -67,7 +75,7 @@ class FileConfiguration:
     clip_instance_path: Optional[str] = (
         None  # HDL hierarchy path for CLIP instance (not a file path)
     )
-    clip_xdc_paths: List[str] = None  # List of paths to XDC constraint files
+    clip_xdc_paths: List[str] = field(default_factory=list)  # List of paths to XDC constraint files
     updated_xdc_folder: Optional[str] = None  # Folder where updated XDC files will be written
     clip_to_window_signal_definitions: Optional[str] = (
         None  # Path for CLIP-to-Window signal definitions file
