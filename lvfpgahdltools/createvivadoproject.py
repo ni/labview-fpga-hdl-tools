@@ -23,7 +23,7 @@ from enum import Enum
 from . import common, genlvtargetsupport
 
 
-def has_spaces(file_path):
+def _has_spaces(file_path):
     """Checks if the given file path contains spaces.
 
     TCL scripts require special handling for paths containing spaces,
@@ -38,7 +38,7 @@ def has_spaces(file_path):
     return " " in file_path
 
 
-def get_tcl_add_files_text(file_list, file_dir):
+def _get_tcl_add_files_text(file_list, file_dir):
     """Generates TCL commands to add files to a Vivado project.
 
     Creates properly formatted 'add_files' TCL commands for each file in the list.
@@ -64,14 +64,14 @@ def get_tcl_add_files_text(file_list, file_dir):
     # Strip the \\?\ prefix and compute relative paths
     stripped_file_list = [strip_long_path_prefix(file) for file in file_list]
     replacement_list = [os.path.relpath(file, file_dir) for file in stripped_file_list]
-    replacement_list = [f'"{file}"' if has_spaces(file) else file for file in replacement_list]
+    replacement_list = [f'"{file}"' if _has_spaces(file) else file for file in replacement_list]
 
     # Generate TCL commands
     replacement_text = "\n".join([f"add_files {{{file}}}" for file in replacement_list])
     return replacement_text
 
 
-def replace_placeholders_in_file(file_path, new_file_path, add_files, project_name, top_entity):
+def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_name, top_entity):
     """Replaces placeholders in a template file with actual values.
 
     This function takes a TCL template file and substitutes key placeholders with
@@ -101,7 +101,7 @@ def replace_placeholders_in_file(file_path, new_file_path, add_files, project_na
         file.write(modified_contents)
 
 
-def find_and_log_duplicates(file_list):
+def _find_and_log_duplicates(file_list):
     """Finds duplicate file names in the file list and logs their full paths to a file.
 
     Duplicate files can cause compilation issues in Vivado projects, as the tool may
@@ -152,7 +152,7 @@ def find_and_log_duplicates(file_list):
         raise ValueError("Duplicate files found. Check the log file for details.")
 
 
-def copy_deps_files(file_list):
+def _copy_deps_files(file_list):
     """Copies files with "githubdeps" in their path to the "objects/gathereddeps" folder.
 
     This centralizes external dependencies into the project's local structure, which:
@@ -201,7 +201,7 @@ def copy_deps_files(file_list):
     return new_file_list
 
 
-def override_lv_window_files(config, file_list):
+def _override_lv_window_files(config, file_list):
     """Replaces entries in file_list with files from the window folder.
 
     This function allows generated window files (like TheWindow.edf) to override files
@@ -260,7 +260,7 @@ class ProjectMode(Enum):
     UPDATE = "update"
 
 
-def create_project(mode: ProjectMode, config):
+def _create_project(mode: ProjectMode, config):
     """Creates or updates a Vivado project based on the specified mode.
 
     This function:
@@ -294,26 +294,26 @@ def create_project(mode: ProjectMode, config):
 
     # Copy dependency files to the gathereddeps folder
     # Returns the file list with the files from githubdeps having new locations in gathereddeps
-    file_list = copy_deps_files(file_list)
+    file_list = _copy_deps_files(file_list)
 
     # Override default LV generated files
     if config.use_gen_lv_window_files:
-        file_list = override_lv_window_files(config, file_list)
+        file_list = _override_lv_window_files(config, file_list)
 
     # Check for duplicate file names and log them
-    find_and_log_duplicates(file_list)
+    _find_and_log_duplicates(file_list)
 
-    add_files = get_tcl_add_files_text(file_list, os.path.join(current_dir, "TCL"))
+    add_files = _get_tcl_add_files_text(file_list, os.path.join(current_dir, "TCL"))
 
     # Get settings from VivadoProjectSettings section
     project_name = config.vivado_project_name
     top_entity = config.top_level_entity
 
     # Replace placeholders in the template Vivado project scripts
-    replace_placeholders_in_file(
+    _replace_placeholders_in_file(
         new_proj_template_path, new_proj_path, add_files, project_name, top_entity
     )
-    replace_placeholders_in_file(
+    _replace_placeholders_in_file(
         update_proj_template_path, update_proj_path, add_files, project_name, top_entity
     )
 
@@ -360,7 +360,7 @@ def create_project(mode: ProjectMode, config):
         print("Vivado tools path not found in configuration.")
 
 
-def create_project_handler(config, overwrite=False, update=False):
+def _create_project_handler(config, overwrite=False, update=False):
     """Handles command line arguments and performs the desired create Vivado project operation.
 
     This function serves as the main coordination point between command-line arguments
@@ -399,7 +399,7 @@ def create_project_handler(config, overwrite=False, update=False):
                 f"The project file '{project_file_path}' already exists. Use the --overwrite or --update flag to modify the project."
             )
         else:
-            create_project(ProjectMode.NEW, config)
+            _create_project(ProjectMode.NEW, config)
     elif update and not overwrite:
         if not os.path.exists(project_file_path):
             # Throw error if the project does not exist and they want to update it
@@ -407,16 +407,16 @@ def create_project_handler(config, overwrite=False, update=False):
                 f"The project file '{project_file_path}' does not exist. Run without the --update flag to create a new project."
             )
         else:
-            create_project(ProjectMode.UPDATE, config)
+            _create_project(ProjectMode.UPDATE, config)
     elif overwrite and not update:
         # Overwrite the project by creating a new one
-        create_project(ProjectMode.NEW, config)
+        _create_project(ProjectMode.NEW, config)
     else:
         # Error case if both overwrite and update are set
         raise ValueError("Invalid combination of arguments.")
 
 
-def main(overwrite=False, update=False):
+def create_project(overwrite=False, update=False):
     """Main entry point for the script.
 
     Args:
@@ -430,10 +430,10 @@ def main(overwrite=False, update=False):
     common.process_constraints_template(config)
 
     # Execute the project handler with the provided options
-    create_project_handler(config, overwrite=overwrite, update=update)
+    _create_project_handler(config, overwrite=overwrite, update=update)
 
     return 0
 
 
 if __name__ == "__main__":
-    main()
+    create_project()

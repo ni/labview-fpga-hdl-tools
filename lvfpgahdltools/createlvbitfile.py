@@ -10,7 +10,7 @@ import subprocess  # For executing external programs
 from . import common  # For shared utilities across tools
 
 
-def create_lv_bitfile():
+def _create_lv_bitfile():
     """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool."""
     vivado_impl_folder = os.getcwd()
 
@@ -87,10 +87,10 @@ def create_lv_bitfile():
         print(f"STDERR: {result.stderr}")
 
 
-def main():
+def create_lv_bitfile():
     """Main function to run the script."""
     try:
-        create_lv_bitfile()
+        _create_lv_bitfile()
     except Exception as e:
         print(f"Unhandled exception: {str(e)}")
         import traceback
@@ -100,4 +100,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    create_lv_bitfile()

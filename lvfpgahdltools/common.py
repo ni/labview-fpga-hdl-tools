@@ -82,7 +82,7 @@ class FileConfiguration:
     )
 
 
-def parse_bool(value, default=False):
+def _parse_bool(value, default=False):
     """Parse string to boolean."""
     if value is None:
         return default
@@ -147,7 +147,7 @@ def load_config(config_path=None):
                 abs_file = resolve_path(file)
                 files.vivado_project_constraints_files.append(abs_file)
 
-    files.use_gen_lv_window_files = parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
+    files.use_gen_lv_window_files = _parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
 
     # -----------------------------------------------------------------------
     # Load LV WINDOW NETLIST settings
@@ -170,8 +170,8 @@ def load_config(config_path=None):
     files.lv_target_guid = settings.get("LVTargetGUID")
     files.lv_target_plugin_folder = resolve_path(settings.get("LVTargetPluginFolder"))
     files.lv_target_install_folder = settings.get("LVTargetInstallFolder")
-    files.include_clip_socket_ports = parse_bool(settings.get("IncludeCLIPSocket"), True)
-    files.include_custom_io = parse_bool(settings.get("IncludeLVTargetBoardIO"), True)
+    files.include_clip_socket_ports = _parse_bool(settings.get("IncludeCLIPSocket"), True)
+    files.include_custom_io = _parse_bool(settings.get("IncludeLVTargetBoardIO"), True)
 
     # Load XML templates
     template_files = settings.get("TargetXMLTemplates")
@@ -272,7 +272,7 @@ def fix_file_slashes(path):
     return path.replace("\\", "/")
 
 
-def parse_vhdl_entity(vhdl_path):
+def _parse_vhdl_entity(vhdl_path):
     """Parse VHDL file to extract entity information - port names only.
 
     This function analyzes a VHDL file and extracts the entity name and all
@@ -390,7 +390,7 @@ def generate_hdl_instantiation_example(
         Signal declarations for ports are not included in the output.
         They must be declared separately.
     """
-    entity_name, ports = parse_vhdl_entity(vhdl_path)
+    entity_name, ports = _parse_vhdl_entity(vhdl_path)
 
     # Create output directory if needed
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

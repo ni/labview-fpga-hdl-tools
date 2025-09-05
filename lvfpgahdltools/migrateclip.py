@@ -24,9 +24,8 @@ import xml.etree.ElementTree as ET  # noqa: N817
 from . import common
 
 
-def find_case_insensitive(element, xpath):
+def _find_case_insensitive(element, xpath):
     """Find an element using case-insensitive tag and attribute matching."""
-    # Keep original implementation...
     if element is None:
         return None
 
@@ -64,9 +63,8 @@ def find_case_insensitive(element, xpath):
     return element.find(xpath)
 
 
-def findall_case_insensitive(element, xpath):
+def _findall_case_insensitive(element, xpath):
     """Find all elements using case-insensitive tag and attribute matching."""
-    # Keep original implementation...
     if element is None:
         return []
 
@@ -99,7 +97,7 @@ def findall_case_insensitive(element, xpath):
     return element.findall(xpath)
 
 
-def get_attribute_case_insensitive(element, attr_name, default=""):
+def _get_attribute_case_insensitive(element, attr_name, default=""):
     """Get attribute value using case-insensitive matching."""
     if element is None:
         return default
@@ -110,13 +108,13 @@ def get_attribute_case_insensitive(element, attr_name, default=""):
     return default
 
 
-def get_element_text(element, xpath, default=""):
+def _get_element_text(element, xpath, default=""):
     """Safely extract text from an element using case-insensitive matching."""
-    child = find_case_insensitive(element, xpath) if element is not None else None
+    child = _find_case_insensitive(element, xpath) if element is not None else None
     return child.text if child is not None and child.text else default
 
 
-def extract_data_type(element):
+def _extract_data_type(element):
     """Extract data type from element using case-insensitive matching."""
     if element is None:
         return "N/A"
@@ -124,26 +122,26 @@ def extract_data_type(element):
     # Check for simple types
     simple_types = ["Boolean", "U8", "U16", "U32", "U64", "I8", "I16", "I32", "I64"]
     for type_name in simple_types:
-        if find_case_insensitive(element, type_name) is not None:
+        if _find_case_insensitive(element, type_name) is not None:
             return type_name
 
     # Check for FXP
-    fxp = find_case_insensitive(element, "FXP")
+    fxp = _find_case_insensitive(element, "FXP")
     if fxp is not None:
-        word_length = get_element_text(fxp, "WordLength", "?")
-        int_word_length = get_element_text(fxp, "IntegerWordLength", "?")
-        signed = "Unsigned" if find_case_insensitive(fxp, "Unsigned") is not None else "Signed"
+        word_length = _get_element_text(fxp, "WordLength", "?")
+        int_word_length = _get_element_text(fxp, "IntegerWordLength", "?")
+        signed = "Unsigned" if _find_case_insensitive(fxp, "Unsigned") is not None else "Signed"
         return f"FXP({word_length},{int_word_length},{signed})"
 
     # Check for Array
-    array = find_case_insensitive(element, "Array")
+    array = _find_case_insensitive(element, "Array")
     if array is not None:
-        size = get_element_text(array, "Size", "?")
+        size = _get_element_text(array, "Size", "?")
 
         # Find array element type
         subtype = "Unknown"
         for type_name in simple_types + ["FXP"]:
-            if find_case_insensitive(array, type_name) is not None:
+            if _find_case_insensitive(array, type_name) is not None:
                 subtype = type_name
                 break
 
@@ -152,7 +150,7 @@ def extract_data_type(element):
     return "Unknown"
 
 
-def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
+def _generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
     """Process CLIP XML and generate CSV with signal information.
 
     This function:
@@ -186,7 +184,7 @@ def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
             sys.exit(f"Error parsing XML file: {e}")
 
         # Find LabVIEW interface
-        lv_interface = find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
+        lv_interface = _find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
         if lv_interface is None:
             sys.exit(f"No LabVIEW interface found in {input_xml_path}")
 
@@ -216,14 +214,14 @@ def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
             )
 
             # Find signals
-            signals = findall_case_insensitive(lv_interface, ".//SignalList/Signal")
+            signals = _findall_case_insensitive(lv_interface, ".//SignalList/Signal")
             if not signals:
                 print("Warning: No signals found in the LabVIEW interface")
 
             # Process each signal
             for signal in signals:
                 # Get signal name - try both "Name" and "name" attributes
-                name = get_attribute_case_insensitive(signal, "Name")
+                name = _get_attribute_case_insensitive(signal, "Name")
                 if not name:
                     print("Warning: Signal without a name found, skipping")
                     continue
@@ -232,17 +230,17 @@ def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
                 lv_name = "IO Socket\\" + name.replace(".", "\\")
 
                 # Get signal properties using case-insensitive matching
-                hdl_name = get_element_text(signal, "HDLName", "N/A")
-                raw_direction = get_element_text(signal, "Direction", "N/A")
+                hdl_name = _get_element_text(signal, "HDLName", "N/A")
+                raw_direction = _get_element_text(signal, "Direction", "N/A")
                 direction = {"ToCLIP": "output", "FromCLIP": "input"}.get(
                     raw_direction, raw_direction
                 )
-                signal_type = get_element_text(signal, "SignalType", "N/A")
-                data_type = extract_data_type(
-                    signal.find("DataType") or find_case_insensitive(signal, "DataType")
+                signal_type = _get_element_text(signal, "SignalType", "N/A")
+                data_type = _extract_data_type(
+                    signal.find("DataType") or _find_case_insensitive(signal, "DataType")
                 )
-                use_in_scl = get_element_text(signal, "UseInLabVIEWSingleCycleTimedLoop")
-                clock_domain = get_element_text(signal, "RequiredClockDomain")
+                use_in_scl = _get_element_text(signal, "UseInLabVIEWSingleCycleTimedLoop")
+                clock_domain = _get_element_text(signal, "RequiredClockDomain")
 
                 if direction == "input" or use_in_scl == "Required":
                     zero_sync_regs = "TRUE"
@@ -255,7 +253,7 @@ def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
                     output_readback = ""
 
                 # Extract clock-related information
-                clock_params = extract_clock_parameters(signal)
+                clock_params = _extract_clock_parameters(signal)
                 duty_cycle_max = clock_params["duty_cycle_max"]
                 duty_cycle_min = clock_params["duty_cycle_min"]
                 accuracy_ppm = clock_params["accuracy_ppm"]
@@ -291,7 +289,7 @@ def generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
         traceback.print_exc()
 
 
-def process_constraint_file(input_xml_path, output_folder, instance_path):
+def _process_constraint_file(input_xml_path, output_folder, instance_path):
     """Process XDC constraint file and replace %ClipInstancePath% with the instance path.
 
     XDC constraint files need to be updated with the correct hierarchical path
@@ -345,7 +343,7 @@ def process_constraint_file(input_xml_path, output_folder, instance_path):
         traceback.print_exc()
 
 
-def generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
+def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
     """Generate VHDL signal declarations for CLIP signals to connect to Window component.
 
     This function:
@@ -381,13 +379,13 @@ def generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
             return False
 
         # Find LabVIEW interface
-        lv_interface = find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
+        lv_interface = _find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
         if lv_interface is None:
             print(f"No LabVIEW interface found in {input_xml_path}")
             return False
 
         # Find signals
-        signals = findall_case_insensitive(lv_interface, ".//SignalList/Signal")
+        signals = _findall_case_insensitive(lv_interface, ".//SignalList/Signal")
         if not signals:
             print("Warning: No signals found in the LabVIEW interface")
             return False
@@ -400,23 +398,23 @@ def generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
             # Process each signal
             for signal in signals:
                 # Get signal name
-                name = get_attribute_case_insensitive(signal, "Name")
+                name = _get_attribute_case_insensitive(signal, "Name")
                 if not name:
                     continue
 
                 # Get HDL name and direction
-                hdl_name = get_element_text(signal, "HDLName", name)
-                raw_direction = get_element_text(signal, "Direction", "N/A")
+                hdl_name = _get_element_text(signal, "HDLName", name)
+                raw_direction = _get_element_text(signal, "Direction", "N/A")
                 direction = {"ToCLIP": "output", "FromCLIP": "input"}.get(
                     raw_direction, raw_direction
                 )
 
                 # Get data type and convert to VHDL type
-                data_type_elem = signal.find("DataType") or find_case_insensitive(
+                data_type_elem = signal.find("DataType") or _find_case_insensitive(
                     signal, "DataType"
                 )
-                lv_data_type = extract_data_type(data_type_elem)
-                vhdl_type = map_lv_type_to_vhdl(lv_data_type)
+                lv_data_type = _extract_data_type(data_type_elem)
+                vhdl_type = _map_lv_type_to_vhdl(lv_data_type)
 
                 # Generate signal declaration
                 signal_comment = f"-- {name} ({direction})"
@@ -432,7 +430,7 @@ def generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
         return False
 
 
-def map_lv_type_to_vhdl(lv_type):
+def _map_lv_type_to_vhdl(lv_type):
     """Map LabVIEW data type to VHDL data type.
 
     Converts LabVIEW data types (like U32, Boolean, FXP) to their
@@ -483,7 +481,7 @@ def map_lv_type_to_vhdl(lv_type):
         size = lv_type.split("[")[1].split("]")[0]
 
         # Map the element type to VHDL
-        element_vhdl = map_lv_type_to_vhdl(element_type)
+        element_vhdl = _map_lv_type_to_vhdl(element_type)
 
         # If element_vhdl contains "std_logic_vector", we need special handling
         if "std_logic_vector" in element_vhdl:
@@ -503,7 +501,7 @@ def map_lv_type_to_vhdl(lv_type):
         return "std_logic_vector(0 downto 0)"
 
 
-def extract_clock_parameters(element):
+def _extract_clock_parameters(element):
     """Extract clock parameter information from signal element using case-insensitive matching.
 
     Args:
@@ -533,24 +531,24 @@ def extract_clock_parameters(element):
     }
 
     # Get accuracy and jitter (simple elements)
-    clock_params["accuracy_ppm"] = get_element_text(element, "AccuracyInPPM", "")
-    clock_params["jitter_ps"] = get_element_text(element, "JitterInPicoSeconds", "")
+    clock_params["accuracy_ppm"] = _get_element_text(element, "AccuracyInPPM", "")
+    clock_params["jitter_ps"] = _get_element_text(element, "JitterInPicoSeconds", "")
 
     # Extract duty cycle (nested in DutyCycleRange)
-    duty_cycle_range = find_case_insensitive(element, "DutyCycleRange")
+    duty_cycle_range = _find_case_insensitive(element, "DutyCycleRange")
     if duty_cycle_range is not None:
-        max_elem = find_case_insensitive(duty_cycle_range, "PercentInHighMax")
-        min_elem = find_case_insensitive(duty_cycle_range, "PercentInHighMin")
+        max_elem = _find_case_insensitive(duty_cycle_range, "PercentInHighMax")
+        min_elem = _find_case_insensitive(duty_cycle_range, "PercentInHighMin")
         if max_elem is not None and max_elem.text:
             clock_params["duty_cycle_max"] = max_elem.text
         if min_elem is not None and min_elem.text:
             clock_params["duty_cycle_min"] = min_elem.text
 
     # Extract frequency range (nested in FreqInHertz)
-    freq_in_hertz = find_case_insensitive(element, "FreqInHertz")
+    freq_in_hertz = _find_case_insensitive(element, "FreqInHertz")
     if freq_in_hertz is not None:
-        max_elem = find_case_insensitive(freq_in_hertz, "Max")
-        min_elem = find_case_insensitive(freq_in_hertz, "Min")
+        max_elem = _find_case_insensitive(freq_in_hertz, "Max")
+        min_elem = _find_case_insensitive(freq_in_hertz, "Min")
         if max_elem is not None and max_elem.text:
             clock_params["freq_max"] = max_elem.text
         if min_elem is not None and min_elem.text:
@@ -559,7 +557,7 @@ def extract_clock_parameters(element):
     return clock_params
 
 
-def main():
+def migrate_clip():
     """Main program entry point."""
     # Load configuration
     config = common.load_config()
@@ -568,7 +566,7 @@ def main():
     long_input_xml_path = common.handle_long_path(config.input_xml_path)
 
     # Process XML
-    generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
+    _generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
 
     # Generate entity instantiation
     common.generate_hdl_instantiation_example(
@@ -577,13 +575,13 @@ def main():
 
     # Process all constraint files
     for xdc_path in config.clip_xdc_paths:
-        process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
+        _process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
 
     # Generate CLIP to Window signal definitions
-    generate_clip_to_window_signals(long_input_xml_path, config.clip_to_window_signal_definitions)
+    _generate_clip_to_window_signals(long_input_xml_path, config.clip_to_window_signal_definitions)
 
     print("CLIP migration completed successfully.")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(migrate_clip())

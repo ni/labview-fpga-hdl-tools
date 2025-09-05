@@ -80,10 +80,5 @@ def launch_vivado():
     print("Vivado launched successfully")
 
 
-def main():
-    """Main entry point for the script."""
-    launch_vivado()
-
-
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(launch_vivado())

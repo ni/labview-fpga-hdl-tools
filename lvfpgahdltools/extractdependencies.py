@@ -19,7 +19,7 @@ import os
 import shutil
 
 
-def extract_deps_from_zip(deps_folder, source_folder=None):
+def extract_deps_from_zip():
     """Extracts the contents of all ZIP files from source_folder into the deps_folder.
 
     Args:
@@ -27,7 +27,10 @@ def extract_deps_from_zip(deps_folder, source_folder=None):
         source_folder (str, optional): Folder containing ZIP files to extract.
                                       If None, uses current directory.
     """
-    # Ensure the path exists
+    cwd = os.getcwd()
+    deps_folder = os.path.join(cwd, "..", "dependencies", "githubdeps")
+    source_folder = os.path.join(cwd, "..", "dependencies")
+
     deps_folder = os.path.abspath(deps_folder)
 
     # Handle long paths on Windows
@@ -71,19 +74,5 @@ def extract_deps_from_zip(deps_folder, source_folder=None):
     print(f"Extracted {len(extracted_files)} items to {deps_folder}")
 
 
-def main():
-    """Main entry point for the script."""
-    # Define fixed relative paths
-    #
-    # This script must be run from the targets folder of the repository
-    #
-    cwd = os.getcwd()
-    deps_folder = os.path.join(cwd, "..", "dependencies", "githubdeps")
-    source_folder = os.path.join(cwd, "..", "dependencies")
-
-    # Extract dependencies
-    extract_deps_from_zip(deps_folder, source_folder)
-
-
 if __name__ == "__main__":
-    main()
+    extract_deps_from_zip()

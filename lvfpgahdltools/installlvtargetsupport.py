@@ -11,7 +11,7 @@ import sys  # For command-line arguments and error handling
 from . import common  # For shared utilities across tools
 
 
-def is_admin():
+def _is_admin():
     """Check if the script is running with administrator privileges."""
     try:
         import ctypes
@@ -24,7 +24,7 @@ def is_admin():
         return False
 
 
-def run_as_admin():
+def _run_as_admin():
     """Re-launch the command with administrator privileges."""
     import ctypes
     import sys
@@ -95,8 +95,8 @@ def install_lv_target_support():
     needs_admin = "program files" in install_folder.lower()
 
     # If we need admin and don't have it, relaunch with elevated privileges
-    if needs_admin and not is_admin():
-        run_as_admin()
+    if needs_admin and not _is_admin():
+        _run_as_admin()
         return  # Exit current instance as the elevated instance will continue
 
     print(f"Installing LabVIEW Target '{config.lv_target_name}' files...")
@@ -111,7 +111,7 @@ def install_lv_target_support():
         # Create install directory if it doesn't exist
         os.makedirs(install_folder, exist_ok=True)
 
-        def copy_recursively(src, dst):
+        def _copy_recursively(src, dst):
             """Helper to copy files and directories recursively."""
             if os.path.isdir(src):
                 # Create destination directory if it doesn't exist
@@ -123,7 +123,7 @@ def install_lv_target_support():
                     s = os.path.join(src, item)
                     d = os.path.join(dst, item)
                     if os.path.isdir(s):
-                        copy_recursively(s, d)
+                        _copy_recursively(s, d)
                     else:
                         shutil.copy2(s, d)
             else:
@@ -131,7 +131,7 @@ def install_lv_target_support():
                 shutil.copy2(src, dst)
 
         # Copy everything from plugin folder to install folder
-        copy_recursively(config.lv_target_plugin_folder, install_folder)
+        _copy_recursively(config.lv_target_plugin_folder, install_folder)
 
         print(
             f"Successfully installed LabVIEW Target '{config.lv_target_name}' to {install_folder}"
@@ -152,4 +152,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    install_lv_target_support()

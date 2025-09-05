@@ -60,7 +60,7 @@ DATA_TYPE_PROTOTYPES = {
 }
 
 
-def write_tree_to_xml(root, output_file):
+def _write_tree_to_xml(root, output_file):
     """Write an XML tree to a formatted XML file.
 
     Converts an ElementTree structure to a properly formatted, indented XML file.
@@ -86,7 +86,7 @@ def write_tree_to_xml(root, output_file):
     print(f"XML written to {output_file}")
 
 
-def get_or_create_resource_list(parent, name):
+def _get_or_create_resource_list(parent, name):
     """Find or create a ResourceList element.
 
     Searches for a ResourceList element with the specified name within the parent element.
@@ -106,20 +106,20 @@ def get_or_create_resource_list(parent, name):
     return ET.SubElement(parent, "ResourceList", {"name": name})
 
 
-def create_boardio_structure():
+def _create_boardio_structure():
     """Create the initial boardio XML structure."""
     boardio_top = ET.Element("boardio")
     boardio_resources = ET.SubElement(boardio_top, "ResourceList", {"name": BOARDIO_WRAPPER_NAME})
     return boardio_top, boardio_resources
 
 
-def create_clocklist_structure():
+def _create_clocklist_structure():
     """Create the initial ClockList XML structure."""
     clock_list_top = ET.Element("ClockList")
     return clock_list_top
 
 
-def map_datatype_to_vhdl(data_type):
+def _map_datatype_to_vhdl(data_type):
     """Map CSV data type to VHDL data type."""
     if data_type == "Boolean":
         return "std_logic"
@@ -162,7 +162,7 @@ def map_datatype_to_vhdl(data_type):
         return "std_logic"  # Default type
 
 
-def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
+def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
     """Generate boardio XML and clock XML files from CSV data.
 
     Reads signal definitions from the CSV and creates two XML files:
@@ -181,8 +181,8 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
         SystemExit: If an error occurs during XML generation
     """
     try:
-        boardio_top, boardio_resources = create_boardio_structure()
-        clock_list_top = create_clocklist_structure()
+        boardio_top, boardio_resources = _create_boardio_structure()
+        clock_list_top = _create_clocklist_structure()
 
         with open(csv_path, "r", newline="") as csvfile:
             reader = csv.DictReader(csvfile)
@@ -240,7 +240,7 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                     # Create resource hierarchy
                     current_parent = boardio_resources
                     for part in parts[:-1]:
-                        current_parent = get_or_create_resource_list(current_parent, part)
+                        current_parent = _get_or_create_resource_list(current_parent, part)
 
                     # Create IO resource
                     io_resource = ET.SubElement(
@@ -300,15 +300,15 @@ def generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                         io_resource.set("prototype", f"{DOCUMENT_ROOT_PREFIX}unknownSignal")
 
         # Write the XML files
-        write_tree_to_xml(boardio_top, boardio_output_path)
-        write_tree_to_xml(clock_list_top, clock_output_path)
+        _write_tree_to_xml(boardio_top, boardio_output_path)
+        _write_tree_to_xml(clock_list_top, clock_output_path)
 
     except Exception as e:
         print(f"Error generating XML from CSV: {e}")
         sys.exit(1)
 
 
-def generate_window_vhdl_from_csv(
+def _generate_window_vhdl_from_csv(
     csv_path, template_path, output_path, include_clip_socket, include_custom_io
 ):
     """Generate Window VHDL from CSV using a Mako template.
@@ -347,7 +347,7 @@ def generate_window_vhdl_from_csv(
                     {
                         "name": row["HDLName"],
                         "direction": "in" if row["Direction"] == "input" else "out",
-                        "type": map_datatype_to_vhdl(row["DataType"]),
+                        "type": _map_datatype_to_vhdl(row["DataType"]),
                         "lv_name": row["LVName"],
                     }
                 )
@@ -374,7 +374,7 @@ def generate_window_vhdl_from_csv(
         sys.exit(1)
 
 
-def generate_target_xml(
+def _generate_target_xml(
     template_paths,
     output_folder,
     include_clip_socket,
@@ -450,7 +450,7 @@ def generate_target_xml(
         sys.exit(1)
 
 
-def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
+def _generate_window_vhdl_instantiation_example(vhdl_path, output_path):
     """Generate Window VHDL entity instantiation example from VHDL file.
 
     Creates a VHDL file that demonstrates how to instantiate TheWindow entity
@@ -477,7 +477,7 @@ def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
         sys.exit(1)
 
 
-def copy_fpgafiles(
+def _copy_fpgafiles(
     hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target
 ):
     """Copy HDL files to the FPGA files destination folder."""
@@ -551,7 +551,7 @@ def copy_fpgafiles(
             shutil.copy2(file, target_path)
 
 
-def copy_otherfiles(plugin_folder, target_family):
+def _copy_otherfiles(plugin_folder, target_family):
     """Copy other files needed to make the plugin folder work."""
     if target_family.lower() == "flexrio":
         common_plugin_src = common.resolve_path("../common/lvFpgaTarget/targetpluginmisc")
@@ -606,9 +606,11 @@ def gen_lv_target_support():
 
     # Only generate custom IO files if the plugin is configured to include them
     if config.include_custom_io:
-        generate_xml_from_csv(config.custom_signals_csv, config.boardio_output, config.clock_output)
+        _generate_xml_from_csv(
+            config.custom_signals_csv, config.boardio_output, config.clock_output
+        )
 
-    generate_window_vhdl_from_csv(
+    _generate_window_vhdl_from_csv(
         config.custom_signals_csv,
         config.window_vhdl_template,
         config.window_vhdl_output,
@@ -616,11 +618,11 @@ def gen_lv_target_support():
         config.include_custom_io,
     )
 
-    generate_window_vhdl_instantiation_example(
+    _generate_window_vhdl_instantiation_example(
         config.window_vhdl_output, config.window_instantiation_example
     )
 
-    generate_target_xml(
+    _generate_target_xml(
         config.target_xml_templates,
         config.lv_target_plugin_folder,
         config.include_clip_socket_ports,
@@ -631,7 +633,7 @@ def gen_lv_target_support():
         config.lv_target_guid,
     )
 
-    copy_fpgafiles(
+    _copy_fpgafiles(
         config.hdl_file_lists,
         config.lv_target_constraints_files,
         config.lv_target_plugin_folder,
@@ -639,15 +641,10 @@ def gen_lv_target_support():
         config.base_target,
     )
 
-    copy_otherfiles(config.lv_target_plugin_folder, config.target_family)
+    _copy_otherfiles(config.lv_target_plugin_folder, config.target_family)
 
     print("Target support file generation complete.")
 
 
-def main():
-    """Main function to run the script."""
-    gen_lv_target_support()
-
-
 if __name__ == "__main__":
-    main()
+    gen_lv_target_support()
