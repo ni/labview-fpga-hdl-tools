@@ -33,8 +33,12 @@ class FileConfiguration:
     vivado_tools_path: Optional[str] = None  # Path to Vivado tools
     hdl_file_lists: List[str] = None  # List of HDL file list paths for Vivado project generation
     constraints_templates: List[str] = None  # List of constraint template file paths
-    vivado_project_constraints_files: List[str] = None  # List of Vivado project constraint file paths
-    use_gen_lv_window_files: Optional[bool] = None  # Use files from the_window_folder to override what is in hdl_file_lists
+    vivado_project_constraints_files: List[str] = (
+        None  # List of Vivado project constraint file paths
+    )
+    use_gen_lv_window_files: Optional[bool] = (
+        None  # Use files from the_window_folder to override what is in hdl_file_lists
+    )
     # ----- LV WINDOW NETLIST SETTINGS -----
     vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
     the_window_folder: Optional[str] = None  # Destination folder for generated Window files
@@ -47,7 +51,9 @@ class FileConfiguration:
     window_instantiation_example: Optional[str]  # Path for instantiation example output
     target_xml_templates: list  # Templates for target XML generation
     lv_target_constraints_files: List[str] = None  # List of LabVIEW target constraint file paths
-    include_clip_socket_ports: Optional[bool] = None  # Whether to include CLIP socket ports in generated files
+    include_clip_socket_ports: Optional[bool] = (
+        None  # Whether to include CLIP socket ports in generated files
+    )
     include_custom_io: Optional[bool] = None  # Whether to include custom I/O in generated files
     lv_target_plugin_folder: Optional[str] = None  # Destination folder for plugin generation
     lv_target_name: Optional[str] = None  # Name of the LabVIEW FPGA target (e.g., "PXIe-7903")
@@ -58,10 +64,14 @@ class FileConfiguration:
     output_csv_path: Optional[str] = None  # Path where CSV signals will be written
     clip_hdl_path: Optional[str] = None  # Path to top-level CLIP HDL file
     clip_inst_example_path: Optional[str] = None  # Path where instantiation example will be written
-    clip_instance_path: Optional[str] = None  # HDL hierarchy path for CLIP instance (not a file path)
+    clip_instance_path: Optional[str] = (
+        None  # HDL hierarchy path for CLIP instance (not a file path)
+    )
     clip_xdc_paths: List[str] = None  # List of paths to XDC constraint files
     updated_xdc_folder: Optional[str] = None  # Folder where updated XDC files will be written
-    clip_to_window_signal_definitions: Optional[str] = None  # Path for CLIP-to-Window signal definitions file
+    clip_to_window_signal_definitions: Optional[str] = (
+        None  # Path for CLIP-to-Window signal definitions file
+    )
 
 
 def parse_bool(value, default=False):
