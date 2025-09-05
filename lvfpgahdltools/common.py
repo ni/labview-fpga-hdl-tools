@@ -102,47 +102,7 @@ def load_config(config_path=None):
     config.read(config_path)
 
     # Default configuration
-    files = FileConfiguration(
-        # ----- General settings -----
-        target_family=[],
-        base_target=[],
-        lv_path=[],
-        # ----- Vivado project settings -----
-        top_level_entity=[],
-        vivado_project_name=[],
-        vivado_tools_path=[],
-        hdl_file_lists=[],
-        constraints_templates=[],
-        vivado_project_constraints_files=[],
-        use_gen_lv_window_files=[],
-        # ----- LV WINDOW NETLIST settings -----
-        vivado_project_export_xpr=[],
-        the_window_folder=[],
-        # ----- LVFPGA target settings -----
-        custom_signals_csv=[],
-        boardio_output=[],
-        clock_output=[],
-        window_vhdl_template=[],
-        window_vhdl_output=[],
-        window_instantiation_example=[],
-        target_xml_templates=[],
-        lv_target_constraints_files=[],
-        include_clip_socket_ports=[],
-        include_custom_io=[],
-        lv_target_plugin_folder=[],
-        lv_target_name=[],
-        lv_target_guid=[],
-        lv_target_install_folder=[],
-        # ----- CLIP migration settings -----
-        input_xml_path=[],
-        output_csv_path=[],
-        clip_hdl_path=[],
-        clip_inst_example_path=[],
-        clip_instance_path=[],
-        clip_xdc_paths=[],
-        updated_xdc_folder=[],
-        clip_to_window_signal_definitions=[],
-    )
+    files = FileConfiguration()
 
     # -----------------------------------------------------------------------
     # Load General settings
