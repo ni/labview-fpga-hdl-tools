@@ -480,32 +480,25 @@ def generate_window_vhdl_instantiation_example(vhdl_path, output_path):
 def copy_fpgafiles(
     hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target
 ):
-    """Copy HDL files to the FPGA files destination folder.
-
-    This function:
-    1. Gets the list of HDL files from the project file lists
-    2. Creates the destination folder structure
-    3. Copies each HDL file to the destination, handling long paths on Windows
-
-    Args:
-        hdl_file_lists (list): List of HDL file list paths
-        lv_target_constraints_files (list): List of XDC files to include in target plugin
-        plugin_folder (str): Destination folder where the plugin will be installed
-        target_family (str): Target family identifier (e.g., "FlexRIO")
-        base_target (str): Base target name (e.g., "PXIe-7903")
-    """
+    """Copy HDL files to the FPGA files destination folder."""
     # Get all HDL files from file lists
     print(f"Reading HDL file lists from: {hdl_file_lists}")
     file_list = common.get_vivado_project_files(hdl_file_lists)
 
     # Add constraints XDC files listed in the config file
-    # Check that lv_target_constraints_files is not None before using it
     if lv_target_constraints_files:
         file_list = file_list + [
             common.fix_file_slashes(file) for file in lv_target_constraints_files
         ]
 
     print(f"Found {len(file_list)} files in HDL file lists")
+
+    # Verify required parameters are not None
+    if plugin_folder is None:
+        raise ValueError("Plugin folder must be specified in configuration.")
+
+    if target_family is None:
+        raise ValueError("Target family must be specified in configuration.")
 
     # Create the destination folder with long path support
     dest_deps_folder = os.path.join(plugin_folder, "FpgaFiles")
