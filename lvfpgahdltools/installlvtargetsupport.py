@@ -12,49 +12,41 @@ from . import common  # For shared utilities across tools
 
 
 def is_admin():
-    """Check if the script is running with administrator privileges.
-
-    Returns:
-        bool: True if running as admin, False otherwise
-    """
+    """Check if the script is running with administrator privileges."""
     try:
         import ctypes
+        import sys
 
-        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        if sys.platform == "win32":
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0  # type: ignore
+        return False  # Not Windows, so not using Windows admin privileges
     except (AttributeError, ImportError, OSError):
-        # AttributeError: If windll or IsUserAnAdmin doesn't exist (non-Windows)
-        # ImportError: If ctypes can't be imported
-        # OSError: If the function call fails due to OS-level issues
         return False
 
 
 def run_as_admin():
-    """Re-launch the command with administrator privileges.
-
-    This function creates a new process with elevated privileges using
-    the Windows shell's "runas" verb. It's designed to work with both
-    direct Python script execution and pip-installed entry points.
-    """
+    """Re-launch the command with administrator privileges."""
     import ctypes
     import sys
 
-    # When running via pip-installed entry point (nihdl),
-    # we need to relaunch the entry point rather than the script
+    # Skip on non-Windows platforms
+    if sys.platform != "win32":
+        print("Admin elevation only supported on Windows")
+        return
+
+    # When running via pip-installed entry point
     if sys.argv[0].endswith("nihdl") or sys.argv[0].endswith("nihdl.exe"):
-        # Launch the entry point with the same arguments
         command = "nihdl"
         arguments = " ".join(sys.argv[1:])
     else:
-        # Traditional script execution path
         command = sys.executable
         arguments = f'"{sys.argv[0]}" {" ".join(sys.argv[1:])}'
 
     print("Requesting administrator privileges...")
-    print(f"Running: {command} with args: {arguments}")
 
     # Execute with elevation
-    result = ctypes.windll.shell32.ShellExecuteW(
-        None, "runas", command, arguments, None, 1  # SW_SHOWNORMAL
+    result = ctypes.windll.shell32.ShellExecuteW(  # type: ignore
+        None, "runas", command, arguments, None, 1
     )
 
     # Check if the elevation was successful
@@ -81,11 +73,17 @@ def install_lv_target_support():
     # Load configuration
     config = common.load_config()
 
+    # Verify configuration is complete
+    if not config.lv_target_install_folder or not config.lv_target_name:
+        print("Error: Installation folder or target name not specified in configuration.")
+        sys.exit(1)
+
+    # Now we can safely join paths since we've verified they're not None
     install_folder = os.path.join(config.lv_target_install_folder, config.lv_target_name)
 
-    # Verify configuration
-    if not config.lv_target_plugin_folder or not install_folder:
-        print("Error: Plugin folder or install folder not specified in configuration.")
+    # Verify plugin folder exists
+    if not config.lv_target_plugin_folder:
+        print("Error: Plugin folder not specified in configuration.")
         sys.exit(1)
 
     # Check if source exists

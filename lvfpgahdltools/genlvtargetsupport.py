@@ -24,7 +24,7 @@ import sys  # For command-line arguments and error handling
 import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
 from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
-from mako.template import Template  # For template-based file generation
+from mako.template import Template  # For template-based file generation  # type: ignore
 
 from . import common  # For shared utilities across tools
 
@@ -497,8 +497,13 @@ def copy_fpgafiles(
     # Get all HDL files from file lists
     print(f"Reading HDL file lists from: {hdl_file_lists}")
     file_list = common.get_vivado_project_files(hdl_file_lists)
+
     # Add constraints XDC files listed in the config file
-    file_list = file_list + [common.fix_file_slashes(file) for file in lv_target_constraints_files]
+    # Check that lv_target_constraints_files is not None before using it
+    if lv_target_constraints_files:
+        file_list = file_list + [
+            common.fix_file_slashes(file) for file in lv_target_constraints_files
+        ]
 
     print(f"Found {len(file_list)} files in HDL file lists")
 

@@ -11,12 +11,7 @@ from . import common  # For shared utilities across tools
 
 
 def create_lv_bitfile():
-    """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool.
-
-    This function:
-    1. Locates the createBitfile.exe relative to LabVIEW installation path
-    2. Executes it with the required parameters to generate the .lvbitx file
-    """
+    """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool."""
     vivado_impl_folder = os.getcwd()
 
     # This script is run by a TCL script in Vivado after the bitstream is generated and the
@@ -25,8 +20,12 @@ def create_lv_bitfile():
     os.chdir("../../..")
 
     # Load configuration
-
     config = common.load_config()
+
+    # Check if LV path is set
+    if config.lv_path is None:
+        print("Error: LabVIEW path not set in configuration")
+        return
 
     # Construct path to createBitfile.exe
     createbitfile_exe = os.path.join(config.lv_path, "vi.lib", "rvi", "CDR", "createBitfile.exe")
@@ -38,8 +37,14 @@ def create_lv_bitfile():
 
     # Determine path to CodeGenerationResults.lvtxt based on UseGeneratedLVWindowFiles setting
     if config.use_gen_lv_window_files:
+        # Check if window folder is set
+        if config.the_window_folder is None:
+            print("Error: TheWindow folder not set in configuration")
+            return
+
         print(f"Using generated LV window files: {config.the_window_folder}")
 
+        # Now safe to use window_folder since we checked for None
         window_folder = os.path.abspath(config.the_window_folder)
         print(f"Window folder resolved to: {window_folder}")
 
