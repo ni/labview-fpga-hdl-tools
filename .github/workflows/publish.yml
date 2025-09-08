@@ -31,7 +31,7 @@ env:
     }
 
 jobs:
-  labview-fpga-hdl-tools:
+  build_labview-fpga-hdl-tools:
     name: Build labview-fpga-hdl-tools
     runs-on: ubuntu-latest
     needs: []
