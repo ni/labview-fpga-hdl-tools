@@ -2,4 +2,4 @@
 
 from importlib.metadata import version
 
-__version__ = version("lvfpgahdltools")
+__version__ = version("labview-fpga-hdl-tools")
