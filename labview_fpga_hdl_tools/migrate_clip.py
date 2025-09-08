@@ -189,7 +189,7 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
             sys.exit(f"No LabVIEW interface found in {input_xml_path}")
 
         # Open CSV for writing
-        with open(output_csv_path, "w", newline="") as csvfile:
+        with open(output_csv_path, "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
 
             # Write header
@@ -321,7 +321,7 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
         long_output_csv_path = common.handle_long_path(output_csv_path)
 
         # Read the input file
-        with open(long_input_xml_path, "r") as infile:
+        with open(long_input_xml_path, "r", encoding="utf-8") as infile:
             content = infile.read()
 
         # Replace all instances of %ClipInstancePath%
@@ -333,7 +333,7 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
         os.makedirs(os.path.dirname(long_output_csv_path), exist_ok=True)
 
         # Write the updated content to the output file
-        with open(long_output_csv_path, "w") as outfile:
+        with open(long_output_csv_path, "w", encoding="utf-8") as outfile:
             outfile.write(updated_content)
 
         print(f"Processed XDC file: {file_name}")
@@ -391,7 +391,7 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
             return False
 
         # Open output file for writing VHDL signal declarations
-        with open(output_vhdl_path, "w") as f:
+        with open(output_vhdl_path, "w", encoding="utf-8") as f:
             f.write("-- VHDL Signal declarations for CLIP to Window connections\n")
             f.write("-- Generated from " + os.path.basename(input_xml_path) + "\n\n")
 

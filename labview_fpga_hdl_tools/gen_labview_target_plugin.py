@@ -184,7 +184,7 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
         boardio_top, boardio_resources = _create_boardio_structure()
         clock_list_top = _create_clocklist_structure()
 
-        with open(csv_path, "r", newline="") as csvfile:
+        with open(csv_path, "r", newline="", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
 
             for row in reader:
@@ -335,7 +335,7 @@ def _generate_window_vhdl_from_csv(
     try:
         # Read signals from CSV
         signals = []
-        with open(csv_path, "r", newline="") as csvfile:
+        with open(csv_path, "r", newline="", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 if row["SignalType"].lower() == "clock" and row["Direction"] == "output":
@@ -353,7 +353,7 @@ def _generate_window_vhdl_from_csv(
                 )
 
         # Render template
-        with open(template_path, "r") as f:
+        with open(template_path, "r", encoding="utf-8") as f:
             template = Template(f.read())
 
         output_text = template.render(
@@ -364,7 +364,7 @@ def _generate_window_vhdl_from_csv(
 
         # Write output file
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(output_text)
 
         print(f"Generated VHDL file: {output_path}")
@@ -423,7 +423,7 @@ def _generate_target_xml(
 
             # Render template
             try:
-                with open(template_path, "r") as f:
+                with open(template_path, "r", encoding="utf-8") as f:
                     template = Template(f.read())
 
                 output_text = template.render(
@@ -437,7 +437,7 @@ def _generate_target_xml(
                 )
 
                 # Write output file
-                with open(current_output_path, "w") as f:
+                with open(current_output_path, "w", encoding="utf-8") as f:
                     f.write(output_text)
 
                 print(f"Generated Target XML file: {current_output_path}")

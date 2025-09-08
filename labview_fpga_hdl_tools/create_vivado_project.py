@@ -88,7 +88,7 @@ def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_n
         project_name (str): Name of the Vivado project
         top_entity (str): Name of the top-level entity
     """
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         file_contents = file.read()
     modified_contents = file_contents.replace("ADD_FILES", add_files)
     modified_contents = modified_contents.replace("PROJ_NAME", project_name)
@@ -97,7 +97,7 @@ def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_n
     # Create the directory for the new file if it doesn't exist
     os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
 
-    with open(new_file_path, "w") as file:
+    with open(new_file_path, "w", encoding="utf-8") as file:
         file.write(modified_contents)
 
 
@@ -142,7 +142,7 @@ def _find_and_log_duplicates(file_list):
 
     # Log duplicates if found
     if duplicates_found:
-        with open(output_file_path, "w") as output_file:
+        with open(output_file_path, "w", encoding="utf-8") as output_file:
             for file_name, paths in file_dict.items():
                 if len(paths) > 1:
                     output_file.write(f"Duplicate file: {file_name}\n")

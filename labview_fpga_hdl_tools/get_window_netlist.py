@@ -123,7 +123,7 @@ def _extract_lv_window_constraints(config):
     # Extract constraints between markers
     try:
         if os.path.exists(source_file):
-            with open(source_file, "r") as f_in:
+            with open(source_file, "r", encoding="utf-8") as f_in:
                 lines = f_in.readlines()
 
             # Find the marker lines
@@ -146,7 +146,7 @@ def _extract_lv_window_constraints(config):
             lv_constraints = lines[start_idx + 1 : end_idx]
 
             # Write the constraints to the destination file
-            with open(destination_file, "w") as f_out:
+            with open(destination_file, "w", encoding="utf-8") as f_out:
                 f_out.writelines(lv_constraints)
 
             print(f"Successfully extracted LV FPGA constraints to {destination_file}")

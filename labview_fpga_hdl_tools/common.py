@@ -296,7 +296,7 @@ def _parse_vhdl_entity(vhdl_path):
 
     try:
         # Read the entire file as a single string
-        with open(long_path, "r") as f:
+        with open(long_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Step 1: Find the entity declaration
@@ -396,7 +396,7 @@ def generate_hdl_instantiation_example(
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     # Generate entity instantiation
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(f"-- Instantiation example for {entity_name}\n")
         f.write(f"-- Generated from {os.path.basename(vhdl_path)}\n\n")
 
@@ -444,7 +444,7 @@ def get_vivado_project_files(lists_of_files):
     file_list = []
     for file_list_path in lists_of_files:
         if os.path.exists(file_list_path):
-            with open(file_list_path, "r") as f:
+            with open(file_list_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#"):  # Skip empty lines and comments
@@ -499,7 +499,7 @@ def process_constraints_template(config):
 
     # Check if the window constraints file exists
     if os.path.exists(window_constraints_path):
-        with open(window_constraints_path, "r") as f:
+        with open(window_constraints_path, "r", encoding="utf-8") as f:
             # Read the window constraints file
             constraints_content = f.read()
 
@@ -545,7 +545,7 @@ def process_constraints_template(config):
         print(f"Processing {template_file} -> {output_file}")
 
         # Read the template file
-        with open(template_path, "r") as f:
+        with open(template_path, "r", encoding="utf-8") as f:
             template_content = f.read()
 
         # Replace content between markers
@@ -568,7 +568,7 @@ def process_constraints_template(config):
         )
 
         # Write the processed content to output file
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(final_content)
 
         print(f"Successfully processed and saved: {output_path}")
