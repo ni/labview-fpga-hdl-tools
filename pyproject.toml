@@ -23,7 +23,7 @@ mypy = ">=1.0"
 pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 
 [tool.poetry.scripts]
-nihdl = "tools.__main__:main"
+nihdl = "labview_fpga_hdl_tools.__main__:main"
 
 [tool.mypy]
 packages = ["labview-fpga-hdl-tools"]
