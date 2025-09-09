@@ -551,10 +551,10 @@ def _copy_fpgafiles(
             shutil.copy2(file, target_path)
 
 
-def _copy_otherfiles(plugin_folder, target_family):
+def _copy_menu_files(plugin_folder, target_family):
     """Copy other files needed to make the plugin folder work."""
     if target_family.lower() == "flexrio":
-        common_plugin_src = common.resolve_path("../common/lvFpgaTarget/targetpluginmisc")
+        common_plugin_src = common.resolve_path("../common/lvFpgaTarget/targetpluginmenus")
     else:
         raise ValueError(f"Unsupported target family: {target_family}.")
 
@@ -574,6 +574,22 @@ def _copy_otherfiles(plugin_folder, target_family):
             if os.path.exists(dst_file):
                 os.chmod(dst_file, 0o777)
             shutil.copy2(src_file, dst_file)
+
+def _copy_targetinfo_ini(plugin_folder, target_family):
+    """Copy the TargetInfo.ini file to the plugin folder."""
+    targetinfo_src = common.resolve_path("lvFpgaTarget/TargetInfo.ini")
+    
+    if targetinfo_src is None or not os.path.exists(targetinfo_src):
+        print("Warning: Could not find TargetInfo.ini file")
+        return
+    
+    # Copy the file to the plugin folder
+    targetinfo_dst = os.path.join(plugin_folder, "TargetInfo.ini")
+    try:
+        shutil.copy2(targetinfo_src, targetinfo_dst)
+        print(f"Copied TargetInfo.ini to {plugin_folder}")
+    except Exception as e:
+        print(f"Error copying TargetInfo.ini: {e}")
 
 
 def gen_lv_target_support():
@@ -641,7 +657,9 @@ def gen_lv_target_support():
         config.base_target,
     )
 
-    _copy_otherfiles(config.lv_target_plugin_folder, config.target_family)
+    _copy_menu_files(config.lv_target_plugin_folder, config.target_family)
+
+    _copy_targetinfo_ini(config.lv_target_plugin_folder, config.target_family)
 
     print("Target support file generation complete.")
 
