@@ -575,14 +575,15 @@ def _copy_menu_files(plugin_folder, target_family):
                 os.chmod(dst_file, 0o777)
             shutil.copy2(src_file, dst_file)
 
+
 def _copy_targetinfo_ini(plugin_folder, target_family):
     """Copy the TargetInfo.ini file to the plugin folder."""
     targetinfo_src = common.resolve_path("lvFpgaTarget/TargetInfo.ini")
-    
+
     if targetinfo_src is None or not os.path.exists(targetinfo_src):
         print("Warning: Could not find TargetInfo.ini file")
         return
-    
+
     # Copy the file to the plugin folder
     targetinfo_dst = os.path.join(plugin_folder, "TargetInfo.ini")
     try:

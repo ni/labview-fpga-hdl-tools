@@ -166,9 +166,8 @@ def get_window():
 
     print("\n" + "=" * 80)
     print("NOTICE: If you have already created a Vivado project, you must run")
-    print("         \"nihdl create-project --update\" to pull in the latest Window netlist files.")
+    print('         "nihdl create-project --update" to pull in the latest Window netlist files.')
     print("=" * 80)
-   
 
 
 if __name__ == "__main__":
