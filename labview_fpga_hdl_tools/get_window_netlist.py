@@ -45,7 +45,7 @@ def _get_window_netlist(config):
 
         # Copy TheWindow.edf to destination folder
         source_file = os.path.join(vivado_project_path, "TheWindow.edf")
-        destination_folder = config.the_window_folder
+        destination_folder = config.the_window_folder_output
 
         # Create destination directory if it doesn't exist
         os.makedirs(destination_folder, exist_ok=True)
@@ -86,7 +86,7 @@ def _copy_lv_generated_files(config):
 
     for file_name in files_to_copy:
         source_file = os.path.join(protected_files_folder, file_name)
-        destination_file = os.path.join(config.the_window_folder, file_name)
+        destination_file = os.path.join(config.the_window_folder_output, file_name)
 
         try:
             if os.path.exists(source_file):
@@ -114,7 +114,7 @@ def _extract_lv_window_constraints(config):
     protected_files_folder = os.path.join(project_export_base, "NIProtectedFiles")
 
     source_file = os.path.join(protected_files_folder, "constraints.xdc")
-    destination_folder = config.the_window_folder
+    destination_folder = config.the_window_folder_output
     destination_file = os.path.join(destination_folder, "TheWindowConstraints.xdc")
 
     # Make sure destination folder exists
@@ -158,13 +158,17 @@ def _extract_lv_window_constraints(config):
 
 def get_window():
     """Main entry point for the script."""
-    # Use common.load_config() instead of direct ConfigParser usage
     config = common.load_config()
 
     _get_window_netlist(config)
     _copy_lv_generated_files(config)
     _extract_lv_window_constraints(config)
-    common.process_constraints_template(config)
+
+    print("\n" + "=" * 80)
+    print("NOTICE: If you have already created a Vivado project, you must run")
+    print("         \"nihdl create-project --update\" to pull in the latest Window netlist files.")
+    print("=" * 80)
+   
 
 
 if __name__ == "__main__":

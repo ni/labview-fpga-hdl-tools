@@ -38,14 +38,14 @@ def _create_lv_bitfile():
     # Determine path to CodeGenerationResults.lvtxt based on UseGeneratedLVWindowFiles setting
     if config.use_gen_lv_window_files:
         # Check if window folder is set
-        if config.the_window_folder is None:
+        if config.the_window_folder_input is None:
             print("Error: TheWindow folder not set in configuration")
             return
 
-        print(f"Using generated LV window files: {config.the_window_folder}")
+        print(f"Using generated LV window files: {config.the_window_folder_input}")
 
         # Now safe to use window_folder since we checked for None
-        window_folder = os.path.abspath(config.the_window_folder)
+        window_folder = os.path.abspath(config.the_window_folder_input)
         print(f"Window folder resolved to: {window_folder}")
 
         code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")

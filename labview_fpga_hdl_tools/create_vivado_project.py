@@ -215,14 +215,14 @@ def _override_lv_window_files(config, file_list):
         list: Updated list with matching files replaced by their window folder versions
     """
     # If the window folder isn't specified or doesn't exist, return the original list
-    if not config.the_window_folder or not os.path.exists(config.the_window_folder):
-        print(f"Window folder not found: {config.the_window_folder}")
+    if not config.the_window_folder_input or not os.path.exists(config.the_window_folder_input):
+        print(f"Window folder not found: {config.the_window_folder_input}")
         return file_list
 
     # Get all files in the window folder, indexed by name without extension
     window_files = {}
-    for filename in os.listdir(config.the_window_folder):
-        full_path = os.path.join(config.the_window_folder, filename)
+    for filename in os.listdir(config.the_window_folder_input):
+        full_path = os.path.join(config.the_window_folder_input, filename)
         if os.path.isfile(full_path):
             # Use splitext to get the filename without extension
             name_without_ext = os.path.splitext(filename)[0]

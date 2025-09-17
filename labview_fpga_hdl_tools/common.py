@@ -41,11 +41,12 @@ class FileConfiguration:
         default_factory=list
     )  # List of Vivado project constraint file paths
     use_gen_lv_window_files: Optional[bool] = (
-        None  # Use files from the_window_folder to override what is in hdl_file_lists
+        None  # Use files from the_input_window_folder to override what is in hdl_file_lists
     )
+    the_window_folder_input: Optional[str] = None  # Input folder for generated Window files    
     # ----- LV WINDOW NETLIST SETTINGS -----
     vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
-    the_window_folder: Optional[str] = None  # Destination folder for generated Window files
+    the_window_folder_output: Optional[str] = None  # Destination folder for generated Window files
     # ----- LVFPGA TARGET SETTINGS -----
     custom_signals_csv: Optional[str] = None  # Path to CSV containing signal definitions
     boardio_output: Optional[str] = None  # Path where BoardIO XML will be written
@@ -148,13 +149,15 @@ def load_config(config_path=None):
                 files.vivado_project_constraints_files.append(abs_file)
 
     files.use_gen_lv_window_files = _parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
+    files.the_window_folder_input = resolve_path(settings.get("TheWindowFolder"))
+
 
     # -----------------------------------------------------------------------
     # Load LV WINDOW NETLIST settings
     # -----------------------------------------------------------------------
     settings = config["LVWindowNetlistSettings"]
     files.vivado_project_export_xpr = resolve_path(settings.get("VivadoProjectExportXPR"))
-    files.the_window_folder = resolve_path(settings.get("TheWindowFolder"))
+    files.the_window_folder_output = resolve_path(settings.get("TheWindowFolder"))
 
     # -----------------------------------------------------------------------
     # Load LVFPGA target settings
@@ -492,7 +495,7 @@ def process_constraints_template(config):
     # Define source and destination directories
     xdc_template_folder = os.path.join(os.getcwd(), "xdc")
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
-    window_constraints_path = os.path.join(config.the_window_folder, "TheWindowConstraints.xdc")
+    window_constraints_path = os.path.join(config.the_window_folder_input, "TheWindowConstraints.xdc")
 
     # Create output directory if it doesn't exist
     os.makedirs(output_folder, exist_ok=True)
