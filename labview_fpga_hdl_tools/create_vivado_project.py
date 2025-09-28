@@ -206,6 +206,7 @@ def _override_lv_window_files(config, file_list):
 
     This function allows generated window files (like TheWindow.edf) to override files
     with the same name but different extensions (like TheWindow.vhd) in the original file list.
+    It also adds all files from the window folder to the file list.
 
     Args:
         config (FileConfiguration): Configuration settings object
@@ -213,6 +214,7 @@ def _override_lv_window_files(config, file_list):
 
     Returns:
         list: Updated list with matching files replaced by their window folder versions
+              and all additional window folder files added
     """
     # If the window folder isn't specified or doesn't exist, return the original list
     if not config.the_window_folder_input or not os.path.exists(config.the_window_folder_input):
@@ -230,6 +232,8 @@ def _override_lv_window_files(config, file_list):
 
     # Create a new list with replacements where applicable
     updated_list = []
+    replaced_files = set()  # Track which window files have been used as replacements
+    
     for file_path in file_list:
         # Get the filename without extension for comparison
         base_name = os.path.basename(file_path)
@@ -239,8 +243,15 @@ def _override_lv_window_files(config, file_list):
             # Replace with the window folder version
             print(f"Replacing {file_path} with {window_files[name_without_ext]}")
             updated_list.append(window_files[name_without_ext])
+            replaced_files.add(name_without_ext)  # Mark this window file as used
         else:
             # Keep the original file
+            updated_list.append(file_path)
+
+    # Add all remaining window files that weren't used as replacements
+    for name_without_ext, file_path in window_files.items():
+        if name_without_ext not in replaced_files:
+            print(f"Adding window file: {file_path}")
             updated_list.append(file_path)
 
     return updated_list

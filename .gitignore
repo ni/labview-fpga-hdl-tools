@@ -20,3 +20,8 @@ docs/_build/
 
 # Common editor metadata
 .vscode/
+
+# Office temporary files
+~*.pptx
+~*.xlsx
+~*.docx

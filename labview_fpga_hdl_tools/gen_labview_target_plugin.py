@@ -658,9 +658,15 @@ def gen_lv_target_support():
         config.base_target,
     )
 
-    _copy_menu_files(config.lv_target_plugin_folder, config.target_family)
+    _copy_menu_files(
+        config.lv_target_plugin_folder, 
+        config.target_family
+    )
 
-    _copy_targetinfo_ini(config.lv_target_plugin_folder, config.target_family)
+    _copy_targetinfo_ini(
+        config.lv_target_plugin_folder, 
+        config.target_family
+    )
 
     print("Target support file generation complete.")
 

@@ -28,8 +28,15 @@ def extract_deps_from_zip():
                                       If None, uses current directory.
     """
     cwd = os.getcwd()
-    deps_folder = os.path.join(cwd, "..", "dependencies", "githubdeps")
-    source_folder = os.path.join(cwd, "..", "dependencies")
+    # This code assumes you are running extract-deps from the target folder
+    # For example - c:\github\flexrio\pxie-7903
+    #
+    # The extract-deps function is NOT target specific.  It extracts dependencies for
+    # the entire repo.  However, since all other nihdl commands are run from the target
+    # folder, we set it up for extract-deps to run from there too for consistnecy.
+    #
+    deps_folder = os.path.join(cwd, "..", "..", "dependencies", "githubdeps")
+    source_folder = os.path.join(cwd, "..", "..", "dependencies")
 
     deps_folder = os.path.abspath(deps_folder)
 
