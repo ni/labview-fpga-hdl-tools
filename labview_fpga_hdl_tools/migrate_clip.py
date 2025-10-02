@@ -23,6 +23,7 @@ import xml.etree.ElementTree as ET  # noqa: N817
 
 from . import common
 
+INVALID_LV_DATA_TYPE = "INVALID_LV_DATA_TYPE"
 
 def _find_case_insensitive(element, xpath):
     """Find an element using case-insensitive tag and attribute matching."""
@@ -309,9 +310,6 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
         long_input_xml_path = common.handle_long_path(input_xml_path)
         long_output_folder = common.handle_long_path(output_folder)
 
-        if not os.path.exists(long_input_xml_path):
-            print(f"Error: XDC file not found: {input_xml_path}")
-
         # Create output directory if needed
         os.makedirs(os.path.dirname(long_output_folder), exist_ok=True)
 
@@ -361,11 +359,9 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
     Returns:
         bool: True if successful, False otherwise
     """
+    validation_errors = []
+    
     try:
-        # Ensure input file exists
-        if not os.path.exists(input_xml_path):
-            print(f"Error: Input XML file not found: {input_xml_path}")
-            return False
 
         # Ensure output directory exists
         os.makedirs(os.path.dirname(output_vhdl_path), exist_ok=True)
@@ -414,20 +410,27 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
                     signal, "DataType"
                 )
                 lv_data_type = _extract_data_type(data_type_elem)
-                vhdl_type = _map_lv_type_to_vhdl(lv_data_type)
+                
+                try:
+                    vhdl_type = _map_lv_type_to_vhdl(lv_data_type)
+                    if vhdl_type == INVALID_LV_DATA_TYPE:
+                        validation_errors.append(f"Signal '{name}' has unrecognized LabVIEW type '{lv_data_type}'")
+                except Exception as e:
+                    validation_errors.append(f"Signal '{name}': {str(e)}")
+                    vhdl_type = "std_logic_vector(0 downto 0) -- ERROR: Invalid type"
 
                 # Generate signal declaration
                 signal_comment = f"-- {name} ({direction})"
                 signal_decl = f"signal {hdl_name} : {vhdl_type};"
                 f.write(f"{signal_decl} {signal_comment}\n")
 
-            print(f"Generated VHDL signal declarations: {output_vhdl_path}")
-            return True
+        print(f"Generated VHDL signal declarations: {output_vhdl_path}")
+        return True, validation_errors
 
     except Exception as e:
         print(f"Error generating CLIP to Window signals: {e}")
         traceback.print_exc()
-        return False
+        return False, [f"Critical error: {str(e)}"]
 
 
 def _map_lv_type_to_vhdl(lv_type):
@@ -497,8 +500,7 @@ def _map_lv_type_to_vhdl(lv_type):
         return f"std_logic_vector({int(size) * 32 - 1} downto 0)"
 
     else:
-        print(f"Warning: Unrecognized LabVIEW type '{lv_type}', defaulting to std_logic_vector")
-        return "std_logic_vector(0 downto 0)"
+        return INVALID_LV_DATA_TYPE
 
 
 def _extract_clock_parameters(element):
@@ -557,10 +559,97 @@ def _extract_clock_parameters(element):
     return clock_params
 
 
+def _validate_ini(config):
+    """Validate that all required configuration settings are present.
+
+    This function checks that all settings required for CLIP migration
+    are present in the configuration object. It provides clear error messages
+    about which settings are missing.
+
+    Args:
+        config: Configuration object containing settings from INI file
+
+    Raises:
+        ValueError: If any required settings are missing or paths are invalid
+    """
+    missing_settings = []
+    invalid_paths = []
+
+    # Check required paths
+    if not config.input_xml_path:
+        missing_settings.append("CLIPMigrationSettings.CLIPXML")
+    else:
+        # Validate input XML path
+        invalid_path = common.validate_path(
+            config.input_xml_path, 
+            "CLIPMigrationSettings.CLIPXML", 
+            "file"
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+
+    if not config.output_csv_path:
+        missing_settings.append("CLIPMigrationSettings.LVTargetBoardIO")
+
+    if not config.clip_hdl_path:
+        missing_settings.append("CLIPMigrationSettings.CLIPHDLTop")
+    else:
+        # Validate CLIP HDL path
+        invalid_path = common.validate_path(
+            config.clip_hdl_path,
+            "CLIPMigrationSettings.CLIPHDLTop",
+            "file"
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+
+    if not config.clip_inst_example_path:
+        missing_settings.append("CLIPMigrationSettings.CLIPInstantiationExample")
+
+    # Note: CLIPXDCIn is optional, so we don't check if it's missing - but if they are present, validate them
+    # Only check for CLIPInstancePath and XDC output folder if there are XDC paths
+    if config.clip_xdc_paths:
+        if not config.clip_instance_path:
+            missing_settings.append("CLIPMigrationSettings.CLIPInstancePath")
+        
+        if not config.updated_xdc_folder:
+            missing_settings.append("CLIPMigrationSettings.CLIPXDCOutFolder")
+        
+        # Validate each XDC path
+        for i, xdc_path in enumerate(config.clip_xdc_paths):
+            invalid_path = common.validate_path(
+                xdc_path,
+                f"CLIPMigrationSettings.CLIPXDCIn[{i}]",
+                "file"
+            )
+            if invalid_path:
+                invalid_paths.append(invalid_path)
+
+    if not config.clip_to_window_signal_definitions:
+        missing_settings.append("CLIPMigrationSettings.CLIPtoWindowSignalDefinitions")
+
+    # Construct error message
+    error_msg = common.get_missing_settings_error(missing_settings)
+    error_msg += common.get_invalid_paths_error(invalid_paths)
+    
+    # If any issues found, raise an error with the helpful message
+    if missing_settings or invalid_paths:
+        error_msg += "\nPlease update your configuration file and try again."
+        raise ValueError(error_msg)
+
+
 def migrate_clip():
     """Main program entry point."""
     # Load configuration
     config = common.load_config()
+    validation_errors = []
+
+    # Validate that all required settings are present
+    try:
+        _validate_ini(config)
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
 
     # Handle long paths on Windows - fixes path length limitations
     long_input_xml_path = common.handle_long_path(config.input_xml_path)
@@ -578,10 +667,20 @@ def migrate_clip():
         _process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
 
     # Generate CLIP to Window signal definitions
-    _generate_clip_to_window_signals(long_input_xml_path, config.clip_to_window_signal_definitions)
+    success, errors = _generate_clip_to_window_signals(long_input_xml_path, config.clip_to_window_signal_definitions)
+    if errors:
+        validation_errors.extend(errors)
 
+    # Report any validation errors at the end
+    if validation_errors:
+        print("\n" + "=" * 80)
+        print("ERRORS: The following validation errors were found:")
+        for error in validation_errors:
+            print(f"  - {error}")
+        print("\nThe migration files were generated but may contain incorrect values.")
+        print("Please correct these errors and run the migration again.")
+        print("=" * 80)
+        return 1
+    
     print("CLIP migration completed successfully.")
-
-
-if __name__ == "__main__":
-    sys.exit(migrate_clip())
+    return 0

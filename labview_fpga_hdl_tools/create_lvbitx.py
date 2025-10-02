@@ -10,7 +10,7 @@ import subprocess  # For executing external programs
 from . import common  # For shared utilities across tools
 
 
-def _create_lv_bitfile():
+def _create_lv_bitfile(test):
     """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool."""
     vivado_impl_folder = os.getcwd()
 
@@ -75,6 +75,18 @@ def _create_lv_bitfile():
 
     print(f"Executing: {' '.join(cmd)}")
 
+    # In test mode, stop here after validation
+    if test:
+        print("TEST MODE: Validation successful, skipping createBitfile.exe launch")
+        
+        # Create a mock LVBITX file for testing
+        os.makedirs(os.path.dirname(lvbitx_output_path), exist_ok=True)
+        with open(lvbitx_output_path, 'w') as f:
+            f.write("# Mock LVBITX file created for testing\n")           
+        print(f"Created mock LVBITX file at: {lvbitx_output_path}")
+        return 0
+        
+
     # Execute the command
     result = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
@@ -87,14 +99,17 @@ def _create_lv_bitfile():
         print(f"STDERR: {result.stderr}")
 
 
-def create_lv_bitx():
-    """Main function to run the script."""
+def create_lv_bitx(test=False):
+    """Main function to run the script.
+    
+    Args:
+        test (bool): If True, validate settings but don't run createBitfile.exe
+    """
     try:
-        _create_lv_bitfile()
+        _create_lv_bitfile(test)
     except Exception as e:
         print(f"Unhandled exception: {str(e)}")
         import traceback
-
         traceback.print_exc()
         raise
 

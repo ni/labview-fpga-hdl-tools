@@ -136,7 +136,7 @@ def _map_datatype_to_vhdl(data_type):
             word_length = int(params[0])
             return f"std_logic_vector({word_length - 1} downto 0)"
         except (ValueError, IndexError):  # Specify the exceptions you're catching
-            return "std_logic_vector(31 downto 0)"  # Default if parsing fails
+            return "INVALID_FXP_DATA_TYPE"  # Default if parsing fails
 
     elif data_type.startswith("Array"):
         # Handle Array type with format: Array<ElementType>[Size]
@@ -156,10 +156,10 @@ def _map_datatype_to_vhdl(data_type):
             return f"std_logic_vector({total_width - 1} downto 0)"
         except Exception as e:
             print(f"Error parsing array type: {data_type}, error: {e}")
-            return "std_logic_vector(31 downto 0)"
+            return "INVALID_ARRAY_DATA_TYPE"
 
     else:
-        return "std_logic"  # Default type
+        return "INVALID_DATA_TYPE"  # Default type
 
 
 def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
@@ -180,6 +180,9 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
     Raises:
         SystemExit: If an error occurs during XML generation
     """
+    validation_errors = []
+    row_count = 0
+    
     try:
         boardio_top, boardio_resources = _create_boardio_structure()
         clock_list_top = _create_clocklist_structure()
@@ -188,6 +191,7 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
             reader = csv.DictReader(csvfile)
 
             for row in reader:
+                row_count += 1
                 lv_name = row["LVName"]
                 hdl_name = row["HDLName"]
                 direction = row["Direction"]
@@ -249,27 +253,38 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                     ET.SubElement(io_resource, "VHDLName").text = hdl_name
 
                     if required_clock_domain:
-                        ET.SubElement(io_resource, "RequiredClockDomain").text = (
-                            required_clock_domain
-                        )
+                        ET.SubElement(io_resource, "RequiredClockDomain").text = required_clock_domain
 
                     if use_in_scl:
                         ET.SubElement(io_resource, "UseInSingleCycleTimedLoop").text = use_in_scl
 
-                    io_direction = {"output": "Output", "input": "Input"}.get(
-                        direction.lower(), "Unknown"
-                    )
-
+                    # Validate direction
+                    io_direction = {"output": "Output", "input": "Input"}.get(direction.lower())
+                    if io_direction is None:
+                        error = f"Row {row_count}: Invalid direction '{direction}' for signal '{lv_name}'. Must be 'input' or 'output'."
+                        validation_errors.append(error)
+                        io_direction = "INVALID_DIRECTION"
+                    
+                    # Validate zero sync registers setting
                     io_zero_sync_regs = {
                         "true": "ZeroDefaultSyncRegisters",
                         "false": "",
-                    }.get(zero_sync_regs.lower(), "Unknown")
+                    }.get(zero_sync_regs.lower())
+                    if io_zero_sync_regs is None and zero_sync_regs:
+                        error = f"Row {row_count}: Invalid ZeroSyncRegs '{zero_sync_regs}' for signal '{lv_name}'. Must be 'TRUE' or 'FALSE'."
+                        validation_errors.append(error)
+                        io_zero_sync_regs = "INVALID_SYNC_REGS"
 
+                    # Validate output readback setting for outputs
                     if io_direction == "Output":
                         io_output_readback = {
                             "true": "WithReadback",
                             "false": "WithoutReadback",
-                        }.get(output_readback.lower(), "Unknown")
+                        }.get(output_readback.lower())
+                        if io_output_readback is None:
+                            error = f"Row {row_count}: Invalid OutputReadback '{output_readback}' for signal '{lv_name}'. Must be 'TRUE' or 'FALSE'."
+                            validation_errors.append(error)
+                            io_output_readback = "INVALID_IO_READBACK"
                     else:
                         io_output_readback = ""
 
@@ -297,11 +312,19 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                             except Exception as e:
                                 print(f"Error parsing FXP parameters for {lv_name}: {e}")
                     else:
-                        io_resource.set("prototype", f"{DOCUMENT_ROOT_PREFIX}unknownSignal")
+                        # Add validation error for invalid signal type
+                        error = f"Row {row_count}: Invalid signal type '{data_type}' for signal '{lv_name}'. Valid types: {', '.join(DATA_TYPE_PROTOTYPES.keys())}"
+                        validation_errors.append(error)
+                        io_resource.set("prototype", "INVALID_SIGNAL_TYPE")
 
-        # Write the XML files
+        # Write the XML files even if there are validation errors
         _write_tree_to_xml(boardio_top, boardio_output_path)
         _write_tree_to_xml(clock_list_top, clock_output_path)
+
+        # Return validation errors if any were found
+        if validation_errors:
+            return validation_errors
+        return None
 
     except Exception as e:
         print(f"Error generating XML from CSV: {e}")
@@ -580,10 +603,6 @@ def _copy_targetinfo_ini(plugin_folder, target_family):
     """Copy the TargetInfo.ini file to the plugin folder."""
     targetinfo_src = common.resolve_path("lvFpgaTarget/TargetInfo.ini")
 
-    if targetinfo_src is None or not os.path.exists(targetinfo_src):
-        print("Warning: Could not find TargetInfo.ini file")
-        return
-
     # Copy the file to the plugin folder
     targetinfo_dst = os.path.join(plugin_folder, "TargetInfo.ini")
     try:
@@ -593,39 +612,138 @@ def _copy_targetinfo_ini(plugin_folder, target_family):
         print(f"Error copying TargetInfo.ini: {e}")
 
 
-def gen_lv_target_support():
-    """Generate target support files.
-
-    Orchestrates the complete target support generation process by:
-    1. Loading configuration from INI file
-    2. Creating BoardIO and Clock XML files
-    3. Generating the Window VHDL interface component
-    4. Creating an instantiation example
-    5. Generating the target XML file
-    6. Installing plugin files to the destination folder
-
-    This is the main function that coordinates all generator activities
-    and is called by both the main() function and external scripts.
-
+def _validate_ini(config):
+    """Validate that all required configuration settings are present.
+    
+    This function checks that all settings required for target plugin generation
+    are present in the configuration object and validates that all specified paths exist.
+    
+    Args:
+        config: Configuration object containing settings from INI file
+        
     Raises:
-        SystemExit: If an error occurs during generation
+        ValueError: If any required settings are missing or paths are invalid
     """
+    missing_settings = []
+    invalid_paths = []
+    
+    # Required general settings
+    if not config.target_family:
+        missing_settings.append("GeneralSettings.TargetFamily")
+        
+    if not config.base_target:
+        missing_settings.append("GeneralSettings.BaseTarget")
+    
+    # Required plugin settings
+    if not config.lv_target_plugin_folder:
+        missing_settings.append("LVFPGATargetSettings.LVTargetPluginFolder")
+        
+    if not config.lv_target_name:
+        missing_settings.append("LVFPGATargetSettings.LVTargetName")
+        
+    if not config.lv_target_guid:
+        missing_settings.append("LVFPGATargetSettings.LVTargetGUID")
+    
+    # Validate input files and folders
+    if config.include_custom_io and not config.custom_signals_csv:
+         missing_settings.append("LVFPGATargetSettings.LVTargetBoardIO")
+
+    if not config.boardio_output:
+        missing_settings.append("LVFPGATargetSettings.BoardIOXML")
+    
+    if not config.clock_output:
+        missing_settings.append("LVFPGATargetSettings.ClockXML")
+    
+    if not config.window_vhdl_template:
+        missing_settings.append("LVFPGATargetSettings.WindowVhdlTemplate")
+    else:
+        invalid_path = common.validate_path(
+            config.window_vhdl_template,
+            "LVFPGATargetSettings.WindowVhdlTemplate",
+            "file"
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+    
+    if not config.window_vhdl_output:
+        missing_settings.append("LVFPGATargetSettings.WindowVhdlOutput")
+    
+    if not config.window_instantiation_example:
+        missing_settings.append("LVFPGATargetSettings.WindowInstantiationExample")
+    
+    # Check list settings
+    if not config.hdl_file_lists:
+        missing_settings.append("VivadoProjectSettings.VivadoProjectFilesLists")
+    else:
+        # Validate each file list path
+        for i, file_list_path in enumerate(config.hdl_file_lists):
+            invalid_path = common.validate_path(
+                file_list_path,
+                f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]",
+                "file"
+            )
+            if invalid_path:
+                invalid_paths.append(invalid_path)
+        
+    if not config.target_xml_templates:
+        missing_settings.append("LVFPGATargetSettings.TargetXMLTemplates")
+    else:
+        # Validate each template file path
+        for i, template_path in enumerate(config.target_xml_templates):
+            invalid_path = common.validate_path(
+                template_path,
+                f"LVFPGATargetSettings.TargetXMLTemplates[{i}]",
+                "file"
+            )
+            if invalid_path:
+                invalid_paths.append(invalid_path)
+    
+    # Validate any constraint files if specified
+    if config.lv_target_constraints_files:
+        for i, constraint_path in enumerate(config.lv_target_constraints_files):
+            invalid_path = common.validate_path(
+                constraint_path,
+                f"LVFPGATargetSettings.LVTargetConstraintsFiles[{i}]",
+                "file"
+            )
+            if invalid_path:
+                invalid_paths.append(invalid_path)
+    
+    # Construct error message
+    error_msg = common.get_missing_settings_error(missing_settings)
+    error_msg += common.get_invalid_paths_error(invalid_paths)
+    
+    # If any issues found, raise an error with the helpful message
+    if missing_settings or invalid_paths:
+        error_msg += "\nPlease update your configuration file and try again."
+        raise ValueError(error_msg)
+
+
+def gen_lv_target_support():
+    """Generate target support files."""
     # Load configuration
     config = common.load_config()
+    has_validation_errors = False
+    validation_errors = []
 
-    # Verify required configuration is present
-    if config.lv_target_plugin_folder is None:
-        print("Error: LV target plugin folder not set in configuration")
-        sys.exit(1)
+    # Validate that all required settings are present
+    try:
+        _validate_ini(config)
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
 
     # Clean fpga plugins folder
     shutil.rmtree(config.lv_target_plugin_folder, ignore_errors=True)
 
     # Only generate custom IO files if the plugin is configured to include them
     if config.include_custom_io:
-        _generate_xml_from_csv(
+        errors = _generate_xml_from_csv(
             config.custom_signals_csv, config.boardio_output, config.clock_output
         )
+        if errors:
+            has_validation_errors = True
+            validation_errors.extend(errors)
 
     _generate_window_vhdl_from_csv(
         config.custom_signals_csv,
@@ -668,8 +786,19 @@ def gen_lv_target_support():
         config.target_family
     )
 
+    # Report validation errors at the end
+    if has_validation_errors:
+        print("\n" + "=" * 80)
+        print("ERRORS: The following validation errors were found in your signal definitions:")
+        for error in validation_errors:
+            print(f"  - {error}")
+        print("\nThe target files were generated but may contain incorrect values.")
+        print("Please correct these errors in your CSV file and regenerate.")
+        print("=" * 80)
+        return 1
+    
     print("Target support file generation complete.")
-
+    return 0
 
 if __name__ == "__main__":
-    gen_lv_target_support()
+    sys.exit(gen_lv_target_support())

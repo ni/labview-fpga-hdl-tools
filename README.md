@@ -229,7 +229,7 @@ After implementation, Vivado generates a bitstream for the FPGA.  This file is p
 
 This step is automatically done by Vivado when it runs the PostGenerateBitfile.tcl script.
 
-You can run this step manually from the GitHub target folder by running:
+This function is automatically run from within the Vivado implementation directory.  You can run it manually from there (e.g. C:\dev\github\flexrio\targets\pxie-7903\VivadoProject\MySasquatchProj.runs\impl_1)
 > nihdl create-lvbitx
 
 This may be useful to debug errors if the .lvbitx file is not created during the Vivado compile.

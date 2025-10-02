@@ -1,0 +1,1572 @@
+<CodeGenerationResults.lvtxt>
+<CodeGenerationScratchPad>
+   <AllowEnableRemoval>false</AllowEnableRemoval>
+   <ClipInstanceList>
+      <ClipInstance name="IO Socket">
+         <Value>theCLIPs/IO_Socket_CLIP0</Value>
+      </ClipInstance>
+      <ClipInstance name="Routing">
+         <Value>theCLIPs/Routing_CLIP1</Value>
+      </ClipInstance>
+   </ClipInstanceList>
+   <DerivedClockSourcePinList>
+      <DerivedClockSourcePin name="200MHz">
+         <Value>MmcmInst0/Mmcmx/CLKOUT0</Value>
+      </DerivedClockSourcePin>
+   </DerivedClockSourcePinList>
+   <FpgaCompilation>
+      <Architecture>rtl</Architecture>
+      <DeviceCategory>FlexRIO Coprocessor Modules</DeviceCategory>
+      <DeviceFamily>virtexup</DeviceFamily>
+      <DeviceFamilyForLabVIEW>VirtexUltraScalePlusLike</DeviceFamilyForLabVIEW>
+      <FPGADevice>xcvu11p</FPGADevice>
+      <Package>flgb2104</Package>
+      <PartNumber>xcvu11p-flgb2104-2-e</PartNumber>
+      <ProcessPropertyList>
+         <Process name="Synthesize - Vivado">
+            <CommandArguments>
+               <Command name="synth_design">
+                  <Option name="flatten_hierarchy">
+                     <Value>full</Value>
+                  </Option>
+                  <Flag name="keep_equivalent_registers">
+                  </Flag>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="(param)synth.elaboration.rodinMoreOptions">
+                  <Value>rt::set_parameter max_loop_limit 1000000;</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+         <Process name="Optimize Logic">
+            <CommandArguments>
+               <Command name="opt_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList></PropertyList>
+         </Process>
+         <Process name="Place">
+            <CommandArguments>
+               <Command name="place_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="general.maxThreads">
+                  <Value>4</Value>
+               </Property>
+            </PropertyList>
+            <XdcFileList>
+               <XdcFile>constraints_place.xdc</XdcFile>
+            </XdcFileList>
+         </Process>
+         <Process name="Optimize Timing">
+            <CommandArguments>
+               <Command name="phys_opt_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList></PropertyList>
+         </Process>
+         <Process name="Route">
+            <CommandArguments>
+               <Command name="route_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="general.maxThreads">
+                  <Value>4</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+         <Process name="Generate Programming File">
+            <CommandArguments>
+               <Command name="write_bitstream">
+                  <Flag name="bin_file">
+                  </Flag>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="BITSTREAM.GENERAL.COMPRESS">
+                  <Value>True</Value>
+               </Property>
+               <Property name="BITSTREAM.GENERAL.CRC">
+                  <Value>Enable</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.CCLKPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.M0PIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.M1PIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.M2PIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.DONEPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.INITPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TCKPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TDIPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TDOPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TMSPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.UNUSEDPIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.DONE_CYCLE">
+                  <Value>4</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.MATCH_CYCLE">
+                  <Value>3</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.LCK_CYCLE">
+                  <Value>NoWait</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.GTS_CYCLE">
+                  <Value>5</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.GWE_CYCLE">
+                  <Value>6</Value>
+               </Property>
+               <Property name="BITSTREAM.ENCRYPTION.ENCRYPT">
+                  <Value>No</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.USR_ACCESS">
+                  <Value>TIMESTAMP</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.USERID">
+                  <Value>0x00000003</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+         <Process name="Post-Route Optimize Timing">
+            <CommandArguments>
+               <Command name="phys_opt_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="maxViolationInNanoseconds">
+                  <Value>0.5</Value>
+               </Property>
+               <Property name="maxNumberOfAttempts">
+                  <Value>1</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+      </ProcessPropertyList>
+      <SpeedGrade>-2</SpeedGrade>
+      <Top>SasquatchTop</Top>
+      <UseBinaryConfiguration>TRUE</UseBinaryConfiguration>
+   </FpgaCompilation>
+   <NiFpga>
+      <ControlAndIndicatorNamesAndTypes>
+         <fifo_reg_bus_ctrl_0_ctl_2>U32</fifo_reg_bus_ctrl_0_ctl_2>
+         <fifo_reg_bus_data_0_ind_0>U64</fifo_reg_bus_data_0_ind_0>
+         <fifo_reg_bus_status_0_ind_1>U32</fifo_reg_bus_status_0_ind_1>
+         <flexrio_module_io_error_0_ind_4>I32</flexrio_module_io_error_0_ind_4>
+         <flexrio_module_io_ready_0_ind_3>Boolean</flexrio_module_io_ready_0_ind_3>
+         <port_0_enable_ctl_30>Boolean</port_0_enable_ctl_30>
+         <port_0_mismatch_count_ind_7>U64</port_0_mismatch_count_ind_7>
+         <port_0_rx_throttle_ctl_6>U16</port_0_rx_throttle_ctl_6>
+         <port_1_enable_ctl_31>Boolean</port_1_enable_ctl_31>
+         <port_1_mismatch_count_ind_8>U64</port_1_mismatch_count_ind_8>
+         <port_1_rx_throttle_ctl_9>U16</port_1_rx_throttle_ctl_9>
+         <port_10_enable_ctl_40>Boolean</port_10_enable_ctl_40>
+         <port_10_mismatch_count_ind_26>U64</port_10_mismatch_count_ind_26>
+         <port_10_rx_throttle_ctl_27>U16</port_10_rx_throttle_ctl_27>
+         <port_11_enable_ctl_41>Boolean</port_11_enable_ctl_41>
+         <port_11_mismatch_count_ind_28>U64</port_11_mismatch_count_ind_28>
+         <port_11_rx_throttle_ctl_29>U16</port_11_rx_throttle_ctl_29>
+         <port_2_enable_ctl_32>Boolean</port_2_enable_ctl_32>
+         <port_2_mismatch_count_ind_10>U64</port_2_mismatch_count_ind_10>
+         <port_2_rx_throttle_ctl_11>U16</port_2_rx_throttle_ctl_11>
+         <port_3_enable_ctl_33>Boolean</port_3_enable_ctl_33>
+         <port_3_mismatch_count_ind_12>U64</port_3_mismatch_count_ind_12>
+         <port_3_rx_throttle_ctl_13>U16</port_3_rx_throttle_ctl_13>
+         <port_4_enable_ctl_34>Boolean</port_4_enable_ctl_34>
+         <port_4_mismatch_count_ind_14>U64</port_4_mismatch_count_ind_14>
+         <port_4_rx_throttle_ctl_15>U16</port_4_rx_throttle_ctl_15>
+         <port_5_enable_ctl_35>Boolean</port_5_enable_ctl_35>
+         <port_5_mismatch_count_ind_16>U64</port_5_mismatch_count_ind_16>
+         <port_5_rx_throttle_ctl_17>U16</port_5_rx_throttle_ctl_17>
+         <port_6_enable_ctl_36>Boolean</port_6_enable_ctl_36>
+         <port_6_mismatch_count_ind_18>U64</port_6_mismatch_count_ind_18>
+         <port_6_rx_throttle_ctl_19>U16</port_6_rx_throttle_ctl_19>
+         <port_7_enable_ctl_37>Boolean</port_7_enable_ctl_37>
+         <port_7_mismatch_count_ind_20>U64</port_7_mismatch_count_ind_20>
+         <port_7_rx_throttle_ctl_21>U16</port_7_rx_throttle_ctl_21>
+         <port_8_enable_ctl_38>Boolean</port_8_enable_ctl_38>
+         <port_8_mismatch_count_ind_22>U64</port_8_mismatch_count_ind_22>
+         <port_8_rx_throttle_ctl_23>U16</port_8_rx_throttle_ctl_23>
+         <port_9_enable_ctl_39>Boolean</port_9_enable_ctl_39>
+         <port_9_mismatch_count_ind_24>U64</port_9_mismatch_count_ind_24>
+         <port_9_rx_throttle_ctl_25>U16</port_9_rx_throttle_ctl_25>
+         <tb_reset_ctl_5>Boolean</tb_reset_ctl_5>
+      </ControlAndIndicatorNamesAndTypes>
+      <RunWhenLoaded>false</RunWhenLoaded>
+      <signatures>
+         <fpgaSignature>lk9sVs2/24Ww4fTfRHrpJg==</fpgaSignature>
+         <guidSignature>wdTIT6JMNV+XgII/rb0Lng==</guidSignature>
+         <namesSignature>F7suaIV+AdDdN6d7CaWBpQ==</namesSignature>
+      </signatures>
+      <version>1</version>
+      <VivadoProjectExport>true</VivadoProjectExport>
+   </NiFpga>
+   <ResourceList>
+      <Slices>162000</Slices>
+      <Luts>1296000</Luts>
+      <FlipFlops>2592000</FlipFlops>
+      <BRam>2016</BRam>
+      <DSP48E>9216</DSP48E>
+      <UltraRAM>960</UltraRAM>
+   </ResourceList>
+</CodeGenerationScratchPad><CompilerVersion><DisplayString>Xilinx Vivado 2021.1 (64-bit)</DisplayString><Compiler>Xilinx Vivado</Compiler><Bits>64bit</Bits><MajorVersion>2021</MajorVersion><MinorVersion>1</MinorVersion></CompilerVersion><EstimateResources>false</EstimateResources><StepList><Step>Generate Xilinx IP</Step><Step>Synthesize - Vivado</Step><Step>Optimize Logic</Step><Step>Place</Step><Step>Optimize Timing</Step><Step>Route</Step><Step>Post-Route Optimize Timing</Step><Step>Generate Programming File</Step></StepList><MergedIdenticalDerivedClocks>true</MergedIdenticalDerivedClocks><BitfileContents><?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Bitfile>
+	<BitfileVersion>4.0</BitfileVersion>
+	<Documentation>
+		<BuildSpecVersion />
+		<BuildSpecDescription />
+	</Documentation>
+	<SignatureRegister>964F6C56CDBFDB85B0E1F4DF447AE926</SignatureRegister>
+	<SignatureGuids>C1D4C84FA24C355F9780823FADBD0B9E</SignatureGuids>
+	<SignatureNames>17BB2E68857E01D0DD37A77B09A581A5</SignatureNames>
+	<TimeStamp></TimeStamp>
+	<CompilationStatus></CompilationStatus>
+	<BitstreamVersion>2</BitstreamVersion>
+	<VI>
+		<Name>PXIe-7903 Aurora Example.lvlib:Top (FPGA).vi</Name>
+		<RegisterList>
+			<Register>
+				<Name>tb reset</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>tb reset</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001000E402108746220726573657400000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>2</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>5</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 0 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 0 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742030207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>6</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>6</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 0 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 0 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742030206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>8</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>7</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 1 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 1 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742031206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>12</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>8</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 1 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 1 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742031207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>18</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>9</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 3 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 3 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742033206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>20</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>12</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 3 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 3 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742033207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>26</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>13</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 4 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 4 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742034206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>28</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>14</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 4 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 4 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742034207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>34</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>15</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 5 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 5 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742035206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>36</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>16</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 5 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 5 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742035207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>42</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>17</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 6 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 6 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742036206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>44</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>18</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 6 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 6 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742036207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>50</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>19</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 7 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 7 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742037206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>52</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>20</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 7 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 7 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742037207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>58</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>21</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 8 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 8 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742038206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>60</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>22</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 8 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 8 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742038207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>66</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>23</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 9 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 9 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742039206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>68</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>24</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 9 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 9 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742039207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>74</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>25</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 10 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 10 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001D40080016706F7274203130206D69736D6174636820636F756E740000010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>76</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>26</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 10 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 10 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060013706F7274203130207278207468726F74746C6500010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>82</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>27</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 11 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 11 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001D40080016706F7274203131206D69736D6174636820636F756E740000010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>84</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>28</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 11 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 11 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060013706F7274203131207278207468726F74746C6500010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>90</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>29</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 0 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 0 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203020656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>94</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>30</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 1 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 1 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203120656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>98</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>31</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 3 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 3 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203320656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>102</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>33</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 4 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 4 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203420656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>106</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>34</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 5 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 5 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203520656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>110</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>35</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 6 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 6 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203620656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>114</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>36</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 7 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 7 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203720656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>118</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>37</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 8 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 8 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203820656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>122</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>38</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 9 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 9 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203920656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>126</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>39</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 10 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 10 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001440210E706F727420313020656E61626C6500000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>130</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>40</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 11 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 11 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001440210E706F727420313120656E61626C6500000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>134</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>41</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>fifo reg bus data 0</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>fifo reg bus data 0</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>13008000000000010019400800136669666F20726567206275732064617461203000010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>136</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>fifo reg bus status 0</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U32>
+						<Name>fifo reg bus status 0</Name>
+					</U32>
+				</Datatype>
+				<FlattenedType>1300800000000001001B400700156669666F2072656720627573207374617475732030000100000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>140</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>1</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>fifo reg bus ctrl 0</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name>fifo reg bus ctrl 0</Name>
+					</U32>
+				</Datatype>
+				<FlattenedType>13008000000000010019400700136669666F2072656720627573206374726C2030000100000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>144</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>2</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>flexrio.module.io ready 0</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>flexrio.module.io ready 0</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001E402119666C657872696F2E6D6F64756C652E696F2072656164792030000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>150</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>3</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>flexrio.module.io error 0</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<I32>
+						<Name>flexrio.module.io error 0</Name>
+					</I32>
+				</Datatype>
+				<FlattenedType>1300800000000001001F40030019666C657872696F2E6D6F64756C652E696F206572726F722030000100000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>152</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>4</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 2 mismatch count</Name>
+				<Hidden>false</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<U64>
+						<Name>port 2 mismatch count</Name>
+					</U64>
+				</Datatype>
+				<FlattenedType>1300800000000001001B40080015706F72742032206D69736D6174636820636F756E7400010000000000000000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>156</Offset>
+				<SizeInBits>64</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>10</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 2 rx throttle</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U16>
+						<Name>port 2 rx throttle</Name>
+					</U16>
+				</Datatype>
+				<FlattenedType>1300800000000001001940060012706F72742032207278207468726F74746C650000010000000000000000</FlattenedType>
+				<Grouping />
+				<Offset>162</Offset>
+				<SizeInBits>16</SizeInBits>
+				<Class>18</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>11</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>port 2 enable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<Boolean>
+						<Name>port 2 enable</Name>
+					</Boolean>
+				</Datatype>
+				<FlattenedType>1300800000000001001240210D706F7274203220656E61626C65000100000000000000</FlattenedType>
+				<Grouping />
+				<Offset>166</Offset>
+				<SizeInBits>1</SizeInBits>
+				<Class>8</Class>
+				<Internal>false</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>32</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>ViControl</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196600</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>DiagramReset</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196604</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>ViSignature</Name>
+				<Hidden>true</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<Array>
+						<Name></Name>
+						<Size>4</Size>
+						<Type>
+							<U32>
+								<Name></Name>
+							</U32>
+						</Type>
+					</Array>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196596</Offset>
+				<SizeInBits>128</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>false</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>InterruptEnable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196580</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>InterruptMask</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196588</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>InterruptStatus</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196592</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+		</RegisterList>
+		<Icon>
+			<ImageType>0</ImageType>
+			<ImageDepth>8</ImageDepth>
+			<Image>////////////////////////////////////////////ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZm//9mZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmb//////2Zm/2ZmZv9mZv//ZmZm////Zmb//2Zm//9mZv//Zmb/Zv9m/2b/Zv9mZmb/ZmZm/2Zm/2Zm/2ZmZv9m//9m/2Zm////Zv9m/2Zm/2ZmZmb/Zmb/ZmZmZmb/Zmb//2b/ZmZmZv9m/2b/ZmZm/2ZmZv9mZv9mZv9mZmb/Zv//Zv9mZmb/ZmZm/2Zm//9mZmZm/2ZmZv//Zmb//2Zm//9mZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmb//2ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZv//ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZm/////////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAD///8AAP//AAD///8AAAAAAAAAAAAA//8AAAAAAAAAAAD/AAD/AAD/AP8AAP8AAAAAAAAAAAD//wAAAAAAAAAAAP8AAP8AAP8A////AAAAAAAAAAAAAP//AAAAAAAAAAAA/wAA/wAA/wD/AAAAAAAAAAAAAAAA//8AAAAAAAAAAAD/AAAA//8AAP8AAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///////////////////////////////////////////w==</Image>
+			<Mask>//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=</Mask>
+			<Colors>AP///wD//8wA//+ZAP//ZgD//zMA//8AAP/M/wD/zMwA/8yZAP/MZgD/zDMA/8wAAP+Z/wD/mcwA/5mZAP+ZZgD/mTMA/5kAAP9m/wD/ZswA/2aZAP9mZgD/ZjMA/2YAAP8z/wD/M8wA/zOZAP8zZgD/MzMA/zMAAP8A/wD/AMwA/wCZAP8AZgD/ADMA/wAAAMz//wDM/8wAzP+ZAMz/ZgDM/zMAzP8AAMzM/wDMzMwAzMyZAMzMZgDMzDMAzMwAAMyZ/wDMmcwAzJmZAMyZZgDMmTMAzJkAAMxm/wDMZswAzGaZAMxmZgDMZjMAzGYAAMwz/wDMM8wAzDOZAMwzZgDMMzMAzDMAAMwA/wDMAMwAzACZAMwAZgDMADMAzAAAAJn//wCZ/8wAmf+ZAJn/ZgCZ/zMAmf8AAJnM/wCZzMwAmcyZAJnMZgCZzDMAmcwAAJmZ/wCZmcwAmZmZAJmZZgCZmTMAmZkAAJlm/wCZZswAmWaZAJlmZgCZZjMAmWYAAJkz/wCZM8wAmTOZAJkzZgCZMzMAmTMAAJkA/wCZAMwAmQCZAJkAZgCZADMAmQAAAGb//wBm/8wAZv+ZAGb/ZgBm/zMAZv8AAGbM/wBmzMwAZsyZAGbMZgBmzDMAZswAAGaZ/wBmmcwAZpmZAGaZZgBmmTMAZpkAAGZm/wBmZswAZmaZAGZmZgBmZjMAZmYAAGYz/wBmM8wAZjOZAGYzZgBmMzMAZjMAAGYA/wBmAMwAZgCZAGYAZgBmADMAZgAAADP//wAz/8wAM/+ZADP/ZgAz/zMAM/8AADPM/wAzzMwAM8yZADPMZgAzzDMAM8wAADOZ/wAzmcwAM5mZADOZZgAzmTMAM5kAADNm/wAzZswAM2aZADNmZgAzZjMAM2YAADMz/wAzM8wAMzOZADMzZgAzMzMAMzMAADMA/wAzAMwAMwCZADMAZgAzADMAMwAAAAD//wAA/8wAAP+ZAAD/ZgAA/zMAAP8AAADM/wAAzMwAAMyZAADMZgAAzDMAAMwAAACZ/wAAmcwAAJmZAACZZgAAmTMAAJkAAABm/wAAZswAAGaZAABmZgAAZjMAAGYAAAAz/wAAM8wAADOZAAAzZgAAMzMAADMAAAAA/wAAAMwAAACZAAAAZgAAADMA7gAAAN0AAAC7AAAAqgAAAIgAAAB3AAAAVQAAAEQAAAAiAAAAEQAAAADuAAAA3QAAALsAAACqAAAAiAAAAHcAAABVAAAARAAAACIAAAARAAAAAO4AAADdAAAAuwAAAKoAAACIAAAAdwAAAFUAAABEAAAAIgAAABEA7u7uAN3d3QC7u7sAqqqqAIiIiAB3d3cAVVVVAERERAAiIiIAERERAAAAAA==</Colors>
+			<Rectangle>
+				<Left>0</Left>
+				<Top>0</Top>
+				<Right>32</Right>
+				<Bottom>32</Bottom>
+			</Rectangle>
+		</Icon>
+	</VI>
+	<Project>
+		<TargetClass>PXIe-7903Aurora</TargetClass>
+		<AutoRunWhenDownloaded>false</AutoRunWhenDownloaded>
+		<CompilationResultsTree>
+<CompilationResults>
+   <NiFpga>
+      <BaseAddressOnDevice>0</BaseAddressOnDevice>
+      <DmaChannelAllocationList>
+         <Channel name="reg.host instruction fifo 0">
+            <BaseAddressTag>NiLvFpgareg.host instruction fifo 0</BaseAddressTag>
+            <ControlSet>0</ControlSet>
+            <DataType>
+               <Delta>1.000000000000000000000000000000000000000000000000000000</Delta>
+               <IntegerWordLength>64</IntegerWordLength>
+               <Maximum>18446744073709551600.00000000000000000000000000000000000</Maximum>
+               <Minimum>0.000000000000000000000000000000000000000000000000000000</Minimum>
+               <Signed>false</Signed>
+               <SubType>U64</SubType>
+               <WordLength>64</WordLength>
+            </DataType>
+            <Direction>HostToTarget</Direction>
+            <Implementation>niFpgaHostToTarget</Implementation>
+            <Number>0</Number>
+            <NumberOfElements>1029</NumberOfElements>
+            <UserVisible>true</UserVisible>
+         </Channel>
+      </DmaChannelAllocationList>
+      <RegisterBlockList>
+         <RegisterBlock name="NiLvFpgareg.host instruction fifo 0">
+            <Offset>0x3FFC0</Offset>
+         </RegisterBlock>
+      </RegisterBlockList>
+      <UsedBaseClockList>
+         <BaseClock name="PXIe_Clk100">
+         </BaseClock>
+         <BaseClock name="DmaClk">
+         </BaseClock>
+         <BaseClock name="BusClk">
+         </BaseClock>
+         <BaseClock name="ReliableClkIn">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port11 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port10 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port9 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port8 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port3 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port2 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port1 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port0 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port7 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port6 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port5 User Clock">
+         </BaseClock>
+         <BaseClock name="IO Socket.Port4 User Clock">
+         </BaseClock>
+         <BaseClock name="80 MHz Clock">
+         </BaseClock>
+      </UsedBaseClockList>
+      <version>1</version>
+   </NiFpga>
+   <TargetSpecificData>
+      <IOModuleID>0x10937AEC</IOModuleID>
+      <RoutingAliases>
+         <Count>0</Count>
+      </RoutingAliases>
+      <Target>PXIe-7903R</Target>
+   </TargetSpecificData>
+</CompilationResults> </CompilationResultsTree>
+		<MultipleUserClocks>true</MultipleUserClocks>
+		<AllowImplicitEnableRemoval>false</AllowImplicitEnableRemoval>
+	</Project>
+	<ClientData />
+	<BitstreamMD5></BitstreamMD5>
+	<Bitstream></Bitstream>
+</Bitfile>
+</BitfileContents><ProcessedClockData><Clock><DerivedClock>false</DerivedClock><NominalFrequency>80000000.000</NominalFrequency><TimeSpecName>TimingEnginex/TimingStage1x/ReliableClkPllx/inst/mmcme4_adv_inst/CLKOUT1</TimeSpecName><SignalName/><Alias>80 MHz Clock</Alias><ClockName>PllClk80</ClockName></Clock><Clock><DerivedClock>true</DerivedClock><NominalFrequency>200000000.000</NominalFrequency><TimeSpecName>MmcmInst0/Mmcmx/CLKOUT0</TimeSpecName><SignalName>PllClk80Derived5x2C00MHz</SignalName><Alias>200MHz</Alias><ClockName>PllClk80</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort0</TimeSpecName><SignalName/><Alias>IO Socket.Port0 User Clock</Alias><ClockName>UserClkPort0</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort1</TimeSpecName><SignalName/><Alias>IO Socket.Port1 User Clock</Alias><ClockName>UserClkPort1</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort2</TimeSpecName><SignalName/><Alias>IO Socket.Port2 User Clock</Alias><ClockName>UserClkPort2</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort3</TimeSpecName><SignalName/><Alias>IO Socket.Port3 User Clock</Alias><ClockName>UserClkPort3</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort4</TimeSpecName><SignalName/><Alias>IO Socket.Port4 User Clock</Alias><ClockName>UserClkPort4</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort5</TimeSpecName><SignalName/><Alias>IO Socket.Port5 User Clock</Alias><ClockName>UserClkPort5</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort6</TimeSpecName><SignalName/><Alias>IO Socket.Port6 User Clock</Alias><ClockName>UserClkPort6</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort7</TimeSpecName><SignalName/><Alias>IO Socket.Port7 User Clock</Alias><ClockName>UserClkPort7</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort8</TimeSpecName><SignalName/><Alias>IO Socket.Port8 User Clock</Alias><ClockName>UserClkPort8</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort9</TimeSpecName><SignalName/><Alias>IO Socket.Port9 User Clock</Alias><ClockName>UserClkPort9</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort10</TimeSpecName><SignalName/><Alias>IO Socket.Port10 User Clock</Alias><ClockName>UserClkPort10</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>400000000.000</NominalFrequency><TimeSpecName>TS_UserClkPort11</TimeSpecName><SignalName/><Alias>IO Socket.Port11 User Clock</Alias><ClockName>UserClkPort11</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>100000000.000</NominalFrequency><TimeSpecName>PxieClk100_p</TimeSpecName><SignalName/><Alias>PXIe_Clk100</Alias><ClockName>PxieClk100</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>250000000.000</NominalFrequency><TimeSpecName>TS_DmaClk</TimeSpecName><SignalName/><Alias>DmaClk (Used by non-diagram components)</Alias><ClockName>DmaClk</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>80000000.000</NominalFrequency><TimeSpecName>TS_BusClk</TimeSpecName><SignalName/><Alias>BusClk (Used by non-diagram components)</Alias><ClockName>BusClk</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>100000000.000</NominalFrequency><TimeSpecName>TS_ReliableClkIn</TimeSpecName><SignalName/><Alias>ReliableClkIn (Used by non-diagram components)</Alias><ClockName>ReliableClkIn</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram0ClkSocket</TimeSpecName><SignalName/><Alias>Dram0ClkSocket (Used by non-diagram components)</Alias><ClockName>Dram0ClkSocket</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram1ClkSocket</TimeSpecName><SignalName/><Alias>Dram1ClkSocket (Used by non-diagram components)</Alias><ClockName>Dram1ClkSocket</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram0ClkUser</TimeSpecName><SignalName/><Alias>Dram0ClkUser (Used by non-diagram components)</Alias><ClockName>Dram0ClkUser</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram1ClkUser</TimeSpecName><SignalName/><Alias>Dram1ClkUser (Used by non-diagram components)</Alias><ClockName>Dram1ClkUser</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>250000000.000</NominalFrequency><TimeSpecName>TS_dHmbDmaClkSocket</TimeSpecName><SignalName/><Alias>dHmbDmaClkSocket (Used by non-diagram components)</Alias><ClockName>dHmbDmaClkSocket</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>250000000.000</NominalFrequency><TimeSpecName>TS_dLlbDmaClkSocket</TimeSpecName><SignalName/><Alias>dLlbDmaClkSocket (Used by non-diagram components)</Alias><ClockName>dLlbDmaClkSocket</ClockName></Clock></ProcessedClockData><DocumentationInfo><Documentation><BuildSpecVersion>1.0.0.0</BuildSpecVersion><BuildSpecDescription/></Documentation></DocumentationInfo></CodeGenerationResults.lvtxt>

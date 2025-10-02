@@ -253,8 +253,11 @@ def resolve_path(rel_path):
         rel_path (str): Relative path to convert
 
     Returns:
-        str: Normalized absolute path
+        str or None: Normalized absolute path, or None if the input path is empty
     """
+    if rel_path is None or rel_path.strip() == "":
+        return None
+    
     abs_path = os.path.normpath(os.path.join(os.getcwd(), rel_path))
     return abs_path
 
@@ -595,3 +598,58 @@ def run_command(cmd, cwd=None, capture_output=True):
         # Don't capture output (let it go to console)
         subprocess.run(cmd, shell=True, **kwargs)
         return ""  # Return empty string instead of None
+
+
+def validate_path(path, setting_name, required_type=None):
+    """Validates that a path exists and is of the expected type.
+    
+    Args:
+        path (str): Path to validate
+        setting_name (str): Name of the configuration setting (for error reporting)
+        required_type (str, optional): "file" or "directory" to check specific type,
+                                       or None to just check existence
+        
+    Returns:
+        str or None: None if path is valid, otherwise an error message string
+    """
+    if path is None:
+        return None  # Skip validation for None paths (handled by _validate_ini)
+        
+    # For Windows, ensure we handle long paths properly
+    check_path = path
+    if os.name == "nt" and len(path) > 240 and not path.startswith("\\\\?\\"):
+        check_path = f"\\\\?\\{os.path.abspath(path)}"
+    
+    if not os.path.exists(check_path):
+        return f"{setting_name} - Path does not exist: {path}"
+    
+    if required_type == "file" and not os.path.isfile(check_path):
+        return f"{setting_name} - Path is not a file: {path}"
+    
+    if required_type == "directory" and not os.path.isdir(check_path):
+        return f"{setting_name} - Path is not a directory: {path}"
+    
+    if not os.access(check_path, os.R_OK):
+        return f"{setting_name} - Path exists but is not readable: {path}"
+        
+    return None
+
+
+def get_missing_settings_error(missing_settings):
+    error_msg = ""
+    if missing_settings:
+        error_msg += "The following required settings are missing from projectsettings.ini:\n"
+        for setting in missing_settings:
+            error_msg += f"  - {setting}\n"
+    return error_msg
+
+
+def get_invalid_paths_error(invalid_paths):
+    error_msg = ""
+    if invalid_paths:
+        error_msg += "The following settings have invalid paths:\n"
+        for path in invalid_paths:
+            error_msg += f"  - {path}\n"
+    return error_msg
+
+

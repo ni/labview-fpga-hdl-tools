@@ -19,6 +19,26 @@ import os
 import shutil
 
 
+def _validate_source_folder(source_folder):
+    """Validates the source folder and checks for ZIP files.
+    
+    Args:
+        source_folder (str): Folder containing ZIP files to extract.
+    
+    Raises:
+        FileNotFoundError: If source folder doesn't exist
+        ValueError: If no ZIP files are found in the source folder
+    """
+    # Check if source folder exists
+    if not os.path.exists(source_folder):
+        raise FileNotFoundError(f"Dependencies folder not found.\nPlease ensure that you are running extract-deps from the correct folder.\n")
+    
+    # Check if there are any zip files in the source folder
+    zip_files = [f for f in os.listdir(source_folder) if f.endswith(".zip")]
+    if not zip_files:
+        raise ValueError(f"No ZIP files found in source folder: {source_folder}")
+
+
 def extract_deps_from_zip():
     """Extracts the contents of all ZIP files from source_folder into the deps_folder.
 
@@ -29,7 +49,7 @@ def extract_deps_from_zip():
     """
     cwd = os.getcwd()
     # This code assumes you are running extract-deps from the target folder
-    # For example - c:\github\flexrio\pxie-7903
+    # For example - c:\github\flexrio\targets\pxie-7903
     #
     # The extract-deps function is NOT target specific.  It extracts dependencies for
     # the entire repo.  However, since all other nihdl commands are run from the target
@@ -39,6 +59,14 @@ def extract_deps_from_zip():
     source_folder = os.path.join(cwd, "..", "..", "dependencies")
 
     deps_folder = os.path.abspath(deps_folder)
+    source_folder = os.path.abspath(source_folder)
+    
+    # Validate the source folder and its contents
+    try:
+        _validate_source_folder(source_folder)
+    except Exception as e:
+        print(f"Error: {e}")
+        return
 
     # Handle long paths on Windows
     # The \\?\ prefix allows paths over 260 characters on Windows systems
@@ -56,19 +84,18 @@ def extract_deps_from_zip():
     os.makedirs(deps_folder_long, exist_ok=True)
 
     # Determine source directory
-    source_dir = source_folder if source_folder else os.getcwd()
-    print(f"Looking for ZIP files in: {source_dir}")
+    print(f"Looking for ZIP files in: {source_folder}")
 
     # Find all zip files in the source directory
     # This allows batch processing of multiple dependency archives
-    zip_files = [f for f in os.listdir(source_dir) if f.endswith(".zip")]
+    zip_files = [f for f in os.listdir(source_folder) if f.endswith(".zip")]
     print(f"Found {len(zip_files)} ZIP files")
 
     # Extract each zip file
     # Process files sequentially, reporting success or failure for each
     for zip_file in zip_files:
         try:
-            zip_path = os.path.join(source_dir, zip_file)
+            zip_path = os.path.join(source_folder, zip_file)
             print(f"Extracting '{zip_file}' into '{deps_folder}'...")
             shutil.unpack_archive(zip_path, deps_folder_long, "zip")
             print(f"Successfully extracted '{zip_file}'")

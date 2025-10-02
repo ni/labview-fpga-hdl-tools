@@ -12,8 +12,13 @@ import shutil
 from . import common
 
 
-def _get_window_netlist(config):
-    """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
+def _get_window_netlist(config, test=False):
+    """Gets the Window netlist from the Vivado Project as well as other HDL Files.
+    
+    Args:
+        config: Configuration settings object
+        test (bool): If True, skip running Vivado
+    """
     get_netlist_tcl_path = os.path.join(os.getcwd(), "TCL/GetWindowNetlist.tcl")
     current_dir = os.getcwd()
 
@@ -29,13 +34,16 @@ def _get_window_netlist(config):
     # Use the vivado_tools_path from the config instead of the XILINX environment variable
     vivado_path = config.vivado_tools_path
 
-    if vivado_path:
-        # Determine the Vivado executable based on the operating system
-        if os.name == "nt":  # Windows
-            vivado_executable = os.path.join(vivado_path, "bin", "vivado.bat")
-        else:  # Linux or other OS
-            vivado_executable = os.path.join(vivado_path, "bin", "vivado")
+    # Determine the Vivado executable based on the operating system
+    if os.name == "nt":  # Windows
+        vivado_executable = os.path.join(vivado_path, "bin", "vivado.bat")
+    else:  # Linux or other OS
+        vivado_executable = os.path.join(vivado_path, "bin", "vivado")
 
+    # In test mode, skip running Vivado
+    if test:
+        print("TEST MODE: Skipping Vivado execution")
+    else:
         print(f"Current working directory: {os.getcwd()}")
         common.run_command(
             f'"{vivado_executable}" {project_name}.xpr -mode batch -source {get_netlist_tcl_path}',
@@ -43,27 +51,31 @@ def _get_window_netlist(config):
             capture_output=False,
         )
 
-        # Copy TheWindow.edf to destination folder
-        source_file = os.path.join(vivado_project_path, "TheWindow.edf")
-        destination_folder = config.the_window_folder_output
+    # Create a mock EDF file in test mode
+    source_file = os.path.join(vivado_project_path, "TheWindow.edf")
+    destination_folder = config.the_window_folder_output
+    
+    # Create destination directory if it doesn't exist
+    os.makedirs(destination_folder, exist_ok=True)
+    
+    # In test mode, create a mock EDF file if it doesn't exist
+    if test and not os.path.exists(source_file):
+        with open(source_file, 'w') as f:
+            f.write("# Mock EDF file created for testing\n")
+        print(f"Created mock EDF file for testing: {source_file}")
 
-        # Create destination directory if it doesn't exist
-        os.makedirs(destination_folder, exist_ok=True)
+    destination_file = os.path.join(destination_folder, "TheWindow.edf")
 
-        destination_file = os.path.join(destination_folder, "TheWindow.edf")
+    try:
+        if os.path.exists(source_file):
+            shutil.copy(source_file, destination_file)
+            print(f"Copied {source_file} to {destination_file}")
+        else:
+            print(f"Error: Source file {source_file} not found")
+    except Exception as e:
+        print(f"Error copying file: {str(e)}")
 
-        try:
-            if os.path.exists(source_file):
-                shutil.copy(source_file, destination_file)
-                print(f"Copied {source_file} to {destination_file}")
-            else:
-                print(f"Error: Source file {source_file} not found")
-        except Exception as e:
-            print(f"Error copying file: {str(e)}")
-
-        os.chdir(current_dir)
-    else:
-        print("Vivado tools path not found in configuration.")
+    os.chdir(current_dir)
 
 
 def _copy_lv_generated_files(config):
@@ -156,11 +168,76 @@ def _extract_lv_window_constraints(config):
         print(f"Error extracting constraints: {str(e)}")
 
 
-def get_window():
-    """Main entry point for the script."""
+def _validate_ini(config):
+    """Validate that all required configuration settings are present.
+    
+    This function checks that all settings required for getting window netlist
+    are present in the configuration object and validates that paths exist.
+    
+    Args:
+        config: Configuration object containing settings from INI file
+        
+    Raises:
+        ValueError: If any required settings are missing or paths are invalid
+    """
+    missing_settings = []
+    invalid_paths = []
+    
+    # Check required paths for window netlist generation
+    if not config.vivado_project_export_xpr:
+        missing_settings.append("LVWindowNetlistSettings.VivadoProjectExportXPR")
+    else:
+        # Validate that the XPR file exists
+        invalid_path = common.validate_path(
+            config.vivado_project_export_xpr,
+            "LVWindowNetlistSettings.VivadoProjectExportXPR",
+            "file"
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+    
+    if not config.the_window_folder_output:
+        missing_settings.append("LVWindowNetlistSettings.TheWindowFolder")
+    
+    # Check for Vivado tools path
+    if not config.vivado_tools_path:
+        missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
+    else:
+        # Validate that the Vivado tools path exists
+        invalid_path = common.validate_path(
+            config.vivado_tools_path,
+            "VivadoProjectSettings.VivadoToolsPath",
+            "directory"
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+            
+    # Construct error message using common utility functions
+    error_msg = common.get_missing_settings_error(missing_settings)
+    error_msg += common.get_invalid_paths_error(invalid_paths)
+    
+    # If any issues found, raise an error with the helpful message
+    if missing_settings or invalid_paths:
+        error_msg += "\nPlease update your configuration file and try again."
+        raise ValueError(error_msg)
+
+
+def get_window(test=False):
+    """Main entry point for the script.
+    
+    Args:
+        test (bool): If True, validate settings but don't run Vivado
+    """
     config = common.load_config()
 
-    _get_window_netlist(config)
+    # Validate that all required settings are present
+    try:
+        _validate_ini(config)
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+    
+    _get_window_netlist(config, test=test)
     _copy_lv_generated_files(config)
     _extract_lv_window_constraints(config)
 
@@ -168,6 +245,8 @@ def get_window():
     print("NOTICE: If you have already created a Vivado project, you must run")
     print('         "nihdl create-project --update" to pull in the latest Window netlist files.')
     print("=" * 80)
+    
+    return 0
 
 
 if __name__ == "__main__":

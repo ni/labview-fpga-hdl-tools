@@ -59,6 +59,59 @@ def _run_as_admin():
     sys.exit(0)
 
 
+def _validate_ini(config):
+    """Validate that all required configuration settings are present.
+
+    This function checks that all settings required for LabVIEW target installation
+    are present in the configuration object and validates that all paths exist.
+
+    Args:
+        config: Configuration object containing settings from INI file
+
+    Raises:
+        ValueError: If any required settings are missing or paths are invalid
+    """
+    missing_settings = []
+    invalid_paths = []
+
+    # Check required settings for installation
+    if not config.lv_target_install_folder:
+        missing_settings.append("LVFPGATargetSettings.LVTargetInstallFolder")
+    else:
+        # Validate installation folder
+        invalid_path = common.validate_path(
+            config.lv_target_install_folder,
+            "LVFPGATargetSettings.LVTargetInstallFolder",
+            "directory"
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+
+    if not config.lv_target_name:
+        missing_settings.append("LVFPGATargetSettings.LVTargetName")
+
+    if not config.lv_target_plugin_folder:
+        missing_settings.append("LVFPGATargetSettings.LVTargetPluginFolder")
+    else:
+        # Validate plugin folder
+        invalid_path = common.validate_path(
+            config.lv_target_plugin_folder,
+            "LVFPGATargetSettings.LVTargetPluginFolder",
+            "directory"
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+
+    # Construct error message
+    error_msg = common.get_missing_settings_error(missing_settings)
+    error_msg += common.get_invalid_paths_error(invalid_paths)
+    
+    # If any issues found, raise an error with the helpful message
+    if missing_settings or invalid_paths:
+        error_msg += "\nPlease update your configuration file and try again."
+        raise ValueError(error_msg)
+
+
 def install_lv_target_support():
     """Install LabVIEW Target Support files to the target installation folder.
 
@@ -73,23 +126,15 @@ def install_lv_target_support():
     # Load configuration
     config = common.load_config()
 
-    # Verify configuration is complete
-    if not config.lv_target_install_folder or not config.lv_target_name:
-        print("Error: Installation folder or target name not specified in configuration.")
-        sys.exit(1)
+    # Validate that all required settings are present
+    try:
+        _validate_ini(config)
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
 
     # Now we can safely join paths since we've verified they're not None
     install_folder = os.path.join(config.lv_target_install_folder, config.lv_target_name)
-
-    # Verify plugin folder exists
-    if not config.lv_target_plugin_folder:
-        print("Error: Plugin folder not specified in configuration.")
-        sys.exit(1)
-
-    # Check if source exists
-    if not os.path.exists(config.lv_target_plugin_folder):
-        print(f"Error: Source plugin folder not found: {config.lv_target_plugin_folder}")
-        sys.exit(1)
 
     # Check if we need admin rights (typically for Program Files)
     needs_admin = "program files" in install_folder.lower()

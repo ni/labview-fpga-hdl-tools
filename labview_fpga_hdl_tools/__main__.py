@@ -56,11 +56,12 @@ def install_target_cmd(ctx):
 
 
 @cli.command("get-window", help="Extract window netlist from Vivado project")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
 @click.pass_context
-def get_window_cmd(ctx):
+def get_window_cmd(ctx, test):
     """Extract window netlist from Vivado project."""
     try:
-        get_window_netlist.get_window()
+        get_window_netlist.get_window(test=test)
         return 0
     except Exception as e:
         handle_exception(e)
@@ -82,11 +83,12 @@ def gen_target_cmd(ctx):
 @cli.command("create-project", help="Create or update Vivado project")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
 @click.pass_context
-def create_project_cmd(ctx, overwrite, update):
+def create_project_cmd(ctx, overwrite, update, test):
     """Create or update Vivado project."""
     try:
-        create_vivado_project.create_project(overwrite=overwrite, update=update)
+        create_vivado_project.create_project(overwrite=overwrite, update=update, test=test)
         return 0
     except Exception as e:
         handle_exception(e)
@@ -94,11 +96,12 @@ def create_project_cmd(ctx, overwrite, update):
 
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't launch Vivado")
 @click.pass_context
-def launch_vivado_cmd(ctx):
+def launch_vivado_cmd(ctx, test):
     """Launch Vivado with the current project."""
     try:
-        launch_vivado.launch_vivado()
+        launch_vivado.launch_vivado(test=test)
         return 0
     except Exception as e:
         handle_exception(e)
@@ -118,11 +121,12 @@ def extract_deps_cmd(ctx):
 
 
 @cli.command("create-lvbitx", help="Create LabVIEW FPGA bitfile from Vivado output")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run the createBitfile tool")
 @click.pass_context
-def create_lvbitx_cmd(ctx):
+def create_lvbitx_cmd(ctx, test):
     """Create LabVIEW FPGA bitfile from Vivado output."""
     try:
-        create_lvbitx.create_lv_bitx()
+        create_lvbitx.create_lv_bitx(test=test)
         return 0
     except Exception as e:
         handle_exception(e)
