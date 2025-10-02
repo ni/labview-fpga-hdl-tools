@@ -63,7 +63,11 @@ def launch_vivado(test=False):
     # Change to the VivadoProject directory
     vivado_project_dir = os.path.join(os.getcwd(), "VivadoProject")
 
-    # Determine the Vivado executable based on the operating system
+    # Check vivado_tools_path before using
+    if not config.vivado_tools_path:
+        raise ValueError("VivadoToolsPath setting is missing from configuration")
+
+    # Determine the Vivado executable with proper None check
     if platform.system() == "Windows":
         vivado_executable = os.path.join(config.vivado_tools_path, "bin", "vivado.bat")
     else:  # Linux or other OS

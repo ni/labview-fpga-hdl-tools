@@ -573,7 +573,9 @@ def _copy_fpgafiles(
 
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
-            shutil.copy2(file, target_path)
+            # Check file paths before copy
+            if file and target_path:
+                shutil.copy2(file, target_path)
 
 
 def _copy_menu_files(plugin_folder, target_family):
@@ -585,20 +587,22 @@ def _copy_menu_files(plugin_folder, target_family):
 
     print(f"Copying common plugin files from {common_plugin_src} to {plugin_folder}")
 
-    for root, dirs, files in os.walk(common_plugin_src):
-        # Calculate relative path to maintain directory structure
-        rel_path = os.path.relpath(root, common_plugin_src)
-        # Create corresponding directory in destination
-        dest_dir = os.path.join(plugin_folder, rel_path) if rel_path != "." else plugin_folder
-        os.makedirs(dest_dir, exist_ok=True)
-        # Copy each file
-        for file in files:
-            src_file = os.path.join(root, file)
-            dst_file = os.path.join(dest_dir, file)
-            # Make destination writable if it exists
-            if os.path.exists(dst_file):
-                os.chmod(dst_file, 0o777)
-            shutil.copy2(src_file, dst_file)
+    # Add check before os.walk
+    if common_plugin_src:
+        for root, _, files in os.walk(common_plugin_src):
+            # Calculate relative path to maintain directory structure
+            rel_path = os.path.relpath(root, common_plugin_src)
+            # Create corresponding directory in destination
+            dest_dir = os.path.join(plugin_folder, rel_path) if rel_path != "." else plugin_folder
+            os.makedirs(dest_dir, exist_ok=True)
+            # Copy each file
+            for file in files:
+                src_file = os.path.join(root, file)
+                dst_file = os.path.join(dest_dir, file)
+                # Make destination writable if it exists
+                if os.path.exists(dst_file):
+                    os.chmod(dst_file, 0o777)
+                shutil.copy2(src_file, dst_file)
 
 
 def _copy_targetinfo_ini(plugin_folder, target_family):

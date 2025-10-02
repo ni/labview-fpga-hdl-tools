@@ -131,8 +131,11 @@ def install_lv_target_support():
         print(f"Error: {e}")
         return 1
 
-    # Now we can safely join paths since we've verified they're not None
-    install_folder = os.path.join(config.lv_target_install_folder, config.lv_target_name)
+    # Validate paths before joining
+    if config.lv_target_install_folder and config.lv_target_name:
+        install_folder = os.path.join(config.lv_target_install_folder, config.lv_target_name)
+    else:
+        raise ValueError("Missing required settings: LVTargetInstallFolder or LVTargetName")
 
     # Check if we need admin rights (typically for Program Files)
     needs_admin = "program files" in install_folder.lower()
