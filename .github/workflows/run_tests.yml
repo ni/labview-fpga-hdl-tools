@@ -31,6 +31,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install pytest pytest-cov
+        pip install click
+        pip install mako
 
     - name: Run test workflow
       run: python tests/test_workflow.py
