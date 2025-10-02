@@ -15,4 +15,4 @@
 !*.sh
 
 # Allow the dependencies zip file
-!.zip
+!*.zip

@@ -340,13 +340,24 @@ def run_output_validations():
     validation_results.append(success)
     
     # Second validation - project directory with non-exact matching
-    print(f"\n{BLUE}Comparing project directories:{RESET}")
-    project_outputs_dir = os.path.join(TEST_DIR, "test-project")
-    project_expected_dir = os.path.join(TEST_DIR, "test-project-expected")
+    print(f"\n{BLUE}Comparing object directories:{RESET}")
+    project_outputs_dir = os.path.join(TEST_DIR, "test-project/targets/pxie-7903/objects")
+    project_expected_dir = os.path.join(TEST_DIR, "test-project-expected/targets/pxie-7903/objects")
     success, issues = check_output_folders(
         project_outputs_dir, 
         project_expected_dir, 
-        exact_match=False
+        exact_match=True
+    )
+    validation_results.append(success)
+
+    # Second validation - project directory with non-exact matching
+    print(f"\n{BLUE}Comparing VivadoProject directories:{RESET}")
+    project_outputs_dir = os.path.join(TEST_DIR, "test-project/targets/pxie-7903/VivadoProject")
+    project_expected_dir = os.path.join(TEST_DIR, "test-project-expected/targets/pxie-7903/VivadoProject")
+    success, issues = check_output_folders(
+        project_outputs_dir, 
+        project_expected_dir, 
+        exact_match=True
     )
     validation_results.append(success)
     

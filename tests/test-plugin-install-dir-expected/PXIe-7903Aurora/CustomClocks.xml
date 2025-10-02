@@ -3,14 +3,14 @@
   <Clock name="IO Socket.Port0 User Clock">
     <VHDLName>UserClkPort0</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -22,14 +22,14 @@
   <Clock name="IO Socket.Port1 User Clock">
     <VHDLName>UserClkPort1</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -41,14 +41,14 @@
   <Clock name="IO Socket.Port2 User Clock">
     <VHDLName>UserClkPort2</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -60,14 +60,14 @@
   <Clock name="IO Socket.Port3 User Clock">
     <VHDLName>UserClkPort3</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -79,14 +79,14 @@
   <Clock name="IO Socket.Port4 User Clock">
     <VHDLName>UserClkPort4</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -98,14 +98,14 @@
   <Clock name="IO Socket.Port5 User Clock">
     <VHDLName>UserClkPort5</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -117,14 +117,14 @@
   <Clock name="IO Socket.Port6 User Clock">
     <VHDLName>UserClkPort6</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -136,14 +136,14 @@
   <Clock name="IO Socket.Port7 User Clock">
     <VHDLName>UserClkPort7</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -155,14 +155,14 @@
   <Clock name="IO Socket.Port8 User Clock">
     <VHDLName>UserClkPort8</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -174,14 +174,14 @@
   <Clock name="IO Socket.Port9 User Clock">
     <VHDLName>UserClkPort9</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -193,14 +193,14 @@
   <Clock name="IO Socket.Port10 User Clock">
     <VHDLName>UserClkPort10</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
@@ -212,14 +212,14 @@
   <Clock name="IO Socket.Port11 User Clock">
     <VHDLName>UserClkPort11</VHDLName>
     <DutyCycleRangeInPercentHigh>
-      <Max>50</Max>
-      <Min>50</Min>
+      <Max>50.000000</Max>
+      <Min>50.000000</Min>
     </DutyCycleRangeInPercentHigh>
     <AccuracyInPPM>
-      <DefaultValue>100</DefaultValue>
+      <DefaultValue>100.000000</DefaultValue>
     </AccuracyInPPM>
     <JitterInPicoSeconds>
-      <DefaultValue>150</DefaultValue>
+      <DefaultValue>150.000000</DefaultValue>
     </JitterInPicoSeconds>
     <FreqInHertz>
       <Max>400.000000M</Max>
