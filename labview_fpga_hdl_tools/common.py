@@ -128,7 +128,8 @@ def load_config(config_path=None):
             file_list = file_list.strip()
             if file_list:
                 abs_file_list = resolve_path(file_list)
-                files.hdl_file_lists.append(abs_file_list)
+                if abs_file_list is not None:  # Add this check
+                    files.hdl_file_lists.append(abs_file_list)
 
     # Load constraints templates
     constraints_templates = settings.get("ConstraintsTemplates")
@@ -137,7 +138,8 @@ def load_config(config_path=None):
             template = template.strip()
             if template:
                 abs_template = resolve_path(template)
-                files.constraints_templates.append(abs_template)
+                if abs_template is not None:  # Add None check
+                    files.constraints_templates.append(abs_template)
 
     # Load project constraint files
     constraint_files = settings.get("VivadoProjectConstraintsFiles")
@@ -146,7 +148,8 @@ def load_config(config_path=None):
             file = file.strip()
             if file:
                 abs_file = resolve_path(file)
-                files.vivado_project_constraints_files.append(abs_file)
+                if abs_file is not None:  # Add None check
+                    files.vivado_project_constraints_files.append(abs_file)
 
     files.use_gen_lv_window_files = _parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
     files.the_window_folder_input = resolve_path(settings.get("TheWindowFolder"))
@@ -182,7 +185,8 @@ def load_config(config_path=None):
             template_file = template_file.strip()
             if template_file:
                 abs_template_file = resolve_path(template_file)
-                files.target_xml_templates.append(abs_template_file)
+                if abs_template_file is not None:  # Add None check
+                    files.target_xml_templates.append(abs_template_file)
 
     # Load LV target constraints files
     lv_constraints = settings.get("LVTargetConstraintsFiles")
@@ -191,7 +195,8 @@ def load_config(config_path=None):
             file = file.strip()
             if file:
                 abs_file = resolve_path(file)
-                files.lv_target_constraints_files.append(abs_file)
+                if abs_file is not None:  # Add None check
+                    files.lv_target_constraints_files.append(abs_file)
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
@@ -215,7 +220,8 @@ def load_config(config_path=None):
         xdc_file = xdc_file.strip()
         if xdc_file:
             abs_xdc_path = resolve_path(xdc_file)
-            files.clip_xdc_paths.append(abs_xdc_path)
+            if abs_xdc_path is not None:  # Add None check
+                files.clip_xdc_paths.append(abs_xdc_path)
 
     return files
 
