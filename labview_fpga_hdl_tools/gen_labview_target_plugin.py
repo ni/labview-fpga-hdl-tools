@@ -576,6 +576,8 @@ def _copy_fpgafiles(
             # Check file paths before copy
             if file and target_path:
                 shutil.copy2(file, target_path)
+            else:
+                print(f"Warning: Cannot copy file, path is None: file_path={file}, target_path={target_path}")
 
 
 def _copy_menu_files(plugin_folder, target_family):
