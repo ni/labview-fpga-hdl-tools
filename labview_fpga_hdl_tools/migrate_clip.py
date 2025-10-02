@@ -373,19 +373,19 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
             root = tree.getroot()
         except ET.ParseError as e:
             print(f"Error parsing XML file: {e}")
-            return False
+            return False, [f"Critical error: {str(e)}"]
 
         # Find LabVIEW interface
         lv_interface = _find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
         if lv_interface is None:
             print(f"No LabVIEW interface found in {input_xml_path}")
-            return False
+            return False, [f"No LabVIEW interface found in {input_xml_path}"]
 
         # Find signals
         signals = _findall_case_insensitive(lv_interface, ".//SignalList/Signal")
         if not signals:
             print("Warning: No signals found in the LabVIEW interface")
-            return False
+            return False, ["No signals found in the LabVIEW interface"]
 
         # Open output file for writing VHDL signal declarations
         with open(output_vhdl_path, "w", encoding="utf-8") as f:

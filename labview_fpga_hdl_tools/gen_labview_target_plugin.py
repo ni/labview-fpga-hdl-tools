@@ -745,7 +745,8 @@ def gen_lv_target_support():
         return 1
 
     # Clean fpga plugins folder
-    shutil.rmtree(config.lv_target_plugin_folder, ignore_errors=True)
+    if config.lv_target_plugin_folder:
+        shutil.rmtree(config.lv_target_plugin_folder, ignore_errors=True)
 
     # Only generate custom IO files if the plugin is configured to include them
     if config.include_custom_io:
