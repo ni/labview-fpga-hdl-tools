@@ -606,20 +606,27 @@ def _copy_menu_files(plugin_folder, target_family):
                 # Make destination writable if it exists
                 if os.path.exists(dst_file):
                     os.chmod(dst_file, 0o777)
-                shutil.copy2(src_file, dst_file)
+                # Add null check before copy
+                if src_file is not None and dst_file is not None:
+                    shutil.copy2(src_file, dst_file)
+                else:
+                    print(f"Warning: Cannot copy file, path is None: src_file={src_file}, dst_file={dst_file}")
 
 
 def _copy_targetinfo_ini(plugin_folder, target_family):
     """Copy the TargetInfo.ini file to the plugin folder."""
     targetinfo_src = common.resolve_path("lvFpgaTarget/TargetInfo.ini")
 
-    # Copy the file to the plugin folder
-    targetinfo_dst = os.path.join(plugin_folder, "TargetInfo.ini")
-    try:
-        shutil.copy2(targetinfo_src, targetinfo_dst)
-        print(f"Copied TargetInfo.ini to {plugin_folder}")
-    except Exception as e:
-        print(f"Error copying TargetInfo.ini: {e}")
+    # Copy the file to the plugin folder only if source path exists
+    if targetinfo_src is not None:
+        targetinfo_dst = os.path.join(plugin_folder, "TargetInfo.ini")
+        try:
+            shutil.copy2(targetinfo_src, targetinfo_dst)
+            print(f"Copied TargetInfo.ini to {plugin_folder}")
+        except Exception as e:
+            print(f"Error copying TargetInfo.ini: {e}")
+    else:
+        print("Warning: Could not resolve path to TargetInfo.ini")
 
 
 def _validate_ini(config):
