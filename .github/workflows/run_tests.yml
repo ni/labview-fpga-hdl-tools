@@ -35,12 +35,3 @@ jobs:
     - name: Run test workflow
       run: python tests/test_workflow.py
       shell: bash
-
-    - name: Upload test outputs as artifacts
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: test-outputs-${{ matrix.os }}-py${{ matrix.python-version }}
-        path: |
-          tests/test-project/targets/pxie-7903/objects
-          tests/test-plugin-install-dir
