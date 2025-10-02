@@ -1,0 +1,46 @@
+name: Run Test Workflow
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  test:
+    name: Run Test Workflow
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        python-version: [3.8, 3.9]
+      fail-fast: false
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest pytest-cov
+
+    - name: Run test workflow
+      run: python tests/test_workflow.py
+      shell: bash
+
+    - name: Upload test outputs as artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-outputs-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: |
+          tests/test-project/targets/pxie-7903/objects
+          tests/test-plugin-install-dir
