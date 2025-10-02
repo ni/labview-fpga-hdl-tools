@@ -275,16 +275,21 @@ def check_output_folders(outputs_dir, expected_dir, exact_match=True):
     for root, _, files in os.walk(expected_dir):
         for file in files:
             full_path = os.path.join(root, file)
-            rel_path = os.path.relpath(full_path, expected_dir)
-            expected_files[rel_path] = full_path
+            # Normalize path for cross-platform comparison
+            rel_path = os.path.normpath(os.path.relpath(full_path, expected_dir))
+            expected_files[rel_path.lower()] = full_path  # Use lowercase keys for case-insensitive comparison
     
     # Get all files in outputs (with relative paths)
     output_files = {}
     for root, _, files in os.walk(outputs_dir):
         for file in files:
             full_path = os.path.join(root, file)
-            rel_path = os.path.relpath(full_path, outputs_dir)
-            output_files[rel_path] = full_path
+            # Normalize path for cross-platform comparison
+            rel_path = os.path.normpath(os.path.relpath(full_path, outputs_dir))
+            output_files[rel_path.lower()] = full_path  # Use lowercase keys for case-insensitive comparison
+    
+    # Print diagnostic info
+    print(f"Found {len(expected_files)} expected files and {len(output_files)} output files")
     
     # Check for missing expected files
     for rel_path, expected_path in expected_files.items():
@@ -299,8 +304,8 @@ def check_output_folders(outputs_dir, expected_dir, exact_match=True):
                     with open(expected_path, 'r', encoding='utf-8', errors='replace') as f1, \
                          open(output_path, 'r', encoding='utf-8', errors='replace') as f2:
                         # Normalize line endings before comparison
-                        expected_content = f1.read().replace('\r\n', '\n')
-                        output_content = f2.read().replace('\r\n', '\n')
+                        expected_content = f1.read().replace('\r\n', '\n').replace('\r', '\n')
+                        output_content = f2.read().replace('\r\n', '\n').replace('\r', '\n')
                         
                         if expected_content != output_content:
                             # Files differ even after normalizing line endings
@@ -309,8 +314,12 @@ def check_output_folders(outputs_dir, expected_dir, exact_match=True):
                 except UnicodeDecodeError:
                     # If file can't be read as text, fall back to binary comparison
                     with open(expected_path, 'rb') as f1, open(output_path, 'rb') as f2:
-                        if f1.read() != f2.read():
+                        expected_binary = f1.read()
+                        output_binary = f2.read()
+                        
+                        if expected_binary != output_binary:
                             issues.append(f"Binary content mismatch: {rel_path}")
+                            print(f"  Binary file size: Expected {len(expected_binary)} bytes, got {len(output_binary)} bytes")
             
             except Exception as e:
                 issues.append(f"Error comparing {rel_path}: {str(e)}")
@@ -333,7 +342,6 @@ def check_output_folders(outputs_dir, expected_dir, exact_match=True):
             extra_count = len(output_files) - len(expected_files)
             print(f"{YELLOW}Note: {extra_count} extra files in outputs (allowed by non-exact match){RESET}")
         return True, []
-
 
 
 def run_output_validations():
