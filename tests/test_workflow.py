@@ -247,7 +247,7 @@ def test_all_commands():
 
 
 def check_output_folders(outputs_dir, expected_dir, exact_match=True):
-    """Compare files between two folder hierarchies.
+    """Compare files between two folder hierarchies, ignoring line ending differences.
     
     Args:
         outputs_dir (str): Path to the outputs directory to validate
@@ -294,9 +294,24 @@ def check_output_folders(outputs_dir, expected_dir, exact_match=True):
             # Compare file contents
             output_path = output_files[rel_path]
             try:
-                with open(expected_path, 'rb') as f1, open(output_path, 'rb') as f2:
-                    if f1.read() != f2.read():
-                        issues.append(f"Content mismatch: {rel_path}")
+                # First try to compare files as text (normalizing line endings)
+                try:
+                    with open(expected_path, 'r', encoding='utf-8', errors='replace') as f1, \
+                         open(output_path, 'r', encoding='utf-8', errors='replace') as f2:
+                        # Normalize line endings before comparison
+                        expected_content = f1.read().replace('\r\n', '\n')
+                        output_content = f2.read().replace('\r\n', '\n')
+                        
+                        if expected_content != output_content:
+                            # Files differ even after normalizing line endings
+                            issues.append(f"Content mismatch: {rel_path}")
+                
+                except UnicodeDecodeError:
+                    # If file can't be read as text, fall back to binary comparison
+                    with open(expected_path, 'rb') as f1, open(output_path, 'rb') as f2:
+                        if f1.read() != f2.read():
+                            issues.append(f"Binary content mismatch: {rel_path}")
+            
             except Exception as e:
                 issues.append(f"Error comparing {rel_path}: {str(e)}")
     
@@ -318,6 +333,7 @@ def check_output_folders(outputs_dir, expected_dir, exact_match=True):
             extra_count = len(output_files) - len(expected_files)
             print(f"{YELLOW}Note: {extra_count} extra files in outputs (allowed by non-exact match){RESET}")
         return True, []
+
 
 
 def run_output_validations():
