@@ -610,7 +610,9 @@ def _copy_menu_files(plugin_folder, target_family):
                 if src_file is not None and dst_file is not None:
                     shutil.copy2(src_file, dst_file)
                 else:
-                    print(f"Warning: Cannot copy file, path is None: src_file={src_file}, dst_file={dst_file}")
+                    print(
+                        f"Warning: Cannot copy file, path is None: src_file={src_file}, dst_file={dst_file}"
+                    )
 
 
 def _copy_targetinfo_ini(plugin_folder, target_family):

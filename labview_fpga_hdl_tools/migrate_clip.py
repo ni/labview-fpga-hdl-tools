@@ -665,18 +665,12 @@ def migrate_clip():
         _process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
 
     # Generate CLIP to Window signal definitions
-    result = _generate_clip_to_window_signals(
+    _, errors = _generate_clip_to_window_signals(
         long_input_xml_path, config.clip_to_window_signal_definitions
     )
-    
-    # Check if result is a tuple (new format) or boolean (old format)
-    if isinstance(result, tuple):
-        success, errors = result
-        if errors:
-            validation_errors.extend(errors)
-    else:
-        # Handle case where function returns just a boolean (old behavior)
-        success = result
+
+    if errors:
+        validation_errors.extend(errors)
 
     # Report any validation errors at the end
     if validation_errors:
