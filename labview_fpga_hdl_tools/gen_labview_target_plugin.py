@@ -182,7 +182,7 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
     """
     validation_errors = []
     row_count = 0
-    
+
     try:
         boardio_top, boardio_resources = _create_boardio_structure()
         clock_list_top = _create_clocklist_structure()
@@ -253,7 +253,9 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                     ET.SubElement(io_resource, "VHDLName").text = hdl_name
 
                     if required_clock_domain:
-                        ET.SubElement(io_resource, "RequiredClockDomain").text = required_clock_domain
+                        ET.SubElement(io_resource, "RequiredClockDomain").text = (
+                            required_clock_domain
+                        )
 
                     if use_in_scl:
                         ET.SubElement(io_resource, "UseInSingleCycleTimedLoop").text = use_in_scl
@@ -264,7 +266,7 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                         error = f"Row {row_count}: Invalid direction '{direction}' for signal '{lv_name}'. Must be 'input' or 'output'."
                         validation_errors.append(error)
                         io_direction = "INVALID_DIRECTION"
-                    
+
                     # Validate zero sync registers setting
                     io_zero_sync_regs = {
                         "true": "ZeroDefaultSyncRegisters",
@@ -614,63 +616,61 @@ def _copy_targetinfo_ini(plugin_folder, target_family):
 
 def _validate_ini(config):
     """Validate that all required configuration settings are present.
-    
+
     This function checks that all settings required for target plugin generation
     are present in the configuration object and validates that all specified paths exist.
-    
+
     Args:
         config: Configuration object containing settings from INI file
-        
+
     Raises:
         ValueError: If any required settings are missing or paths are invalid
     """
     missing_settings = []
     invalid_paths = []
-    
+
     # Required general settings
     if not config.target_family:
         missing_settings.append("GeneralSettings.TargetFamily")
-        
+
     if not config.base_target:
         missing_settings.append("GeneralSettings.BaseTarget")
-    
+
     # Required plugin settings
     if not config.lv_target_plugin_folder:
         missing_settings.append("LVFPGATargetSettings.LVTargetPluginFolder")
-        
+
     if not config.lv_target_name:
         missing_settings.append("LVFPGATargetSettings.LVTargetName")
-        
+
     if not config.lv_target_guid:
         missing_settings.append("LVFPGATargetSettings.LVTargetGUID")
-    
+
     # Validate input files and folders
     if config.include_custom_io and not config.custom_signals_csv:
-         missing_settings.append("LVFPGATargetSettings.LVTargetBoardIO")
+        missing_settings.append("LVFPGATargetSettings.LVTargetBoardIO")
 
     if not config.boardio_output:
         missing_settings.append("LVFPGATargetSettings.BoardIOXML")
-    
+
     if not config.clock_output:
         missing_settings.append("LVFPGATargetSettings.ClockXML")
-    
+
     if not config.window_vhdl_template:
         missing_settings.append("LVFPGATargetSettings.WindowVhdlTemplate")
     else:
         invalid_path = common.validate_path(
-            config.window_vhdl_template,
-            "LVFPGATargetSettings.WindowVhdlTemplate",
-            "file"
+            config.window_vhdl_template, "LVFPGATargetSettings.WindowVhdlTemplate", "file"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
-    
+
     if not config.window_vhdl_output:
         missing_settings.append("LVFPGATargetSettings.WindowVhdlOutput")
-    
+
     if not config.window_instantiation_example:
         missing_settings.append("LVFPGATargetSettings.WindowInstantiationExample")
-    
+
     # Check list settings
     if not config.hdl_file_lists:
         missing_settings.append("VivadoProjectSettings.VivadoProjectFilesLists")
@@ -678,41 +678,35 @@ def _validate_ini(config):
         # Validate each file list path
         for i, file_list_path in enumerate(config.hdl_file_lists):
             invalid_path = common.validate_path(
-                file_list_path,
-                f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]",
-                "file"
+                file_list_path, f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]", "file"
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
-        
+
     if not config.target_xml_templates:
         missing_settings.append("LVFPGATargetSettings.TargetXMLTemplates")
     else:
         # Validate each template file path
         for i, template_path in enumerate(config.target_xml_templates):
             invalid_path = common.validate_path(
-                template_path,
-                f"LVFPGATargetSettings.TargetXMLTemplates[{i}]",
-                "file"
+                template_path, f"LVFPGATargetSettings.TargetXMLTemplates[{i}]", "file"
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
-    
+
     # Validate any constraint files if specified
     if config.lv_target_constraints_files:
         for i, constraint_path in enumerate(config.lv_target_constraints_files):
             invalid_path = common.validate_path(
-                constraint_path,
-                f"LVFPGATargetSettings.LVTargetConstraintsFiles[{i}]",
-                "file"
+                constraint_path, f"LVFPGATargetSettings.LVTargetConstraintsFiles[{i}]", "file"
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
-    
+
     # Construct error message
     error_msg = common.get_missing_settings_error(missing_settings)
     error_msg += common.get_invalid_paths_error(invalid_paths)
-    
+
     # If any issues found, raise an error with the helpful message
     if missing_settings or invalid_paths:
         error_msg += "\nPlease update your configuration file and try again."
@@ -776,15 +770,9 @@ def gen_lv_target_support():
         config.base_target,
     )
 
-    _copy_menu_files(
-        config.lv_target_plugin_folder, 
-        config.target_family
-    )
+    _copy_menu_files(config.lv_target_plugin_folder, config.target_family)
 
-    _copy_targetinfo_ini(
-        config.lv_target_plugin_folder, 
-        config.target_family
-    )
+    _copy_targetinfo_ini(config.lv_target_plugin_folder, config.target_family)
 
     # Report validation errors at the end
     if has_validation_errors:
@@ -796,9 +784,10 @@ def gen_lv_target_support():
         print("Please correct these errors in your CSV file and regenerate.")
         print("=" * 80)
         return 1
-    
+
     print("Target support file generation complete.")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(gen_lv_target_support())

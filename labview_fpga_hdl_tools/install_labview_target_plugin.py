@@ -82,7 +82,7 @@ def _validate_ini(config):
         invalid_path = common.validate_path(
             config.lv_target_install_folder,
             "LVFPGATargetSettings.LVTargetInstallFolder",
-            "directory"
+            "directory",
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -95,9 +95,7 @@ def _validate_ini(config):
     else:
         # Validate plugin folder
         invalid_path = common.validate_path(
-            config.lv_target_plugin_folder,
-            "LVFPGATargetSettings.LVTargetPluginFolder",
-            "directory"
+            config.lv_target_plugin_folder, "LVFPGATargetSettings.LVTargetPluginFolder", "directory"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -105,7 +103,7 @@ def _validate_ini(config):
     # Construct error message
     error_msg = common.get_missing_settings_error(missing_settings)
     error_msg += common.get_invalid_paths_error(invalid_paths)
-    
+
     # If any issues found, raise an error with the helpful message
     if missing_settings or invalid_paths:
         error_msg += "\nPlease update your configuration file and try again."

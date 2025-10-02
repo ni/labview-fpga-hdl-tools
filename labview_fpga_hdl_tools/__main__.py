@@ -121,7 +121,11 @@ def extract_deps_cmd(ctx):
 
 
 @cli.command("create-lvbitx", help="Create LabVIEW FPGA bitfile from Vivado output")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run the createBitfile tool")
+@click.option(
+    "--test",
+    is_flag=True,
+    help="Test mode - validate settings but don't run the createBitfile tool",
+)
 @click.pass_context
 def create_lvbitx_cmd(ctx, test):
     """Create LabVIEW FPGA bitfile from Vivado output."""

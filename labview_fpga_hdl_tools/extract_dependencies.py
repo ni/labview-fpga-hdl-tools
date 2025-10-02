@@ -21,18 +21,20 @@ import shutil
 
 def _validate_source_folder(source_folder):
     """Validates the source folder and checks for ZIP files.
-    
+
     Args:
         source_folder (str): Folder containing ZIP files to extract.
-    
+
     Raises:
         FileNotFoundError: If source folder doesn't exist
         ValueError: If no ZIP files are found in the source folder
     """
     # Check if source folder exists
     if not os.path.exists(source_folder):
-        raise FileNotFoundError(f"Dependencies folder not found.\nPlease ensure that you are running extract-deps from the correct folder.\n")
-    
+        raise FileNotFoundError(
+            f"Dependencies folder not found.\nPlease ensure that you are running extract-deps from the correct folder.\n"
+        )
+
     # Check if there are any zip files in the source folder
     zip_files = [f for f in os.listdir(source_folder) if f.endswith(".zip")]
     if not zip_files:
@@ -60,7 +62,7 @@ def extract_deps_from_zip():
 
     deps_folder = os.path.abspath(deps_folder)
     source_folder = os.path.abspath(source_folder)
-    
+
     # Validate the source folder and its contents
     try:
         _validate_source_folder(source_folder)

@@ -34,7 +34,7 @@ def _validate_ini(config):
 
     if not config.vivado_project_name:
         missing_settings.append("VivadoProjectSettings.VivadoProjectName")
-        
+
     # If any required settings are missing, raise an error
     if missing_settings:
         error_msg = "Missing required configuration settings:\n"
@@ -46,7 +46,7 @@ def _validate_ini(config):
 
 def launch_vivado(test=False):
     """Launch Vivado using settings from projectsettings.ini.
-    
+
     Args:
         test (bool): If True, validate settings but don't launch Vivado
     """
@@ -78,14 +78,10 @@ def launch_vivado(test=False):
 
     # Construct the project file path
     project_arg = f"{config.vivado_project_name}.xpr"
-    
+
     # Validate project file exists
     project_file = os.path.join(vivado_project_dir, project_arg)
-    invalid_path = common.validate_path(
-        project_file,
-        "Vivado project file",
-        "file"
-    )
+    invalid_path = common.validate_path(project_file, "Vivado project file", "file")
     if invalid_path:
         print(f"Error: {invalid_path}")
         return 1
@@ -97,7 +93,7 @@ def launch_vivado(test=False):
 
     # Verify that the executable exists
     if not os.path.exists(vivado_abs):
-        raise FileNotFoundError(f"Error: Vivado executable not found: {vivado_abs}")   
+        raise FileNotFoundError(f"Error: Vivado executable not found: {vivado_abs}")
 
     # In test mode, stop here after validation
     if test:

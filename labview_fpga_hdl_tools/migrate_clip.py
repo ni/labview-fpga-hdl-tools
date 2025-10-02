@@ -25,6 +25,7 @@ from . import common
 
 INVALID_LV_DATA_TYPE = "INVALID_LV_DATA_TYPE"
 
+
 def _find_case_insensitive(element, xpath):
     """Find an element using case-insensitive tag and attribute matching."""
     if element is None:
@@ -360,7 +361,7 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
         bool: True if successful, False otherwise
     """
     validation_errors = []
-    
+
     try:
 
         # Ensure output directory exists
@@ -410,11 +411,13 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
                     signal, "DataType"
                 )
                 lv_data_type = _extract_data_type(data_type_elem)
-                
+
                 try:
                     vhdl_type = _map_lv_type_to_vhdl(lv_data_type)
                     if vhdl_type == INVALID_LV_DATA_TYPE:
-                        validation_errors.append(f"Signal '{name}' has unrecognized LabVIEW type '{lv_data_type}'")
+                        validation_errors.append(
+                            f"Signal '{name}' has unrecognized LabVIEW type '{lv_data_type}'"
+                        )
                 except Exception as e:
                     validation_errors.append(f"Signal '{name}': {str(e)}")
                     vhdl_type = "std_logic_vector(0 downto 0) -- ERROR: Invalid type"
@@ -581,9 +584,7 @@ def _validate_ini(config):
     else:
         # Validate input XML path
         invalid_path = common.validate_path(
-            config.input_xml_path, 
-            "CLIPMigrationSettings.CLIPXML", 
-            "file"
+            config.input_xml_path, "CLIPMigrationSettings.CLIPXML", "file"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -596,9 +597,7 @@ def _validate_ini(config):
     else:
         # Validate CLIP HDL path
         invalid_path = common.validate_path(
-            config.clip_hdl_path,
-            "CLIPMigrationSettings.CLIPHDLTop",
-            "file"
+            config.clip_hdl_path, "CLIPMigrationSettings.CLIPHDLTop", "file"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -606,21 +605,20 @@ def _validate_ini(config):
     if not config.clip_inst_example_path:
         missing_settings.append("CLIPMigrationSettings.CLIPInstantiationExample")
 
-    # Note: CLIPXDCIn is optional, so we don't check if it's missing - but if they are present, validate them
+    # Note: CLIPXDCIn is optional, so we don't check if it's missing -
+    #   but if they are present, validate them
     # Only check for CLIPInstancePath and XDC output folder if there are XDC paths
     if config.clip_xdc_paths:
         if not config.clip_instance_path:
             missing_settings.append("CLIPMigrationSettings.CLIPInstancePath")
-        
+
         if not config.updated_xdc_folder:
             missing_settings.append("CLIPMigrationSettings.CLIPXDCOutFolder")
-        
+
         # Validate each XDC path
         for i, xdc_path in enumerate(config.clip_xdc_paths):
             invalid_path = common.validate_path(
-                xdc_path,
-                f"CLIPMigrationSettings.CLIPXDCIn[{i}]",
-                "file"
+                xdc_path, f"CLIPMigrationSettings.CLIPXDCIn[{i}]", "file"
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -631,7 +629,7 @@ def _validate_ini(config):
     # Construct error message
     error_msg = common.get_missing_settings_error(missing_settings)
     error_msg += common.get_invalid_paths_error(invalid_paths)
-    
+
     # If any issues found, raise an error with the helpful message
     if missing_settings or invalid_paths:
         error_msg += "\nPlease update your configuration file and try again."
@@ -667,7 +665,9 @@ def migrate_clip():
         _process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
 
     # Generate CLIP to Window signal definitions
-    success, errors = _generate_clip_to_window_signals(long_input_xml_path, config.clip_to_window_signal_definitions)
+    success, errors = _generate_clip_to_window_signals(
+        long_input_xml_path, config.clip_to_window_signal_definitions
+    )
     if errors:
         validation_errors.extend(errors)
 
@@ -681,6 +681,6 @@ def migrate_clip():
         print("Please correct these errors and run the migration again.")
         print("=" * 80)
         return 1
-    
+
     print("CLIP migration completed successfully.")
     return 0

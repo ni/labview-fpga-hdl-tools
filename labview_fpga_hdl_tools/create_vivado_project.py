@@ -228,7 +228,7 @@ def _override_lv_window_files(config, file_list):
     # Create a new list with replacements where applicable
     updated_list = []
     replaced_files = set()  # Track which window files have been used as replacements
-    
+
     for file_path in file_list:
         # Get the filename without extension for comparison
         base_name = os.path.basename(file_path)
@@ -285,7 +285,7 @@ def _validate_files(file_list):
     for file in file_list:
         # Convert to absolute path for consistency
         abs_path = os.path.abspath(file)
-        
+
         # For Windows, ensure we handle long paths properly
         if os.name == "nt":
             # If path is already long enough to need the prefix but doesn't have it
@@ -295,7 +295,7 @@ def _validate_files(file_list):
                 check_path = abs_path
         else:
             check_path = abs_path
-        
+
         if os.path.exists(check_path):
             valid_files.append(file)
         else:
@@ -325,26 +325,24 @@ def _validate_ini(config):
     """
     missing_settings = []
     invalid_paths = []
-    
+
     # Check VivadoProjectSettings
     if not config.vivado_project_name:
         missing_settings.append("VivadoProjectSettings.VivadoProjectName")
-    
+
     if not config.top_level_entity:
         missing_settings.append("VivadoProjectSettings.TopLevelEntity")
-    
+
     if not config.vivado_tools_path:
         missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
     else:
         # Validate that the Vivado tools path exists
         invalid_path = common.validate_path(
-            config.vivado_tools_path, 
-            "VivadoProjectSettings.VivadoToolsPath",
-            "directory"
+            config.vivado_tools_path, "VivadoProjectSettings.VivadoToolsPath", "directory"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
-    
+
     # Check for file lists
     if not config.hdl_file_lists:
         missing_settings.append("VivadoProjectSettings.VivadoProjectFilesLists")
@@ -352,22 +350,18 @@ def _validate_ini(config):
         # Validate each file list path
         for i, file_list_path in enumerate(config.hdl_file_lists):
             invalid_path = common.validate_path(
-                file_list_path,
-                f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]",
-                "file"
+                file_list_path, f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]", "file"
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
-    
+
     # Check for LV Window folder if using generated window files
     if config.use_gen_lv_window_files and not config.the_window_folder_input:
         missing_settings.append("VivadoProjectSettings.TheWindowFolder")
     elif config.use_gen_lv_window_files:
         # Validate the window folder path
         invalid_path = common.validate_path(
-            config.the_window_folder_input, 
-            "VivadoProjectSettings.TheWindowFolder",
-            "directory"
+            config.the_window_folder_input, "VivadoProjectSettings.TheWindowFolder", "directory"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -375,9 +369,7 @@ def _validate_ini(config):
     if config.constraints_templates:
         for i, constr_path in enumerate(config.constraints_templates):
             invalid_path = common.validate_path(
-                constr_path,
-                f"VivadoProjectSettings.VivadoProjectConstraintsTemplates[{i}]",
-                "file"
+                constr_path, f"VivadoProjectSettings.VivadoProjectConstraintsTemplates[{i}]", "file"
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -385,23 +377,22 @@ def _validate_ini(config):
     # Construct error message
     error_msg = common.get_missing_settings_error(missing_settings)
     error_msg += common.get_invalid_paths_error(invalid_paths)
-    
+
     # If any issues found, raise an error with the helpful message
     if missing_settings or invalid_paths:
         error_msg += "\nPlease update your configuration file and try again."
         raise ValueError(error_msg)
+
 
 def _validate_constraints_files(config):
     invalid_paths = []
     if config.vivado_project_constraints_files:
         for i, constr_path in enumerate(config.vivado_project_constraints_files):
             invalid_path = common.validate_path(
-                constr_path,
-                f"VivadoProjectSettings.VivadoProjectConstraintsFiles[{i}]",
-                "file"
+                constr_path, f"VivadoProjectSettings.VivadoProjectConstraintsFiles[{i}]", "file"
             )
             if invalid_path:
-                invalid_paths.append(invalid_path)  
+                invalid_paths.append(invalid_path)
 
     # Construct error message
     error_msg = common.get_invalid_paths_error(invalid_paths)
@@ -409,7 +400,8 @@ def _validate_constraints_files(config):
     # If any issues found, raise an error with the helpful message
     if invalid_paths:
         error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)    
+        raise ValueError(error_msg)
+
 
 def _create_project(mode: ProjectMode, config, test):
     """Creates or updates a Vivado project based on the specified mode.
@@ -487,7 +479,7 @@ def _create_project(mode: ProjectMode, config, test):
     vivado_project_path = os.path.join(os.getcwd(), "VivadoProject")
     if not os.path.exists(vivado_project_path):
         os.makedirs(vivado_project_path)
-    
+
     # Vivado expects to be run from within the project directory
     os.chdir("VivadoProject")
 
@@ -498,8 +490,10 @@ def _create_project(mode: ProjectMode, config, test):
     print(f"Vivado executable absolute path: {vivado_abs}")
     # Check if the Vivado executable exists
     if not os.path.exists(vivado_abs):
-        raise FileNotFoundError(f"Vivado executable not found at: {vivado_abs}\n"
-                              f"Please check your VivadoToolsPath setting in projectsettings.ini")
+        raise FileNotFoundError(
+            f"Vivado executable not found at: {vivado_abs}\n"
+            f"Please check your VivadoToolsPath setting in projectsettings.ini"
+        )
 
     if mode == ProjectMode.NEW:
         # Create a new project
@@ -509,7 +503,7 @@ def _create_project(mode: ProjectMode, config, test):
         command = f'"{vivado_abs}" {project_name}.xpr -mode batch -source {update_proj_path}'
     else:
         raise ValueError(f"Unsupported mode: {mode}")
-    
+
     print(f"Running command: {command}")
 
     # In test mode, create a mock project file and skip Vivado execution
@@ -517,7 +511,7 @@ def _create_project(mode: ProjectMode, config, test):
         print("TEST MODE: Validation successful, skipping Vivado launch")
         # Create an empty project file for testing
         mock_project_path = os.path.join(vivado_project_path, f"{project_name}.xpr")
-        with open(mock_project_path, 'w') as f:
+        with open(mock_project_path, "w") as f:
             f.write("# Mock Vivado project file created for testing\n")
         print(f"Created mock project file: {mock_project_path}")
         return 0
@@ -531,7 +525,6 @@ def _create_project(mode: ProjectMode, config, test):
     os.chdir(current_dir)
 
     print(output)
-
 
 
 def _create_project_handler(config, overwrite=False, update=False):
@@ -588,7 +581,7 @@ def _create_project_handler(config, overwrite=False, update=False):
     else:
         # Error case if both overwrite and update are set
         raise ValueError("Invalid combination of arguments.")
-    
+
     return project_mode
 
 
