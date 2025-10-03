@@ -209,7 +209,70 @@ def test_set_errors():
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
-        }
+        },
+        {
+            "name": "create-project with --update flag but no project",
+            "command": f"{nihdl_cmd} create-project --update --test",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "create-project with no flags - should complete successfully",
+            "command": f"{nihdl_cmd} create-project --test",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 0,  # Expect NO error
+        },
+        {
+            "name": "create-project with no flags but project already created",
+            "command": f"{nihdl_cmd} create-project --test",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "migrate-clip with bad settings",
+            "command": f"{nihdl_cmd} migrate-clip --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "gen-target with bad settings",
+            "command": f"{nihdl_cmd} gen-target --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "install-target with bad settings",
+            "command": f"{nihdl_cmd} install-target --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "get-window with bad settings",
+            "command": f"{nihdl_cmd} get-window --test --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "launch-vivado with bad settings",
+            "command": f"{nihdl_cmd} launch-vivado --test --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "create-lvbitx with bad settings",
+            "command": f"{nihdl_cmd} create-lvbitx --test --config=badsettings.ini",
+            "working_dir": paths["impl_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
     ]
 
 

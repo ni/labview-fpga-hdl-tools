@@ -356,9 +356,6 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
     Args:
         input_xml_path: Path to the CLIP XML file
         output_vhdl_path: Path where to write the VHDL signal declarations
-
-    Returns:
-        bool: True if successful, False otherwise
     """
     validation_errors = []
 

@@ -605,7 +605,11 @@ def create_project(overwrite=False, update=False, test=False, config_path=None):
         return 1
 
     # Execute the project handler with the provided options - handles argument validation
-    project_mode = _create_project_handler(config, overwrite=overwrite, update=update)
+    try:
+        project_mode = _create_project_handler(config, overwrite=overwrite, update=update)
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
 
     # Process the xdc_template to ensure that we have one for the Vivado project
     common.process_constraints_template(config)

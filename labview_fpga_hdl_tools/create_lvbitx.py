@@ -25,7 +25,7 @@ def _create_lv_bitfile(test, config_path=None):
     # Check if LV path is set
     if config.lv_path is None:
         print("Error: LabVIEW path not set in configuration")
-        return
+        return 1
 
     # Construct path to createBitfile.exe
     createbitfile_exe = os.path.join(config.lv_path, "vi.lib", "rvi", "CDR", "createBitfile.exe")
@@ -33,14 +33,14 @@ def _create_lv_bitfile(test, config_path=None):
     # Check if the executable exists
     if not os.path.exists(createbitfile_exe):
         print(f"Error: createBitfile.exe not found at {createbitfile_exe}")
-        return
+        return 1
 
     # Determine path to CodeGenerationResults.lvtxt based on UseGeneratedLVWindowFiles setting
     if config.use_gen_lv_window_files:
         # Check if window folder is set
         if config.the_window_folder_input is None:
             print("Error: TheWindow folder not set in configuration")
-            return
+            return 1
 
         print(f"Using generated LV window files: {config.the_window_folder_input}")
 
@@ -97,6 +97,8 @@ def _create_lv_bitfile(test, config_path=None):
         print(f"STDOUT: {result.stdout}")
         print(f"STDERR: {result.stderr}")
 
+    return 0
+
 
 def create_lv_bitx(test=False, config_path=None):
     """Main function to run the script.
@@ -104,12 +106,16 @@ def create_lv_bitx(test=False, config_path=None):
     Args:
         test (bool): If True, validate settings but don't run createBitfile.exe
         config_path: Optional path to configuration INI file
+
+    Returns:
+        int: 0 for success, 1 for error
     """
     try:
-        _create_lv_bitfile(test, config_path)
+        result = _create_lv_bitfile(test, config_path)
+        return result  # Return the result code
     except Exception as e:
         print(f"Unhandled exception: {str(e)}")
         import traceback
 
         traceback.print_exc()
-        raise
+        return 1  # Return error code on exception

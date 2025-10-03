@@ -47,8 +47,8 @@ def config_option(f):
 def migrate_clip_cmd(ctx, config):
     """Migrate CLIP files for FlexRIO custom devices."""
     try:
-        migrate_clip.migrate_clip(config_path=config)
-        return 0
+        result = migrate_clip.migrate_clip(config_path=config)
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
@@ -60,8 +60,8 @@ def migrate_clip_cmd(ctx, config):
 def install_target_cmd(ctx, config):
     """Install LabVIEW FPGA target support files."""
     try:
-        install_labview_target_plugin.install_lv_target_support(config_path=config)
-        return 0
+        result = install_labview_target_plugin.install_lv_target_support(config_path=config)
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
@@ -74,8 +74,8 @@ def install_target_cmd(ctx, config):
 def get_window_cmd(ctx, config, test):
     """Extract window netlist from Vivado project."""
     try:
-        get_window_netlist.get_window(test=test, config_path=config)
-        return 0
+        result = get_window_netlist.get_window(test=test, config_path=config)
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
@@ -87,8 +87,8 @@ def get_window_cmd(ctx, config, test):
 def gen_target_cmd(ctx, config):
     """Generate LabVIEW FPGA target support files."""
     try:
-        gen_labview_target_plugin.gen_lv_target_support(config_path=config)
-        return 0
+        result = gen_labview_target_plugin.gen_lv_target_support(config_path=config)
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
@@ -103,10 +103,10 @@ def gen_target_cmd(ctx, config):
 def create_project_cmd(ctx, config, overwrite, update, test):
     """Create or update Vivado project."""
     try:
-        create_vivado_project.create_project(
+        result = create_vivado_project.create_project(
             overwrite=overwrite, update=update, test=test, config_path=config
         )
-        return 0
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
@@ -119,8 +119,8 @@ def create_project_cmd(ctx, config, overwrite, update, test):
 def launch_vivado_cmd(ctx, config, test):
     """Launch Vivado with the current project."""
     try:
-        launch_vivado.launch_vivado(test=test, config_path=config)
-        return 0
+        result = launch_vivado.launch_vivado(test=test, config_path=config)
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
@@ -131,8 +131,8 @@ def launch_vivado_cmd(ctx, config, test):
 def extract_deps_cmd(ctx):
     """Extract dependency ZIP files from current directory."""
     try:
-        extract_dependencies.extract_deps_from_zip()
-        return 0
+        result = extract_dependencies.extract_deps_from_zip()
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
@@ -149,8 +149,8 @@ def extract_deps_cmd(ctx):
 def create_lvbitx_cmd(ctx, config, test):
     """Create LabVIEW FPGA bitfile from Vivado output."""
     try:
-        create_lvbitx.create_lv_bitx(test=test, config_path=config)
-        return 0
+        result = create_lvbitx.create_lv_bitx(test=test, config_path=config)
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
