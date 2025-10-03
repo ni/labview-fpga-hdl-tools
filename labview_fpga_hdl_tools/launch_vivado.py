@@ -8,7 +8,6 @@
 import os
 import platform
 import subprocess
-import sys
 
 from . import common
 
@@ -44,14 +43,15 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def launch_vivado(test=False):
+def launch_vivado(test=False, config_path=None):
     """Launch Vivado using settings from projectsettings.ini.
 
     Args:
         test (bool): If True, validate settings but don't launch Vivado
+        config_path: Optional path to configuration INI file
     """
     # Load configuration from projectsettings.ini
-    config = common.load_config()
+    config = common.load_config(config_path)
 
     # Validate that all required settings are present and paths exist
     try:
@@ -122,7 +122,3 @@ def launch_vivado(test=False):
 
     print("Vivado launched successfully")
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(launch_vivado())

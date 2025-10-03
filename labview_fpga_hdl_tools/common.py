@@ -94,13 +94,27 @@ def load_config(config_path=None):
     """Load configuration from INI file."""
     if config_path is None:
         config_path = os.path.join(os.getcwd(), "projectsettings.ini")
+    else:
+        print(f"Using config file: {config_path}")
 
     if not os.path.exists(config_path):
         print(f"Error: Configuration file {config_path} not found.")
         sys.exit(1)
 
+    # Read the file content and strip comments
+    with open(config_path, "r") as file:
+        lines = []
+        for line in file:
+            # Remove comments (anything after # or ;)
+            line = line.split("#", 1)[0].split(";", 1)[0]
+            lines.append(line)
+
+    # Create a string from cleaned lines
+    config_string = "\n".join(lines)
+
+    # Parse the cleaned config content
     config = configparser.ConfigParser()
-    config.read(config_path)
+    config.read_string(config_string)
 
     # Default configuration
     files = FileConfiguration()

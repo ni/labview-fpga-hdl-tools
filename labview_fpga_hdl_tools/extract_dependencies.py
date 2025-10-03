@@ -108,7 +108,3 @@ def extract_deps_from_zip():
     # This helps verify that the extraction process produced output files
     extracted_files = os.listdir(deps_folder)
     print(f"Extracted {len(extracted_files)} items to {deps_folder}")
-
-
-if __name__ == "__main__":
-    extract_deps_from_zip()

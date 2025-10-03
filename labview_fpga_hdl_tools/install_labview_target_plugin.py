@@ -110,7 +110,7 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def install_lv_target_support():
+def install_lv_target_support(config_path=None):
     """Install LabVIEW Target Support files to the target installation folder.
 
     This function:
@@ -122,7 +122,7 @@ def install_lv_target_support():
     Administrator privileges are automatically requested if needed.
     """
     # Load configuration
-    config = common.load_config()
+    config = common.load_config(config_path)
 
     # Validate that all required settings are present
     try:
@@ -194,8 +194,4 @@ def install_lv_target_support():
 
 def main():
     """Main function to run the script."""
-    install_lv_target_support()
-
-
-if __name__ == "__main__":
     install_lv_target_support()

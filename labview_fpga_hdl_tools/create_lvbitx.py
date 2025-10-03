@@ -10,7 +10,7 @@ import subprocess  # For executing external programs
 from . import common  # For shared utilities across tools
 
 
-def _create_lv_bitfile(test):
+def _create_lv_bitfile(test, config_path=None):
     """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool."""
     vivado_impl_folder = os.getcwd()
 
@@ -20,7 +20,7 @@ def _create_lv_bitfile(test):
     os.chdir("../../..")
 
     # Load configuration
-    config = common.load_config()
+    config = common.load_config(config_path)
 
     # Check if LV path is set
     if config.lv_path is None:
@@ -98,21 +98,18 @@ def _create_lv_bitfile(test):
         print(f"STDERR: {result.stderr}")
 
 
-def create_lv_bitx(test=False):
+def create_lv_bitx(test=False, config_path=None):
     """Main function to run the script.
 
     Args:
         test (bool): If True, validate settings but don't run createBitfile.exe
+        config_path: Optional path to configuration INI file
     """
     try:
-        _create_lv_bitfile(test)
+        _create_lv_bitfile(test, config_path)
     except Exception as e:
         print(f"Unhandled exception: {str(e)}")
         import traceback
 
         traceback.print_exc()
         raise
-
-
-if __name__ == "__main__":
-    create_lv_bitx()

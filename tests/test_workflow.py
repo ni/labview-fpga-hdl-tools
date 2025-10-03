@@ -3,7 +3,7 @@
 
 import os
 import platform
-import shutil  # Added import for directory removal
+import shutil
 import subprocess
 import sys
 import time
@@ -110,90 +110,134 @@ def clean_target_directories(target_dir):
             print(f"  - {dir_name} directory does not exist, skipping")
 
 
-def test_all_commands():
-    """Run all NIHDL commands and report results."""
+def get_standard_test_paths():
+    """Get standard paths used in tests."""
+    paths = {
+        "target_dir": os.path.join(TEST_DIR, "test-project", "targets", "pxie-7903"),
+        "impl_dir": os.path.join(
+            TEST_DIR,
+            "test-project",
+            "targets",
+            "pxie-7903",
+            "VivadoProject",
+            "MySasquatchProj.runs",
+            "impl_1",
+        ),
+        "plugin_install_dir": os.path.join(TEST_DIR, "test-plugin-install-dir"),
+    }
+    return paths
+
+
+def test_set_no_errors():
+    """Define the standard set of tests."""
+    paths = get_standard_test_paths()
     nihdl_cmd = get_nihdl_command()
-    target_dir = os.path.join(TEST_DIR, "test-project", "targets", "pxie-7903")
-    impl_dir = os.path.join(target_dir, "VivadoProject", "MySasquatchProj.runs", "impl_1")
-    plugin_install_dir = os.path.join(TEST_DIR, "test-plugin-install-dir")
 
-    print(f"{BLUE}Starting NIHDL command tests in target directory: {target_dir}{RESET}")
-
-    # Clean target directories before running tests
-    clean_target_directories(target_dir)
-
-    os.makedirs(impl_dir, exist_ok=True)  # Ensure impl_dir exists for create-lvbitx test
-    os.makedirs(plugin_install_dir, exist_ok=True)  # Ensure plugin install dir exists
-
-    # Define tests to run
-    tests = [
+    return [
         {
             "name": "extract-deps",
             "command": f"{nihdl_cmd} extract-deps",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "migrate-clip",
             "command": f"{nihdl_cmd} migrate-clip",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "gen-target",
             "command": f"{nihdl_cmd} gen-target",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "create-project new",
             "command": f"{nihdl_cmd} create-project --test",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "create-project overwrite",
             "command": f"{nihdl_cmd} create-project --overwrite --test",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "create-project update",
             "command": f"{nihdl_cmd} create-project --update --test",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "get-window",
             "command": f"{nihdl_cmd} get-window --test",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "launch-vivado",
             "command": f"{nihdl_cmd} launch-vivado --test",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
             "name": "create-lvbitx",
             "command": f"{nihdl_cmd} create-lvbitx --test",
-            "working_dir": impl_dir,
+            "working_dir": paths["impl_dir"],
             "disable_test": False,
         },
         {
             "name": "install-target",
             "command": f"{nihdl_cmd} install-target",
-            "working_dir": target_dir,
+            "working_dir": paths["target_dir"],
             "disable_test": False,
         },
     ]
+
+
+def test_set_errors():
+    """Define a set of tests for error handling."""
+    paths = get_standard_test_paths()
+    nihdl_cmd = get_nihdl_command()
+
+    return [
+        {
+            "name": "create-project with bad settings",
+            "command": f"{nihdl_cmd} create-project --test --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        }
+    ]
+
+
+def run_test_cases(tests, test_name="Unnamed Test Set"):
+    """Run a set of NIHDL commands and report results.
+
+    Args:
+        tests (list): List of test dictionaries to run
+        test_name (str): Name of the test set for reporting
+
+    Returns:
+        bool: True if all tests passed, False otherwise
+    """
+    paths = get_standard_test_paths()
+
+    print(f"\n{BLUE}{'=' * 80}{RESET}")
+    print(f"{BLUE}Running Test Set: {test_name}{RESET}")
+    print(f"{BLUE}{'=' * 80}{RESET}")
+
+    # Ensure required directories exist
+    os.makedirs(paths["impl_dir"], exist_ok=True)
+    os.makedirs(paths["plugin_install_dir"], exist_ok=True)
 
     # Run the tests
     results = {}
     skipped = []
     for test in tests:
-        if test["disable_test"]:
+        if test.get("disable_test", False):
             print(f"\n{'-' * 80}")
             print(f"{BLUE}TEST:{RESET} {test['name']} - {YELLOW}SKIPPED{RESET}")
             print(f"{'-' * 80}")
@@ -204,15 +248,17 @@ def test_all_commands():
         print(f"{BLUE}TEST:{RESET} {test['name']}")
         print(f"{'-' * 80}")
 
+        expected_exit_code = test.get("expected_exit_code", 0)
         results[test["name"]] = run_command(
             test["command"],
             working_dir=test["working_dir"],
-            timeout=120,  # Some commands like create-project might take longer
+            expected_exit_code=expected_exit_code,
+            timeout=test.get("timeout", 120),
         )
 
     # Print summary
     print(f"\n{'-' * 80}")
-    print(f"{BLUE}TEST SUMMARY{RESET}")
+    print(f"{BLUE}TEST SUMMARY: {test_name}{RESET}")
     print(f"{'-' * 80}")
 
     passed = 0
@@ -401,12 +447,24 @@ def run_output_validations():
 
 
 if __name__ == "__main__":
-    # Run all commands first
-    commands_success = test_all_commands()
+    # Clean test directories before starting
+    paths = get_standard_test_paths()
+    clean_target_directories(paths["target_dir"])
 
-    # Then validate output folders
+    # Run different test sets
+    results = []
+
+    # Run test cases - no expected errors
+    results.append(run_test_cases(test_set_no_errors(), "No Error Tests"))
+    # Validate output folders
     validation_success = run_output_validations()
 
+    # Re-clean target directories to ensure clean state
+    clean_target_directories(paths["target_dir"])
+
+    # Run project creation tests
+    results.append(run_test_cases(test_set_errors(), "Expect Error Tests"))
+
     # Exit with appropriate status code
-    success = commands_success and validation_success
+    success = all(results) and validation_success
     sys.exit(0 if success else 1)

@@ -730,10 +730,10 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def gen_lv_target_support():
+def gen_lv_target_support(config_path=None):
     """Generate target support files."""
     # Load configuration
-    config = common.load_config()
+    config = common.load_config(config_path)
     has_validation_errors = False
     validation_errors = []
 
@@ -805,7 +805,3 @@ def gen_lv_target_support():
 
     print("Target support file generation complete.")
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(gen_lv_target_support())
