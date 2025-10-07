@@ -8,7 +8,7 @@
 ------------------------------------------------------------------------------------------
 -- Copyright (c) 2025 National Instruments Corporation
 -- 
--- SPDX-License-Identifier: MIT
+-- All rights reserved.
 ------------------------------------------------------------------------------------------
 --
 -- Purpose: This module holds the IO buffers for the Macallan carrier to keep them off
