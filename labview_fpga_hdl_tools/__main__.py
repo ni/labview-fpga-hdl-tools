@@ -156,6 +156,36 @@ def create_lvbitx_cmd(ctx, config, test):
         return 1
 
 
+@cli.command("install-lv-patch", help="Install LabVIEW patches")
+@config_option
+@click.pass_context
+def install_lv_patch_cmd(ctx, config):
+    """Install LabVIEW patches."""
+    try:
+        from . import patch_labview
+
+        result = patch_labview.install_labview_patch(config_path=config)
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("uninstall-lv-patch", help="Uninstall LabVIEW patches and restore originals")
+@config_option
+@click.pass_context
+def uninstall_lv_patch_cmd(ctx, config):
+    """Uninstall LabVIEW patches and restore original files."""
+    try:
+        from . import patch_labview
+
+        result = patch_labview.uninstall_labview_patch(config_path=config)
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
 def handle_exception(e):
     """Handle exceptions with consistent error output."""
     click.echo(f"Error: {str(e)}", err=True)
