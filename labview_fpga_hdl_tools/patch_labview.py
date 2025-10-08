@@ -7,48 +7,54 @@ import shutil
 from . import common
 
 
-def install_labview_patch(config_path=None):
-    """Install patches to LabVIEW.
-
-    Args:
-        config_path (str, optional): Path to configuration file
-
-    Returns:
-        int: 0 for success, 1 for failure
-    """
+def _get_config(config_path=None):
+    """Retrieve LV path and version from config file."""
     # Load configuration to get LabVIEW path
     try:
         config = common.load_config(config_path)
     except Exception as e:
         print(f"Error loading configuration: {str(e)}")
-        return 1
+        raise
 
-    # Check if LabVIEW path is defined
+    # Validate LabVIEW path before proceeding
     if not config.lv_path:
-        print("Error: LabVIEW path not defined in configuration")
-        return 1
+        raise ValueError("LabVIEW path is not defined in configuration")
+
+    if not os.path.exists(config.lv_path):
+        raise ValueError(f"LabVIEW path does not exist: {config.lv_path}")
+
+    if not os.path.isdir(config.lv_path):
+        raise ValueError(f"LabVIEW path is not a directory: {config.lv_path}")
+
+    # Check for critical LabVIEW subdirectories to validate it's actually a LabVIEW installation
+    vi_lib_path = os.path.join(config.lv_path, "vi.lib")
+    if not os.path.isdir(vi_lib_path):
+        raise ValueError(f"Invalid LabVIEW installation: vi.lib not found in {config.lv_path}")
 
     # Determine LabVIEW version from path
     if "2023" in config.lv_path:
         lv_version = "2023"
     elif "2024" in config.lv_path:
         lv_version = "2024"
+    elif "2025" in config.lv_path:
+        lv_version = "2025"
     else:
         raise ValueError(
-            f"Unsupported LabVIEW version. Supported versions are 2023, 2024 and 2025: {config.lv_path}"
+            f"Unsupported LabVIEW version. Path must contain 2023, 2024, or 2025: {config.lv_path}"
         )
-
     print(f"Detected LabVIEW version: {lv_version}")
 
-    # Define paths
-    worker_path = os.path.join(config.lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi")
-    backup_path = os.path.join(config.lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi.bak")
-    patch_source = os.path.join(os.getcwd(), f"lv-patch/{lv_version}/niFpgaGenerateCode_Worker.vi")
+    return config.lv_path, lv_version
 
-    # Check if directories exist
-    if not os.path.isdir(config.lv_path):
-        print(f"Error: LabVIEW path does not exist: {config.lv_path}")
-        return 1
+
+def install_labview_patch(config_path=None):
+    """Install patches to LabVIEW."""
+    lv_path, lv_version = _get_config(config_path)
+
+    # Define paths
+    worker_path = os.path.join(lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi")
+    backup_path = os.path.join(lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi.bak")
+    patch_source = os.path.join(os.getcwd(), f"lv-patch/{lv_version}/niFpgaGenerateCode_Worker.vi")
 
     # Check if patch source exists
     if not os.path.isfile(patch_source):
@@ -85,46 +91,12 @@ def install_labview_patch(config_path=None):
 
 
 def uninstall_labview_patch(config_path=None):
-    """Uninstall patches from LabVIEW by restoring backups.
-
-    Args:
-        config_path (str, optional): Path to configuration file
-
-    Returns:
-        int: 0 for success, 1 for failure
-    """
-    # Load configuration to get LabVIEW path
-    try:
-        config = common.load_config(config_path)
-    except Exception as e:
-        print(f"Error loading configuration: {str(e)}")
-        return 1
-
-    # Check if LabVIEW path is defined
-    if not config.lv_path:
-        print("Error: LabVIEW path not defined in configuration")
-        return 1
-
-    # Determine LabVIEW version from path (for logging purposes)
-    if "2023" in config.lv_path:
-        lv_version = "2023"
-    elif "2024" in config.lv_path:
-        lv_version = "2024"
-    else:
-        raise ValueError(
-            f"Unsupported LabVIEW version. Path must contain '2023' or '2024': {config.lv_path}"
-        )
-
-    print(f"Detected LabVIEW version: {lv_version}")
+    """Uninstall patches from LabVIEW by restoring backups."""
+    lv_path, _ = _get_config(config_path)
 
     # Define paths
-    worker_path = os.path.join(config.lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi")
-    backup_path = os.path.join(config.lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi.bak")
-
-    # Check if directories exist
-    if not os.path.isdir(config.lv_path):
-        print(f"Error: LabVIEW path does not exist: {config.lv_path}")
-        return 1
+    worker_path = os.path.join(lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi")
+    backup_path = os.path.join(lv_path, "vi.lib/rvi/CDR/niFpgaGenerateCode_Worker.vi.bak")
 
     # Check if backup file exists
     if not os.path.isfile(backup_path):
