@@ -35,7 +35,7 @@ def install_labview_patch(config_path=None):
         lv_version = "2024"
     else:
         raise ValueError(
-            f"Unsupported LabVIEW version. Path must contain '2023' or '2024': {config.lv_path}"
+            f"Unsupported LabVIEW version. Supported versions are 2023, 2024 and 2025: {config.lv_path}"
         )
 
     print(f"Detected LabVIEW version: {lv_version}")
