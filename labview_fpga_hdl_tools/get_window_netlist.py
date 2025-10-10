@@ -219,6 +219,14 @@ def _validate_ini(config):
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
+        # Check that the project folder path length does not exceed 80 characters
+        vivado_project_path = os.path.dirname(config.vivado_project_export_xpr)
+        if len(vivado_project_path) > 80:
+            raise ValueError(
+                f"Error: Vivado project path exceeds 80 characters ({len(vivado_project_path)} chars).\n"
+                f"Path: {vivado_project_path}\n"
+                f"Vivado has issues with long paths. Please use a shorter path for your project."
+            )
 
     if not config.the_window_folder_output:
         missing_settings.append("LVWindowNetlistSettings.TheWindowFolder")
