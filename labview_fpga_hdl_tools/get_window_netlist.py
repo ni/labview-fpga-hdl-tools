@@ -265,7 +265,7 @@ def get_window(test=False, config_path=None):
 
     # Validate that all required settings are present
     try:
-        _validate_ini(config)
+        _validate_ini(config, test)
     except Exception as e:
         print(f"Error: {e}")
         return 1
