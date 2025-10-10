@@ -491,7 +491,7 @@ def _create_project(mode: ProjectMode, config, test):
 
     print(f"Vivado executable absolute path: {vivado_abs}")
     # Check if the Vivado executable exists
-    if not os.path.exists(vivado_abs):
+    if not test and not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
             f"Please check your VivadoToolsPath setting in projectsettings.ini"
