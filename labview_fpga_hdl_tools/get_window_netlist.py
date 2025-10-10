@@ -192,7 +192,7 @@ def _extract_lv_window_constraints(config):
         print(f"Error extracting constraints: {str(e)}")
 
 
-def _validate_ini(config):
+def _validate_ini(config, test):
     """Validate that all required configuration settings are present.
 
     This function checks that all settings required for getting window netlist
@@ -219,14 +219,16 @@ def _validate_ini(config):
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
-        # Check that the project folder path length does not exceed 80 characters
-        vivado_project_path = os.path.dirname(config.vivado_project_export_xpr)
-        if len(vivado_project_path) > 80:
-            raise ValueError(
-                f"Error: Vivado project path exceeds 80 characters ({len(vivado_project_path)} chars).\n"
-                f"Path: {vivado_project_path}\n"
-                f"Vivado has issues with long paths. Please use a shorter path for your project."
-            )
+        if not test:
+            # Check that the project folder path length does not exceed 80 characters
+            # OK to skip this check in test mode because we are not running Vivado
+            vivado_project_path = os.path.dirname(config.vivado_project_export_xpr)
+            if len(vivado_project_path) > 80:
+                raise ValueError(
+                    f"Error: Vivado project path exceeds 80 characters ({len(vivado_project_path)} chars).\n"
+                    f"Path: {vivado_project_path}\n"
+                    f"Vivado has issues with long paths. Please use a shorter path for your project."
+                )
 
     if not config.the_window_folder_output:
         missing_settings.append("LVWindowNetlistSettings.TheWindowFolder")
