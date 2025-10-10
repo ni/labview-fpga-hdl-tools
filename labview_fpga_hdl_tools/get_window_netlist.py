@@ -13,12 +13,7 @@ from . import common
 
 
 def _get_window_netlist(config, test=False):
-    """Gets the Window netlist from the Vivado Project as well as other HDL Files.
-
-    Args:
-        config: Configuration settings object
-        test (bool): If True, skip running Vivado
-    """
+    """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
     get_netlist_tcl_path = os.path.join(os.getcwd(), "TCL/GetWindowNetlist.tcl")
     current_dir = os.getcwd()
 
@@ -40,9 +35,21 @@ def _get_window_netlist(config, test=False):
     else:  # Linux or other OS
         vivado_executable = os.path.join(vivado_path, "bin", "vivado")
 
+    source_file = os.path.join(vivado_project_path, "TheWindow.edf")
+    destination_folder = config.the_window_folder_output
+
+    # Create destination directory if it doesn't exist
+    os.makedirs(destination_folder, exist_ok=True)
+
     # In test mode, skip running Vivado
     if test:
         print("TEST MODE: Skipping Vivado execution")
+
+        # In test mode, create a mock EDF file if it doesn't exist
+        if not os.path.exists(source_file):
+            with open(source_file, "w") as f:
+                f.write("# Mock EDF file created for testing\n")
+            print(f"Created mock EDF file for testing: {source_file}")
     else:
         print(f"Current working directory: {os.getcwd()}")
         common.run_command(
@@ -51,18 +58,32 @@ def _get_window_netlist(config, test=False):
             capture_output=False,
         )
 
-    # Create a mock EDF file in test mode
-    source_file = os.path.join(vivado_project_path, "TheWindow.edf")
-    destination_folder = config.the_window_folder_output
+        # Check for success marker in vivado.log file
+        vivado_log_path = os.path.join(os.getcwd(), "vivado.log")
+        if not os.path.exists(vivado_log_path):
+            os.chdir(current_dir)
+            raise RuntimeError("Vivado log file not found. TCL script execution may have failed.")
 
-    # Create destination directory if it doesn't exist
-    os.makedirs(destination_folder, exist_ok=True)
+        # Read the log file and check for success marker
+        try:
+            with open(vivado_log_path, "r", encoding="utf-8", errors="replace") as log_file:
+                log_content = log_file.read()
+                # This GET_WINDOW=FAILED constant is set in the GetWindowNetlist.tcl file
+                # We have not found a better way to surface an error from Vivado executing a
+                # TCL script up to Python
+                if "GET_WINDOW=FAILED" in log_content:
+                    os.chdir(current_dir)
+                    raise RuntimeError("Window netlist extraction failed.")
+        except Exception as e:
+            os.chdir(current_dir)
+            raise RuntimeError(f"Errors found in Vivado log file: {str(e)}")
 
-    # In test mode, create a mock EDF file if it doesn't exist
-    if test and not os.path.exists(source_file):
-        with open(source_file, "w") as f:
-            f.write("# Mock EDF file created for testing\n")
-        print(f"Created mock EDF file for testing: {source_file}")
+        # Check if the expected output file was generated
+        if not os.path.exists(source_file):
+            os.chdir(current_dir)
+            raise RuntimeError(
+                f"Vivado TCL script execution failed: Expected output file {source_file} was not generated."
+            )
 
     destination_file = os.path.join(destination_folder, "TheWindow.edf")
 
@@ -71,9 +92,11 @@ def _get_window_netlist(config, test=False):
             shutil.copy(source_file, destination_file)
             print(f"Copied {source_file} to {destination_file}")
         else:
-            print(f"Error: Source file {source_file} not found")
+            os.chdir(current_dir)
+            raise FileNotFoundError(f"Source file {source_file} not found")
     except Exception as e:
-        print(f"Error copying file: {str(e)}")
+        os.chdir(current_dir)
+        raise RuntimeError(f"Error copying file: {str(e)}")
 
     os.chdir(current_dir)
 
@@ -94,6 +117,7 @@ def _copy_lv_generated_files(config):
         "PkgLvFpgaConst.vhd",
         "PkgCommIntConfiguration.vhd",
         "PkgDmaPortCommIfcRegs.vhd",
+        "PkgDmaPortDmaFifos.vhd",
     ]
 
     for file_name in files_to_copy:
