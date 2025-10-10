@@ -310,7 +310,7 @@ def _validate_files(file_list):
         raise FileNotFoundError(error_msg)
 
 
-def _validate_ini(config):
+def _validate_ini(config, test):
     """Validates that all required configuration settings for project creation are present.
 
     This function ensures that the configuration has all necessary settings before
@@ -333,15 +333,17 @@ def _validate_ini(config):
     if not config.top_level_entity:
         missing_settings.append("VivadoProjectSettings.TopLevelEntity")
 
-    if not config.vivado_tools_path:
-        missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
-    else:
-        # Validate that the Vivado tools path exists
-        invalid_path = common.validate_path(
-            config.vivado_tools_path, "VivadoProjectSettings.VivadoToolsPath", "directory"
-        )
-        if invalid_path:
-            invalid_paths.append(invalid_path)
+    # Don't validate Vivado path if test arguement is set
+    if not test:
+        if not config.vivado_tools_path:
+            missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
+        else:
+            # Validate that the Vivado tools path exists
+            invalid_path = common.validate_path(
+                config.vivado_tools_path, "VivadoProjectSettings.VivadoToolsPath", "directory"
+            )
+            if invalid_path:
+                invalid_paths.append(invalid_path)
 
     # Check for file lists
     if not config.hdl_file_lists:
@@ -599,7 +601,7 @@ def create_project(overwrite=False, update=False, test=False, config_path=None):
 
     # Validate that all required settings are present
     try:
-        _validate_ini(config)
+        _validate_ini(config, test)
     except Exception as e:
         print(f"Error: {e}")
         return 1
