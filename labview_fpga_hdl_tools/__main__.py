@@ -194,7 +194,6 @@ def handle_exception(e):
 
 def main():
     """Main entry point for the command-line interface."""
-    print(f"DEBUG: Arguments received: {sys.argv[1:]}")
     return cli(args=sys.argv[1:], standalone_mode=False)
 
 
