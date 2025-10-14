@@ -274,6 +274,8 @@ def get_window(test=False, config_path=None):
     _copy_lv_generated_files(config)
     _extract_lv_window_constraints(config)
 
+    print("Window netlist extraction completed successfully.")
+
     print("\n" + "=" * 80)
     print("NOTICE: If you have already created a Vivado project, you must run")
     print('         "nihdl create-project --update" to pull in the latest Window netlist files.')

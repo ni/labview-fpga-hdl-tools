@@ -632,6 +632,12 @@ def create_project(overwrite=False, update=False, test=False, config_path=None):
         return 1
 
     # Create or update the Vivado project based on the determined mode
-    _create_project(project_mode, config, test)
+    try:
+        _create_project(project_mode, config, test)
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+
+    print("Vivado project created successfully.")
 
     return 0
