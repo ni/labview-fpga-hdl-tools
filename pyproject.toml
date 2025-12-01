@@ -26,15 +26,15 @@ pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 nihdl = "labview_fpga_hdl_tools.__main__:main"
 
 [tool.mypy]
-packages = [    
-  { include = "labview_fpga_hdl_tools" },
-  { include = "host_interfaces" }
-]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
+files = [
+  "labview_fpga_hdl_tools",
+  "host_interfaces"
+]
 
 [[tool.mypy.overrides]]
 module = "mako.*"
