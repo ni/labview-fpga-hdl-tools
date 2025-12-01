@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "labview-fpga-hdl-tools"
-version = "0.1.2"
+version = "0.1.3"
 description = "LabVIEW FPGA HDL Tools"
 authors = [
   "Salvador Santolucito <salvador.santolucito@gmail.com>"
@@ -13,7 +13,7 @@ readme = "README.md"
 license = "MIT"
 dependencies = {python = ">=3.7,<4.0"}
 include = [
-  { path = "host_interfaces/**", format = "sdist" }
+  { path = "labview_fpga_hdl_tools/host_interfaces/**", format = "sdist" }
 ]
 
 [tool.poetry.group.test.dependencies]
