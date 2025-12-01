@@ -12,6 +12,9 @@ authors = [
 readme = "README.md"
 license = "MIT"
 dependencies = {python = ">=3.7,<4.0"}
+include = [
+  { path = "host_interfaces/**", format = "sdist" }
+]
 
 [tool.poetry.group.test.dependencies]
 pytest = ">=7.2"
@@ -26,15 +29,12 @@ pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 nihdl = "labview_fpga_hdl_tools.__main__:main"
 
 [tool.mypy]
+packages = ["labview_fpga_hdl_tools"]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
-files = [
-  "labview_fpga_hdl_tools",
-  "host_interfaces"
-]
 
 [[tool.mypy.overrides]]
 module = "mako.*"
