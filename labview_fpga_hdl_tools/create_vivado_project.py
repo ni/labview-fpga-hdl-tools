@@ -153,7 +153,7 @@ def _find_and_log_duplicates(file_list):
 
 
 def _copy_deps_files(file_list):
-    """Copies files with "githubdeps" in their path to the "objects/gathereddeps" folder.
+    """Copies files with "githubdeps" or "flexrio_dependencies" in their path to the "objects/gathereddeps" folder.
 
     This centralizes external dependencies into the project's local structure, which:
     1. Ensures consistent file locations regardless of development environment
@@ -187,7 +187,8 @@ def _copy_deps_files(file_list):
         else:
             target_folder_long = target_folder
 
-        if "githubdeps" in file:
+        # Check if the file path contains "githubdeps" or "flexrio_dependencies"
+        if "githubdeps" in file or "flexrio_dependencies" in file:
             target_path = os.path.join(target_folder_long, os.path.basename(file))
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
