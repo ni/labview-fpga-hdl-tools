@@ -40,10 +40,13 @@ class FileConfiguration:
     vivado_project_constraints_files: List[str] = field(
         default_factory=list
     )  # List of Vivado project constraint file paths
+    vivado_tcl_scripts_folder: Optional[str] = None  # Folder containing Vivado TCL scripts
+    custom_constraints_file: Optional[str] = None  # Path to custom constraints XDC file
     use_gen_lv_window_files: Optional[bool] = (
         None  # Use files from the_input_window_folder to override what is in hdl_file_lists
     )
     the_window_folder_input: Optional[str] = None  # Input folder for generated Window files
+    code_generation_results_stub: Optional[str] = None  # Path to code generation results stub file
     # ----- LV WINDOW NETLIST SETTINGS -----
     vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
     the_window_folder_output: Optional[str] = None  # Destination folder for generated Window files
@@ -68,6 +71,8 @@ class FileConfiguration:
     lv_target_name: Optional[str] = None  # Name of the LabVIEW FPGA target (e.g., "PXIe-7903")
     lv_target_guid: Optional[str] = None  # GUID for the LabVIEW FPGA target
     lv_target_install_folder: Optional[str] = None  # Installation folder for target plugins
+    lv_target_menus_folder: Optional[str] = None  # Folder containing target plugin menu files
+    lv_target_info_ini: Optional[str] = None  # Path to TargetInfo.ini file
     # ----- CLIP MIGRATION SETTINGS -----
     input_xml_path: Optional[str] = None  # Path to source CLIP XML file
     output_csv_path: Optional[str] = None  # Path where CSV signals will be written
@@ -165,8 +170,12 @@ def load_config(config_path=None):
                 if abs_file is not None:  # Add None check
                     files.vivado_project_constraints_files.append(abs_file)
 
+    files.vivado_tcl_scripts_folder = resolve_path(settings.get("VivadoTclScriptsFolder"))
+    files.vivado_tcl_scripts_folder_relpath = settings.get("VivadoTclScriptsFolder")
+    files.custom_constraints_file = resolve_path(settings.get("CustomConstraintsFile"))
     files.use_gen_lv_window_files = _parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
     files.the_window_folder_input = resolve_path(settings.get("TheWindowFolder"))
+    files.code_generation_results_stub = resolve_path(settings.get("CodeGenerationResultsStub"))
 
     # -----------------------------------------------------------------------
     # Load LV WINDOW NETLIST settings
@@ -211,6 +220,9 @@ def load_config(config_path=None):
                 abs_file = resolve_path(file)
                 if abs_file is not None:  # Add None check
                     files.lv_target_constraints_files.append(abs_file)
+
+    files.lv_target_menus_folder = resolve_path(settings.get("LVTargetMenusFolder"))
+    files.lv_target_info_ini = resolve_path(settings.get("LVTargetInfoIni"))
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
@@ -278,6 +290,8 @@ def resolve_path(rel_path):
     if rel_path is None or rel_path.strip() == "":
         return None
 
+    # Strip whitespace/newlines before processing (handles multi-line INI values)
+    rel_path = rel_path.strip()
     abs_path = os.path.normpath(os.path.join(os.getcwd(), rel_path))
     return abs_path
 
@@ -552,6 +566,15 @@ def process_constraints_template(config):
         period_clip_content = ""
         from_to_content = ""
 
+    # Read custom constraints file if specified
+    custom_constraints_content = ""
+    if config.custom_constraints_file and os.path.exists(config.custom_constraints_file):
+        with open(config.custom_constraints_file, "r", encoding="utf-8") as f:
+            custom_constraints_content = f.read()
+        print(f"Loaded custom constraints from {config.custom_constraints_file}")
+    else:
+        print("No custom constraints file specified or file not found")
+
     # Find all files in xdc folder that contain "_template"
     template_files = []
     for file in os.listdir(xdc_template_folder):
@@ -590,6 +613,14 @@ def process_constraints_template(config):
         final_content = re.sub(
             r"# BEGIN_LV_NETLIST_FROM_TO_CONSTRAINTS(.*?)# END_LV_NETLIST_FROM_TO_CONSTRAINTS",
             f"# BEGIN_LV_NETLIST_FROM_TO_CONSTRAINTS{from_to_content}# END_LV_NETLIST_FROM_TO_CONSTRAINTS",
+            final_content,
+            flags=re.DOTALL,
+        )
+
+        # Replace GITHUB_CUSTOM_CONSTRAINTS section
+        final_content = re.sub(
+            r"# BEGIN_GITHUB_CUSTOM_CONSTRAINTS(.*?)# END_GITHUB_CUSTOM_CONSTRAINTS",
+            f"# BEGIN_GITHUB_CUSTOM_CONSTRAINTS\n{custom_constraints_content}\n# END_GITHUB_CUSTOM_CONSTRAINTS",
             final_content,
             flags=re.DOTALL,
         )

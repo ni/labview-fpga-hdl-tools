@@ -582,12 +582,9 @@ def _copy_fpgafiles(
                 )
 
 
-def _copy_menu_files(plugin_folder, target_family):
+def _copy_menu_files(plugin_folder, menus_folder):
     """Copy other files needed to make the plugin folder work."""
-    if target_family.lower() == "flexrio":
-        common_plugin_src = common.resolve_path("../common/lvFpgaTarget/targetpluginmenus")
-    else:
-        raise ValueError(f"Unsupported target family: {target_family}.")
+    common_plugin_src = menus_folder
 
     print(f"Copying common plugin files from {common_plugin_src} to {plugin_folder}")
 
@@ -615,9 +612,9 @@ def _copy_menu_files(plugin_folder, target_family):
                     )
 
 
-def _copy_targetinfo_ini(plugin_folder, target_family):
+def _copy_targetinfo_ini(plugin_folder, targetinfo_path):
     """Copy the TargetInfo.ini file to the plugin folder."""
-    targetinfo_src = common.resolve_path("lvFpgaTarget/TargetInfo.ini")
+    targetinfo_src = targetinfo_path
 
     # Copy the file to the plugin folder only if source path exists
     if targetinfo_src is not None:
@@ -788,9 +785,9 @@ def gen_lv_target_support(config_path=None):
         config.base_target,
     )
 
-    _copy_menu_files(config.lv_target_plugin_folder, config.target_family)
+    _copy_menu_files(config.lv_target_plugin_folder, config.lv_target_menus_folder)
 
-    _copy_targetinfo_ini(config.lv_target_plugin_folder, config.target_family)
+    _copy_targetinfo_ini(config.lv_target_plugin_folder, config.lv_target_info_ini)
 
     # Report validation errors at the end
     if has_validation_errors:

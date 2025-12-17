@@ -71,7 +71,7 @@ def _get_tcl_add_files_text(file_list, file_dir):
     return replacement_text
 
 
-def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_name, top_entity):
+def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_name, top_entity, tcl_folder):
     """Replaces placeholders in a template file with actual values.
 
     This function takes a TCL template file and substitutes key placeholders with
@@ -93,6 +93,7 @@ def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_n
     modified_contents = file_contents.replace("ADD_FILES", add_files)
     modified_contents = modified_contents.replace("PROJ_NAME", project_name)
     modified_contents = modified_contents.replace("TOP_ENTITY", top_entity)
+    modified_contents = modified_contents.replace("TCL_FOLDER", tcl_folder)
 
     # Create the directory for the new file if it doesn't exist
     os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
@@ -427,9 +428,9 @@ def _create_project(mode: ProjectMode, config, test):
         FileNotFoundError: If any required files are missing
     """
     current_dir = os.getcwd()
-    new_proj_template_path = os.path.join(current_dir, "TCL/CreateNewProjectTemplate.tcl")
+    new_proj_template_path = os.path.join(config.vivado_tcl_scripts_folder, "CreateNewProjectTemplate.tcl")
     new_proj_path = os.path.join(current_dir, "objects/TCL/CreateNewProject.tcl")
-    update_proj_template_path = os.path.join(current_dir, "TCL/UpdateProjectFilesTemplate.tcl")
+    update_proj_template_path = os.path.join(config.vivado_tcl_scripts_folder, "UpdateProjectFilesTemplate.tcl")
     update_proj_path = os.path.join(current_dir, "objects/TCL/UpdateProjectFiles.tcl")
 
     # Get the lists of Vivado project files from the configuration
@@ -462,10 +463,10 @@ def _create_project(mode: ProjectMode, config, test):
 
     # Replace placeholders in the template Vivado project scripts
     _replace_placeholders_in_file(
-        new_proj_template_path, new_proj_path, add_files, project_name, top_entity
+        new_proj_template_path, new_proj_path, add_files, project_name, top_entity, config.vivado_tcl_scripts_folder_relpath
     )
     _replace_placeholders_in_file(
-        update_proj_template_path, update_proj_path, add_files, project_name, top_entity
+        update_proj_template_path, update_proj_path, add_files, project_name, top_entity, config.vivado_tcl_scripts_folder_relpath
     )
 
     # Use the vivado_tools_path from the config instead of the XILINX environment variable

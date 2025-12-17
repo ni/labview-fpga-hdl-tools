@@ -51,8 +51,8 @@ def _create_lv_bitfile(test, config_path=None):
         code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")
     else:
         print("Using default LV window files")
-        # Use the default path in lvFpgaTarget
-        code_gen_results_path = os.path.abspath("lvFpgaTarget/CodeGenerationResultsStub.lvtxt")
+        # Use the path from configuration
+        code_gen_results_path = config.code_generation_results_stub
 
     print(f"LabVIEW code generation results path: {code_gen_results_path}")
 
