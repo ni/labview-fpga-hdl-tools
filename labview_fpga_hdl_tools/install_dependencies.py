@@ -22,14 +22,13 @@ def _remove_readonly(func, path, exc_info):
 
 
 def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
-    """
-    Clone a GitHub repository at a specific tag.
-    
+    """Clone a GitHub repository at a specific tag.
+
     Args:
         repo: Repository in format "owner/repo"
         tag: Git tag to checkout
         base_dir: Directory where repos should be cloned
-        
+
     Returns:
         True if successful, False otherwise
     """
@@ -38,15 +37,15 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
     repo_name = repo.split("/")[-1]
     repo_path = base_dir / repo_name
     repo_url = f"https://github.com/{repo}.git"
-    
+
     print(f"Cloning {repo} at tag {tag}...")
-    
+
     # Check if already exists and prompt user
     if repo_path.exists():
         print(f"  ℹ Repository {repo_name} already exists at {repo_path}")
         response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
-        
-        if response in ['y', 'yes']:
+
+        if response in ["y", "yes"]:
             print(f"    Deleting {repo_path}...")
             try:
                 # Use onexc (Python 3.12+) or onerror (older versions) to handle read-only files
@@ -62,49 +61,63 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
         else:
             print(f"    Skipping clone")
             return True
-    
+
     try:
         # Clone with specific tag
-        result = subprocess.run(
+        _ = subprocess.run(
             ["git", "clone", "--branch", tag, "--depth", "1", repo_url, str(repo_path)],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         print(f"  ✓ Successfully cloned {repo_name}")
         return True
-        
+
     except subprocess.CalledProcessError as e:
         print(f"  ✗ Failed to clone {repo}: {e.stderr}")
         return False
 
 
 def install_dependencies(dependencies_file: str = None) -> int:
-    """
-    Install dependencies from a TOML file.
-    
+    """Install dependencies from a TOML file.
+
     Args:
-        dependencies_file: Path to dependencies.toml file. If None, looks for it in current directory.
-        
+        dependencies_file: Path to dependencies.toml file.
+                           If None, searches for it in current directory or up to 2 levels
+
     Returns:
         0 if successful, 1 if errors occurred
     """
     # Find dependencies file
     if dependencies_file is None:
-        dependencies_file = os.path.join(os.getcwd(), "dependencies.toml")
-    
-    if not os.path.exists(dependencies_file):
-        print(f"Error: Dependencies file not found: {dependencies_file}")
-        return 1
-    
-    # Create deps directory (one level up from current directory)
-    deps_dir = Path(os.getcwd()).parent / "deps"
+        # Search current directory and up to 2 parent directories
+        search_path = Path(os.getcwd())
+        dependencies_file = None
+
+        for level in range(3):  # 0, 1, 2 levels up
+            candidate = search_path / "dependencies.toml"
+            if candidate.exists():
+                dependencies_file = str(candidate)
+                break
+            search_path = search_path.parent
+
+        if dependencies_file is None:
+            print(
+                "Error: Dependencies file not found in current directory or up to 2 parent directories"
+            )
+            return 1
+
+    # Get the directory containing dependencies.toml
+    deps_base_dir = Path(dependencies_file).parent
+
+    # Create deps directory at the same level as dependencies.toml
+    deps_dir = deps_base_dir / "deps"
     deps_dir.mkdir(parents=True, exist_ok=True)
-    
+
     print(f"Reading dependencies from: {dependencies_file}")
     print(f"Installing to: {deps_dir}")
     print()
-    
+
     # Read TOML file
     try:
         with open(dependencies_file, "rb") as f:
@@ -112,37 +125,37 @@ def install_dependencies(dependencies_file: str = None) -> int:
     except Exception as e:
         print(f"Error reading TOML file: {e}")
         return 1
-    
+
     dependencies = data.get("dependencies", {})
-    
+
     if not dependencies:
         print("No dependencies found in TOML file")
         return 1
-    
+
     # Parse and clone each dependency
     # Format: "owner/repo:tag" or "owner\repo:tag"
     success_count = 0
     total_count = 0
-    
+
     for dep_string in dependencies:
         # Parse the dependency string
         if ":" not in dep_string:
             print(f"Warning: Invalid dependency format (missing ':'): {dep_string}")
             continue
-        
+
         repo, tag = dep_string.rsplit(":", 1)
         total_count += 1
-        
+
         if _clone_repo_at_tag(repo, tag, deps_dir):
             success_count += 1
-    
+
     # Summary
     print()
     print(f"Installed {success_count}/{total_count} dependencies successfully")
-    
+
     if success_count < total_count:
         return 1
-    
+
     return 0
 
 

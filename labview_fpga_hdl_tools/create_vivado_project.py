@@ -71,7 +71,9 @@ def _get_tcl_add_files_text(file_list, file_dir):
     return replacement_text
 
 
-def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_name, top_entity, tcl_folder):
+def _replace_placeholders_in_file(
+    file_path, new_file_path, add_files, project_name, top_entity, tcl_folder
+):
     """Replaces placeholders in a template file with actual values.
 
     This function takes a TCL template file and substitutes key placeholders with
@@ -87,6 +89,7 @@ def _replace_placeholders_in_file(file_path, new_file_path, add_files, project_n
         add_files (str): TCL commands to add files to the project
         project_name (str): Name of the Vivado project
         top_entity (str): Name of the top-level entity
+        tcl_folder (str): Path to the TCL scripts folder
     """
     with open(file_path, "r", encoding="utf-8") as file:
         file_contents = file.read()
@@ -153,13 +156,8 @@ def _find_and_log_duplicates(file_list):
         raise ValueError("Duplicate files found. Check the log file for details.")
 
 
-def _copy_deps_files(file_list):
-    """Copies files with "githubdeps" or "flexrio_deps" in their path to the "objects/gathereddeps" folder.
-
-    This centralizes external dependencies into the project's local structure, which:
-    1. Ensures consistent file locations regardless of development environment
-    2. Makes the project more portable across different machines
-    3. Avoids dependencies on external repositories during build
+def _copy_long_path_files(file_list):
+    """Copies files to the "objects/gatheredfiles" folder.
 
     The function handles:
     - Creating the target directory if needed
@@ -171,16 +169,19 @@ def _copy_deps_files(file_list):
         file_list (list): Original list of file paths
 
     Returns:
-        list: Updated file list with dependency files moved to local paths
+        list: Updated file list with long path files moved to local paths
 
     Raises:
         IOError: If any file copy operation fails
     """
-    target_folder = os.path.join(os.getcwd(), "objects/gathereddeps")
+    target_folder = os.path.join(os.getcwd(), "objects/gatheredfiles")
     os.makedirs(target_folder, exist_ok=True)
 
     new_file_list = []
     for file in file_list:
+        # Store original file path before modification
+        original_file = file
+
         # Handle long paths on Windows
         if os.name == "nt":
             file = f"\\\\?\\{os.path.abspath(file)}"
@@ -188,14 +189,19 @@ def _copy_deps_files(file_list):
         else:
             target_folder_long = target_folder
 
-        # Check if the file path contains "githubdeps" or "flexrio_deps"
-        if "githubdeps" in file or "flexrio_deps" in file:
+        # Check if the file path is longer than 250 characters
+        if len(file) > 250:
             target_path = os.path.join(target_folder_long, os.path.basename(file))
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
             try:
                 shutil.copy2(file, target_path)
                 new_file_list.append(target_path)
+                print(f"WARNING: Long path file {original_file}")
+                print(f"         was copied into the objects/gathereddeps folder.")
+                print(
+                    f"         You must run 'nihdl create-project --update' to pull in any changes to the source file."
+                )
             except Exception as e:
                 raise IOError(f"Error copying file '{file}' to '{target_path}': {e}")
         else:
@@ -342,7 +348,9 @@ def _validate_ini(config, test):
         else:
             # Validate that the Vivado tools path exists
             invalid_path = common.validate_path(
-                config.vivado_tools_path, "VivadoProjectSettings.VivadoToolsPath", "directory"
+                config.vivado_tools_path,
+                "VivadoProjectSettings.VivadoToolsPath",
+                "directory",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -354,7 +362,9 @@ def _validate_ini(config, test):
         # Validate each file list path
         for i, file_list_path in enumerate(config.hdl_file_lists):
             invalid_path = common.validate_path(
-                file_list_path, f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]", "file"
+                file_list_path,
+                f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]",
+                "file",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -365,7 +375,9 @@ def _validate_ini(config, test):
     elif config.use_gen_lv_window_files:
         # Validate the window folder path
         invalid_path = common.validate_path(
-            config.the_window_folder_input, "VivadoProjectSettings.TheWindowFolder", "directory"
+            config.the_window_folder_input,
+            "VivadoProjectSettings.TheWindowFolder",
+            "directory",
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -373,7 +385,9 @@ def _validate_ini(config, test):
     if config.constraints_templates:
         for i, constr_path in enumerate(config.constraints_templates):
             invalid_path = common.validate_path(
-                constr_path, f"VivadoProjectSettings.VivadoProjectConstraintsTemplates[{i}]", "file"
+                constr_path,
+                f"VivadoProjectSettings.VivadoProjectConstraintsTemplates[{i}]",
+                "file",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -393,7 +407,9 @@ def _validate_constraints_files(config):
     if config.vivado_project_constraints_files:
         for i, constr_path in enumerate(config.vivado_project_constraints_files):
             invalid_path = common.validate_path(
-                constr_path, f"VivadoProjectSettings.VivadoProjectConstraintsFiles[{i}]", "file"
+                constr_path,
+                f"VivadoProjectSettings.VivadoProjectConstraintsFiles[{i}]",
+                "file",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -428,9 +444,13 @@ def _create_project(mode: ProjectMode, config, test):
         FileNotFoundError: If any required files are missing
     """
     current_dir = os.getcwd()
-    new_proj_template_path = os.path.join(config.vivado_tcl_scripts_folder, "CreateNewProjectTemplate.tcl")
+    new_proj_template_path = os.path.join(
+        config.vivado_tcl_scripts_folder, "CreateNewProjectTemplate.tcl"
+    )
     new_proj_path = os.path.join(current_dir, "objects/TCL/CreateNewProject.tcl")
-    update_proj_template_path = os.path.join(config.vivado_tcl_scripts_folder, "UpdateProjectFilesTemplate.tcl")
+    update_proj_template_path = os.path.join(
+        config.vivado_tcl_scripts_folder, "UpdateProjectFilesTemplate.tcl"
+    )
     update_proj_path = os.path.join(current_dir, "objects/TCL/UpdateProjectFiles.tcl")
 
     # Get the lists of Vivado project files from the configuration
@@ -444,9 +464,10 @@ def _create_project(mode: ProjectMode, config, test):
     # Validate that all files exist before proceeding
     _validate_files(file_list)
 
-    # Copy dependency files to the gathereddeps folder
-    # Returns the file list with the files from githubdeps having new locations in gathereddeps
-    file_list = _copy_deps_files(file_list)
+    # Copy long path files to the gatheredfiles folder
+    # Returns the file list with the files from old long path locations having
+    # new locations in gatheredfiles
+    file_list = _copy_long_path_files(file_list)
 
     # Override default LV generated files
     if config.use_gen_lv_window_files:
@@ -463,10 +484,20 @@ def _create_project(mode: ProjectMode, config, test):
 
     # Replace placeholders in the template Vivado project scripts
     _replace_placeholders_in_file(
-        new_proj_template_path, new_proj_path, add_files, project_name, top_entity, config.vivado_tcl_scripts_folder_relpath
+        new_proj_template_path,
+        new_proj_path,
+        add_files,
+        project_name,
+        top_entity,
+        config.vivado_tcl_scripts_folder_relpath,
     )
     _replace_placeholders_in_file(
-        update_proj_template_path, update_proj_path, add_files, project_name, top_entity, config.vivado_tcl_scripts_folder_relpath
+        update_proj_template_path,
+        update_proj_path,
+        add_files,
+        project_name,
+        top_entity,
+        config.vivado_tcl_scripts_folder_relpath,
     )
 
     # Use the vivado_tools_path from the config instead of the XILINX environment variable
