@@ -41,6 +41,7 @@ class FileConfiguration:
         default_factory=list
     )  # List of Vivado project constraint file paths
     vivado_tcl_scripts_folder: Optional[str] = None  # Folder containing Vivado TCL scripts
+    vivado_tcl_scripts_folder_relpath: Optional[str] = None  # Relative path to Vivado TCL scripts folder
     custom_constraints_file: Optional[str] = None  # Path to custom constraints XDC file
     use_gen_lv_window_files: Optional[bool] = (
         None  # Use files from the_input_window_folder to override what is in hdl_file_lists
