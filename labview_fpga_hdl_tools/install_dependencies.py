@@ -53,10 +53,10 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
             try:
                 # Use onexc (Python 3.12+) or onerror (older versions) to handle read-only files
                 try:
-                    shutil.rmtree(repo_path, onexc=_remove_readonly)
+                    shutil.rmtree(repo_path, onexc=_remove_readonly)  # type: ignore[call-arg]
                 except TypeError:
                     # Fall back to onerror for Python < 3.12
-                    shutil.rmtree(repo_path, onerror=_remove_readonly)
+                    shutil.rmtree(repo_path, onerror=_remove_readonly)  # type: ignore[call-arg]
                 print(f"    Deleted successfully")
             except Exception as e:
                 print(f"    ✗ Failed to delete: {e}")
