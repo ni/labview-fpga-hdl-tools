@@ -140,17 +140,11 @@ def extract_deps_cmd(ctx):
 
 
 @cli.command("install-deps", help="Install GitHub dependencies from dependencies.toml")
-@click.option(
-    "--file",
-    "-f",
-    type=click.Path(exists=True, dir_okay=False, readable=True),
-    help="Path to dependencies.toml file (defaults to ./dependencies.toml)",
-)
 @click.pass_context
-def install_deps_cmd(ctx, file):
+def install_deps_cmd(ctx):
     """Install GitHub dependencies from dependencies.toml."""
     try:
-        result = install_dependencies.install_dependencies(dependencies_file=file)
+        result = install_dependencies.install_dependencies()
         return result
     except Exception as e:
         handle_exception(e)

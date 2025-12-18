@@ -12,7 +12,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib  # type: ignore[import-not-found]
 
 
 def _remove_readonly(func, path, exc_info):
@@ -78,7 +81,7 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
         return False
 
 
-def install_dependencies(dependencies_file: str = None) -> int:
+def install_dependencies():
     """Install dependencies from a TOML file.
 
     Args:
@@ -89,23 +92,22 @@ def install_dependencies(dependencies_file: str = None) -> int:
         0 if successful, 1 if errors occurred
     """
     # Find dependencies file
+    # Search current directory and up to 2 parent directories
+    search_path = Path(os.getcwd())
+    dependencies_file = None
+
+    for level in range(3):  # 0, 1, 2 levels up
+        candidate = search_path / "dependencies.toml"
+        if candidate.exists():
+            dependencies_file = str(candidate)
+            break
+        search_path = search_path.parent
+
     if dependencies_file is None:
-        # Search current directory and up to 2 parent directories
-        search_path = Path(os.getcwd())
-        dependencies_file = None
-
-        for level in range(3):  # 0, 1, 2 levels up
-            candidate = search_path / "dependencies.toml"
-            if candidate.exists():
-                dependencies_file = str(candidate)
-                break
-            search_path = search_path.parent
-
-        if dependencies_file is None:
-            print(
-                "Error: Dependencies file not found in current directory or up to 2 parent directories"
-            )
-            return 1
+        print(
+            "Error: Dependencies file not found in current directory or up to 2 parent directories"
+        )
+        return 1
 
     # Get the directory containing dependencies.toml
     deps_base_dir = Path(dependencies_file).parent
