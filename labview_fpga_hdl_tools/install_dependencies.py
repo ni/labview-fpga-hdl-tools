@@ -13,9 +13,9 @@ import sys
 from pathlib import Path
 
 try:
-    import tomllib
+    import tomllib  # type: ignore[import]
 except ModuleNotFoundError:
-    import tomli as tomllib  # type: ignore[import-not-found]
+    import tomli as tomllib  # type: ignore[import]
 
 
 def _remove_readonly(func, path, exc_info):
