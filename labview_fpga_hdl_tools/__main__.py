@@ -17,6 +17,7 @@ from . import (
     extract_dependencies,
     gen_labview_target_plugin,
     get_window_netlist,
+    install_dependencies,
     install_labview_target_plugin,
     launch_vivado,
     migrate_clip,
@@ -132,6 +133,24 @@ def extract_deps_cmd(ctx):
     """Extract dependency ZIP files from current directory."""
     try:
         result = extract_dependencies.extract_deps_from_zip()
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("install-deps", help="Install GitHub dependencies from dependencies.toml")
+@click.option(
+    "--file",
+    "-f",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    help="Path to dependencies.toml file (defaults to ./dependencies.toml)",
+)
+@click.pass_context
+def install_deps_cmd(ctx, file):
+    """Install GitHub dependencies from dependencies.toml."""
+    try:
+        result = install_dependencies.install_dependencies(dependencies_file=file)
         return result
     except Exception as e:
         handle_exception(e)
