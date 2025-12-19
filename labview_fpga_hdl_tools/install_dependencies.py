@@ -24,13 +24,14 @@ def _remove_readonly(func, path, exc_info):
     func(path)
 
 
-def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
+def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path, delete_allowed: bool = False) -> bool:
     """Clone a GitHub repository at a specific tag.
 
     Args:
         repo: Repository in format "owner/repo"
         tag: Git tag to checkout
         base_dir: Directory where repos should be cloned
+        delete_allowed: If True, automatically delete existing repos without prompting
 
     Returns:
         True if successful, False otherwise
@@ -46,7 +47,12 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
     # Check if already exists and prompt user
     if repo_path.exists():
         print(f"  ℹ Repository {repo_name} already exists at {repo_path}")
-        response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
+        
+        if delete_allowed:
+            response = "y"
+            print(f"    Auto-deleting and re-cloning (--delete-allowed flag set)")
+        else:
+            response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
 
         if response in ["y", "yes"]:
             print(f"    Deleting {repo_path}...")
@@ -81,12 +87,11 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path) -> bool:
         return False
 
 
-def install_dependencies():
+def install_dependencies(delete_allowed: bool = False):
     """Install dependencies from a TOML file.
 
     Args:
-        dependencies_file: Path to dependencies.toml file.
-                           If None, searches for it in current directory or up to 2 levels
+        delete_allowed: If True, automatically delete existing repos without prompting
 
     Returns:
         0 if successful, 1 if errors occurred
@@ -148,7 +153,7 @@ def install_dependencies():
         repo, tag = dep_string.rsplit(":", 1)
         total_count += 1
 
-        if _clone_repo_at_tag(repo, tag, deps_dir):
+        if _clone_repo_at_tag(repo, tag, deps_dir, delete_allowed):
             success_count += 1
 
     # Summary

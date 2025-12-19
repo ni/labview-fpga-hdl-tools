@@ -1,30 +1,19 @@
--- 
--- This file was automatically processed for release on GitHub
--- All comments were removed and this header was added
--- 
--- 
--- Copyright (c) 2025 National Instruments Corporation
+-------------------------------------------------------------------------------
+-- File: AxiLiteToMgtDrp.vhd
+-- Author: Minghui Zhang
+-- Workspace: Sasquatch
+-- Date: 25 August 2022
+-------------------------------------------------------------------------------
+-- (c) 2025 Copyright National Instruments Corporation
 -- 
 -- SPDX-License-Identifier: MIT
--- 
--- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-------------------------------------------------------------------------------
+-- Purpose: This component wraps AXI Lite interface to MGT's DRP interface
+-- with AXI cross clock domain.
+-------------------------------------------------------------------------------
+--
+-- githubvisibledep=true
+--
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -37,9 +26,9 @@ entity AxiLiteToMgtDrp is
   );
   port (
     aResetSl          : in std_logic;
-    
-    
-    
+    -------------------------------------------------------------------------------------
+    -- AXI Lite Interface
+    -------------------------------------------------------------------------------------
     SAxiAClk          : in std_logic;
     sAxiAWaddr        : in std_logic_vector(31 downto 0);
     sAxiAWValid       : in std_logic;
@@ -58,9 +47,9 @@ entity AxiLiteToMgtDrp is
     sAxiRResp         : out std_logic_vector(1 downto 0);
     sAxiRValid        : out std_logic;
     sAxiRReady        : in std_logic;
-    
-    
-    
+    -------------------------------------------------------------------------------------
+    -- DRP interface to GT core
+    -------------------------------------------------------------------------------------
     InitClk           : in  std_logic;
     iGtwizDrpClk      : out std_logic_vector(kNumLanes-1 downto 0);
     iGtwizDrpAddrIn   : out std_logic_vector(kNumLanes*kAddrSize-1 downto 0);
@@ -147,7 +136,7 @@ architecture rtl of AxiLiteToMgtDrp is
       mAxiRReady  : out STD_LOGIC);
   end component;
 
-  
+  --vhook_sigstart
   signal iAxiaraddr: std_logic_vector(31 downto 0);
   signal iAxiarready: std_logic;
   signal iAxiarvalid: std_logic;
@@ -165,96 +154,96 @@ architecture rtl of AxiLiteToMgtDrp is
   signal iAxiwready: std_logic;
   signal iAxiwstrb: std_logic_vector(3 downto 0);
   signal iAxiwvalid: std_logic;
-  
+  --vhook_sigend
 
 begin
 
-  
-  
-  
-  
+  --vhook AxiLiteClockConverterWrapper
+  --vhook_a aReset aResetSl
+  --vhook_a {mAxi(.*)} iAxi$1
+  --vhook_a MAxiAClk InitClk
   AxiLiteClockConverterWrapperx: AxiLiteClockConverterWrapper
     port map (
-      aReset      => aResetSl,     
-      SAxiAClk    => SAxiAClk,     
-      sAxiAWaddr  => sAxiAWaddr,   
-      sAxiAWValid => sAxiAWValid,  
-      sAxiAWReady => sAxiAWReady,  
-      sAxiWData   => sAxiWData,    
-      sAxiWStrb   => sAxiWStrb,    
-      sAxiWValid  => sAxiWValid,   
-      sAxiWReady  => sAxiWReady,   
-      sAxiBResp   => sAxiBResp,    
-      sAxiBValid  => sAxiBValid,   
-      sAxiBReady  => sAxiBReady,   
-      sAxiARAddr  => sAxiARAddr,   
-      sAxiARValid => sAxiARValid,  
-      sAxiARReady => sAxiARReady,  
-      sAxiRData   => sAxiRData,    
-      sAxiRResp   => sAxiRResp,    
-      sAxiRValid  => sAxiRValid,   
-      sAxiRReady  => sAxiRReady,   
-      MAxiAClk    => InitClk,      
-      mAxiAWaddr  => iAxiAWaddr,   
-      mAxiAWvalid => iAxiAWvalid,  
-      mAxiAWready => iAxiAWready,  
-      mAxiWData   => iAxiWData,    
-      mAxiWStrb   => iAxiWStrb,    
-      mAxiWValid  => iAxiWValid,   
-      mAxiWReady  => iAxiWReady,   
-      mAxiBResp   => iAxiBResp,    
-      mAxiBValid  => iAxiBValid,   
-      mAxiBReady  => iAxiBReady,   
-      mAxiARaddr  => iAxiARaddr,   
-      mAxiARvalid => iAxiARvalid,  
-      mAxiARready => iAxiARready,  
-      mAxiRData   => iAxiRData,    
-      mAxiRResp   => iAxiRResp,    
-      mAxiRValid  => iAxiRValid,   
-      mAxiRReady  => iAxiRReady);  
+      aReset      => aResetSl,     --in  STD_LOGIC
+      SAxiAClk    => SAxiAClk,     --in  STD_LOGIC
+      sAxiAWaddr  => sAxiAWaddr,   --in  STD_LOGIC_VECTOR(31:0)
+      sAxiAWValid => sAxiAWValid,  --in  STD_LOGIC
+      sAxiAWReady => sAxiAWReady,  --out STD_LOGIC
+      sAxiWData   => sAxiWData,    --in  STD_LOGIC_VECTOR(31:0)
+      sAxiWStrb   => sAxiWStrb,    --in  STD_LOGIC_VECTOR(3:0)
+      sAxiWValid  => sAxiWValid,   --in  STD_LOGIC
+      sAxiWReady  => sAxiWReady,   --out STD_LOGIC
+      sAxiBResp   => sAxiBResp,    --out STD_LOGIC_VECTOR(1:0)
+      sAxiBValid  => sAxiBValid,   --out STD_LOGIC
+      sAxiBReady  => sAxiBReady,   --in  STD_LOGIC
+      sAxiARAddr  => sAxiARAddr,   --in  STD_LOGIC_VECTOR(31:0)
+      sAxiARValid => sAxiARValid,  --in  STD_LOGIC
+      sAxiARReady => sAxiARReady,  --out STD_LOGIC
+      sAxiRData   => sAxiRData,    --out STD_LOGIC_VECTOR(31:0)
+      sAxiRResp   => sAxiRResp,    --out STD_LOGIC_VECTOR(1:0)
+      sAxiRValid  => sAxiRValid,   --out STD_LOGIC
+      sAxiRReady  => sAxiRReady,   --in  STD_LOGIC
+      MAxiAClk    => InitClk,      --in  STD_LOGIC
+      mAxiAWaddr  => iAxiAWaddr,   --out STD_LOGIC_VECTOR(31:0)
+      mAxiAWvalid => iAxiAWvalid,  --out STD_LOGIC
+      mAxiAWready => iAxiAWready,  --in  STD_LOGIC
+      mAxiWData   => iAxiWData,    --out STD_LOGIC_VECTOR(31:0)
+      mAxiWStrb   => iAxiWStrb,    --out STD_LOGIC_VECTOR(3:0)
+      mAxiWValid  => iAxiWValid,   --out STD_LOGIC
+      mAxiWReady  => iAxiWReady,   --in  STD_LOGIC
+      mAxiBResp   => iAxiBResp,    --in  STD_LOGIC_VECTOR(1:0)
+      mAxiBValid  => iAxiBValid,   --in  STD_LOGIC
+      mAxiBReady  => iAxiBReady,   --out STD_LOGIC
+      mAxiARaddr  => iAxiARaddr,   --out STD_LOGIC_VECTOR(31:0)
+      mAxiARvalid => iAxiARvalid,  --out STD_LOGIC
+      mAxiARready => iAxiARready,  --in  STD_LOGIC
+      mAxiRData   => iAxiRData,    --in  STD_LOGIC_VECTOR(31:0)
+      mAxiRResp   => iAxiRResp,    --in  STD_LOGIC_VECTOR(1:0)
+      mAxiRValid  => iAxiRValid,   --in  STD_LOGIC
+      mAxiRReady  => iAxiRReady);  --out STD_LOGIC
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  --vhook MgtTest_DRP_bridge
+  --vhook_a kNUM_LANES kNumLanes
+  --vhook_a kADDR_SIZE kAddrSize
+  --vhook_a s_aclk     InitClk
+  --vhook_a {drp_s_axi_(.*)} iAxi$1
+  --vhook_a gtwiz_drpclk       iGtwizDrpClk   (1*kNumLanes-1    downto 0*kNumLanes)
+  --vhook_a gtwiz_drpaddr_in   iGtwizDrpAddrIn(1*kNumLanes*kAddrSize-1 downto 0*kNumLanes*kAddrSize)
+  --vhook_a gtwiz_drpdi_in     iGtwizDrpDiIn  (1*kNumLanes*16-1 downto 0*kNumLanes*16)
+  --vhook_a gtwiz_drpdo_out    iGtwizDrpDoOut (1*kNumLanes*16-1 downto 0*kNumLanes*16)
+  --vhook_a gtwiz_drpen_in     iGtwizDrpEnIn  (1*kNumLanes-1    downto 0*kNumLanes)
+  --vhook_a gtwiz_drpwe_in     iGtwizDrpWeIn  (1*kNumLanes-1    downto 0*kNumLanes)
+  --vhook_a gtwiz_drprdy_out   iGtwizDrpRdyOut(1*kNumLanes-1    downto 0*kNumLanes)
   MgtTest_DRP_bridgex: MgtTest_DRP_bridge
     generic map (
-      kNUM_LANES => kNumLanes,  
-      kADDR_SIZE => kAddrSize)  
+      kNUM_LANES => kNumLanes,  --integer:=4
+      kADDR_SIZE => kAddrSize)  --integer:=9
     port map (
-      aResetSl          => aResetSl,                                                               
-      gtwiz_drpclk      => iGtwizDrpClk (1*kNumLanes-1 downto 0*kNumLanes),                        
-      gtwiz_drpaddr_in  => iGtwizDrpAddrIn(1*kNumLanes*kAddrSize-1 downto 0*kNumLanes*kAddrSize),  
-      gtwiz_drpdi_in    => iGtwizDrpDiIn (1*kNumLanes*16-1 downto 0*kNumLanes*16),                 
-      gtwiz_drpdo_out   => iGtwizDrpDoOut (1*kNumLanes*16-1 downto 0*kNumLanes*16),                
-      gtwiz_drpen_in    => iGtwizDrpEnIn (1*kNumLanes-1 downto 0*kNumLanes),                       
-      gtwiz_drpwe_in    => iGtwizDrpWeIn (1*kNumLanes-1 downto 0*kNumLanes),                       
-      gtwiz_drprdy_out  => iGtwizDrpRdyOut(1*kNumLanes-1 downto 0*kNumLanes),                      
-      s_aclk            => InitClk,                                                                
-      drp_s_axi_awaddr  => iAxiawaddr,                                                             
-      drp_s_axi_awvalid => iAxiawvalid,                                                            
-      drp_s_axi_awready => iAxiawready,                                                            
-      drp_s_axi_wdata   => iAxiwdata,                                                              
-      drp_s_axi_wstrb   => iAxiwstrb,                                                              
-      drp_s_axi_wvalid  => iAxiwvalid,                                                             
-      drp_s_axi_wready  => iAxiwready,                                                             
-      drp_s_axi_bresp   => iAxibresp,                                                              
-      drp_s_axi_bvalid  => iAxibvalid,                                                             
-      drp_s_axi_bready  => iAxibready,                                                             
-      drp_s_axi_araddr  => iAxiaraddr,                                                             
-      drp_s_axi_arvalid => iAxiarvalid,                                                            
-      drp_s_axi_arready => iAxiarready,                                                            
-      drp_s_axi_rdata   => iAxirdata,                                                              
-      drp_s_axi_rresp   => iAxirresp,                                                              
-      drp_s_axi_rvalid  => iAxirvalid,                                                             
-      drp_s_axi_rready  => iAxirready);                                                            
+      aResetSl          => aResetSl,                                                               --in  std_logic
+      gtwiz_drpclk      => iGtwizDrpClk (1*kNumLanes-1 downto 0*kNumLanes),                        --out std_logic_vector(kNUM_LANES-1:0)
+      gtwiz_drpaddr_in  => iGtwizDrpAddrIn(1*kNumLanes*kAddrSize-1 downto 0*kNumLanes*kAddrSize),  --out std_logic_vector(kNUM_LANES*kADDR_SIZE-1:0)
+      gtwiz_drpdi_in    => iGtwizDrpDiIn (1*kNumLanes*16-1 downto 0*kNumLanes*16),                 --out std_logic_vector(kNUM_LANES*16-1:0)
+      gtwiz_drpdo_out   => iGtwizDrpDoOut (1*kNumLanes*16-1 downto 0*kNumLanes*16),                --in  std_logic_vector(kNUM_LANES*16-1:0)
+      gtwiz_drpen_in    => iGtwizDrpEnIn (1*kNumLanes-1 downto 0*kNumLanes),                       --out std_logic_vector(kNUM_LANES-1:0)
+      gtwiz_drpwe_in    => iGtwizDrpWeIn (1*kNumLanes-1 downto 0*kNumLanes),                       --out std_logic_vector(kNUM_LANES-1:0)
+      gtwiz_drprdy_out  => iGtwizDrpRdyOut(1*kNumLanes-1 downto 0*kNumLanes),                      --in  std_logic_vector(kNUM_LANES-1:0)
+      s_aclk            => InitClk,                                                                --in  std_logic
+      drp_s_axi_awaddr  => iAxiawaddr,                                                             --in  std_logic_vector(31:0)
+      drp_s_axi_awvalid => iAxiawvalid,                                                            --in  std_logic
+      drp_s_axi_awready => iAxiawready,                                                            --out std_logic
+      drp_s_axi_wdata   => iAxiwdata,                                                              --in  std_logic_vector(31:0)
+      drp_s_axi_wstrb   => iAxiwstrb,                                                              --in  std_logic_vector(3:0)
+      drp_s_axi_wvalid  => iAxiwvalid,                                                             --in  std_logic
+      drp_s_axi_wready  => iAxiwready,                                                             --out std_logic
+      drp_s_axi_bresp   => iAxibresp,                                                              --out std_logic_vector(1:0)
+      drp_s_axi_bvalid  => iAxibvalid,                                                             --out std_logic
+      drp_s_axi_bready  => iAxibready,                                                             --in  std_logic
+      drp_s_axi_araddr  => iAxiaraddr,                                                             --in  std_logic_vector(31:0)
+      drp_s_axi_arvalid => iAxiarvalid,                                                            --in  std_logic
+      drp_s_axi_arready => iAxiarready,                                                            --out std_logic
+      drp_s_axi_rdata   => iAxirdata,                                                              --out std_logic_vector(31:0)
+      drp_s_axi_rresp   => iAxirresp,                                                              --out std_logic_vector(1:0)
+      drp_s_axi_rvalid  => iAxirvalid,                                                             --out std_logic
+      drp_s_axi_rready  => iAxirready);                                                            --in  std_logic
 
 end rtl;

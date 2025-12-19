@@ -140,11 +140,16 @@ def extract_deps_cmd(ctx):
 
 
 @cli.command("install-deps", help="Install GitHub dependencies from dependencies.toml")
+@click.option(
+    "--delete-allowed",
+    is_flag=True,
+    help="Automatically delete and re-clone existing repositories without prompting",
+)
 @click.pass_context
-def install_deps_cmd(ctx):
+def install_deps_cmd(ctx, delete_allowed):
     """Install GitHub dependencies from dependencies.toml."""
     try:
-        result = install_dependencies.install_dependencies()
+        result = install_dependencies.install_dependencies(delete_allowed=delete_allowed)
         return result
     except Exception as e:
         handle_exception(e)

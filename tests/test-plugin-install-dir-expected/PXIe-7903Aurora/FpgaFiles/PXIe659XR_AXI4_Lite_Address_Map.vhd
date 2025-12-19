@@ -1,39 +1,28 @@
--- 
--- This file was automatically processed for release on GitHub
--- All comments were removed and this header was added
--- 
--- 
--- Copyright (c) 2025 National Instruments Corporation
--- 
--- SPDX-License-Identifier: MIT
--- 
--- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-------------------------------------------------------------------------------
+--
+-- File: PXIe659XR_AXI4_Lite_Address_Map.vhd
+-- Author: National Instruments
+-- Original Project:
+-- Date: 15 June 2014
+--
+-------------------------------------------------------------------------------
+-- (c) 2014 Copyright National Instruments Corporation
+-- All Rights Reserved
+-- National Instruments Internal Information
+-------------------------------------------------------------------------------
+--
+-- Purpose: This component uses a single AXI4-Lite bus to index into multiple
+--          AXI4-Lite slaves. It uses the kNumEndpoints generic to determine
+--          the size of the select vector and the size of the slave vectors.
+--          The kAddrSelectLsb generic is used to determine the offset into the
+--          AXI4-Lite address vector for the selection vector. The select
+--          value is updated whenever read or write address valid is strobed
+--          with the priority going to read address valid. This component has
+--          two separate state machines, one for processing read requests and
+--          one for processing write requests. This component does not route
+--          read or write data through it.
+--
+-------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -46,13 +35,13 @@ entity PXIe659XR_AXI4_Lite_Address_Map is
     kAddrSelectLsb : positive := 9
   );
   port(
-    
+    -- AXI4-Lite Clock
     s_aclk            : in  std_logic;
 
-    
+    -- AXI Reset, active-Low
     aReset_n          : in  std_logic;
 
-    
+    -- AXI4-Lite Master Interface
     s_axi_awaddr      : in  std_logic_vector(31 downto 0);
     s_axi_awvalid     : in  std_logic;
     s_axi_awready     : out std_logic;
@@ -71,7 +60,7 @@ entity PXIe659XR_AXI4_Lite_Address_Map is
     s_axi_rvalid      : out std_logic;
     s_axi_rready      : in  std_logic;
 
-    
+    -- AXI4-Lite Slave interfaces
     s_axi_awvalid_slv : out std_logic_vector(kNumEndpoints-1 downto 0);
     s_axi_awready_slv : in  std_logic_vector(kNumEndpoints-1 downto 0);
 
@@ -123,7 +112,7 @@ begin
     if aReset_n = '0' then
       sSelectedEndpoint <= (others => '0');
     elsif rising_edge(s_aclk) then
-      
+      -- Give priority to reads over writes
       if s_axi_arvalid = '1' then
         sSelectedEndpoint <= unsigned(s_axi_araddr(kAddrSelectMsb downto kAddrSelectLsb));
       elsif s_axi_awvalid = '1' then
@@ -132,8 +121,8 @@ begin
     end if;
   end process SelectReg;
 
-  
-  
+  -- Write Access FSM
+  -- This FSM is responsible for processing AXI4-Lite write accesses.
   WriteAccessFsm: process(aReset_n, s_aclk) is
   begin
     if aReset_n = '0' then
@@ -196,8 +185,8 @@ begin
     end if;
   end process WriteAccessFsm;
 
-  
-  
+  -- Read Access FSM
+  -- This FSM is responsible for processing AXI4-Lite read accesses.
   ReadAccessFsm: process(aReset_n, s_aclk) is
   begin
     if aReset_n = '0' then

@@ -1,30 +1,19 @@
--- 
--- This file was automatically processed for release on GitHub
--- All comments were removed and this header was added
--- 
--- 
--- Copyright (c) 2025 National Instruments Corporation
--- 
--- SPDX-License-Identifier: MIT
--- 
--- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-------------------------------------------------------------------------------
+--
+-- File: PkgAXI4Lite_GTYE4_Control.vhd
+-- Author: Brandon Griffith
+-- Original Project: Kintex UltraScale+ KCU116 emulation
+-- Date: 1 November 2017
+--
+-------------------------------------------------------------------------------
+-- (c) 2017 Copyright National Instruments Corporation
+-- All Rights Reserved
+-- National Instruments Internal Information
+-------------------------------------------------------------------------------
+--
+-- Purpose: This package is used by the AXI4Lite_GTYE4_Control_Regs component.
+--
+-------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -32,7 +21,7 @@ library ieee;
 
 package PkgAXI4Lite_GTYE4_Control is
 
-  
+  -- Arrays of std_logic_vector for indexing into separate GTY transceivers.
   subtype GTRefClkSel_t is std_logic_vector(2 downto 0);
   type GTRefClkSelAry_t is array(natural range <>) of GTRefClkSel_t;
 
@@ -69,7 +58,7 @@ package PkgAXI4Lite_GTYE4_Control is
   subtype GTPd_t is std_logic_vector(1 downto 0);
   type GTPdAry_t is array(natural range <>) of GTPd_t;
 
-  
+  -- Address and Data types for AXI4-Lite register types.
   subtype Axi4LiteAddr_t is unsigned(31 downto 0);
   subtype Axi4LiteData_t is std_logic_vector(31 downto 0);
   subtype Axi4LiteStrb_t is std_logic_vector(3 downto 0);
@@ -79,22 +68,22 @@ package PkgAXI4Lite_GTYE4_Control is
   constant kAxiRespSlvErr : Axi4LiteResp_t := "10";
 
   type Axi4LiteWritePortIn_t is record
-    
-    
+    -- AXI Write address. The write address bus gives the
+    -- address of the write transaction.
     Address : Axi4LiteAddr_t;
-    
-    
+    -- Write address valid. This signal indicates that valid
+    -- write address and control information are available.
     AddrValid : boolean;
-    
+    -- Write data
     Data : Axi4LiteData_t;
-    
-    
+    -- Write strobes. This signal indicates which byte lanes to
+    -- update in memory.
     DataStrb : Axi4LiteStrb_t;
-    
-    
+    -- Write valid. This signal indicates that valid write data
+    -- and strobes are available.
     DataValid : boolean;
-    
-    
+    -- Response ready. This signal indicates that the master
+    -- can accept the response information.
     Ready : boolean;
   end record;
 
@@ -108,18 +97,18 @@ package PkgAXI4Lite_GTYE4_Control is
   );
 
   type Axi4LiteWritePortOut_t is record
-    
-    
-    
+    -- Write address ready. This signal indicates that the
+    -- slave is ready to accept an address and associated
+    -- control signals.
     AddrReady : boolean;
-    
-    
+    -- Write ready. This signal indicates that the slave can
+    -- accept the write data.
     DataReady : boolean;
-    
-    
+    -- Write response. This signal indicates the status of the
+    -- write transaction. "00" = OKAY, "10" = SLVERR
     Response : Axi4LiteResp_t;
-    
-    
+    -- Write response valid. This signal indicates that a valid
+    -- write response is available.
     RespValid : boolean;
   end record;
 
@@ -131,16 +120,16 @@ package PkgAXI4Lite_GTYE4_Control is
   );
 
   type Axi4LiteReadPortIn_t is record
-    
-    
+    -- Read address. The read address bus gives the
+    -- address of a read transaction.
     Address : Axi4LiteAddr_t;
-    
-    
-    
-    
+    -- Read address valid. This signal indicates, when high,
+    -- that the read address and control information is valid
+    -- and will remain stable until the address
+    -- acknowledgement signal, S_AXI_ARREADY, is High.
     AddrValid : boolean;
-    
-    
+    -- Read ready. This signal indicates that the master can
+    -- accept the read data and response information.
     Ready : boolean;
   end record;
 
@@ -151,17 +140,17 @@ package PkgAXI4Lite_GTYE4_Control is
   );
 
   type Axi4LiteReadPortOut_t is record
-    
-    
-    
+    -- Read address ready. This signal indicates that the
+    -- slave is ready to accept an address and associated
+    -- control signals.
     AddrReady : boolean;
-    
+    -- Read data
     Data : Axi4LiteData_t;
-    
-    
+    -- Read response. This signal indicates the status of the
+    -- read transfer.
     Response : Axi4LiteResp_t;
-    
-    
+    -- Read valid. This signal indicates that the required read
+    -- data is available and the read transfer can complete.
     DataValid : boolean;
   end record;
 
@@ -172,8 +161,8 @@ package PkgAXI4Lite_GTYE4_Control is
     DataValid => false
   );
 
-  
-  
+  -- Functions to determine the start of an AXI4-Lite register access, a
+  -- register write, or a register read.
   function RegAccess (Addr : natural;
                       AxiPortAddr : Axi4LiteAddr_t;
                       AddrValid : boolean) return boolean;
@@ -184,8 +173,8 @@ end package PkgAXI4Lite_GTYE4_Control;
 
 package body PkgAXI4Lite_GTYE4_Control is
 
-  
-  
+  -- Functions to determine the start of an AXI4-Lite register access, a
+  -- register write, or a register read.
   function RegAccess (Addr : natural;
                       AxiPortAddr : Axi4LiteAddr_t;
                       AddrValid : boolean) return boolean is

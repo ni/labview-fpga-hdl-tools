@@ -135,8 +135,8 @@ def test_set_no_errors():
 
     return [
         {
-            "name": "extract-deps",
-            "command": f"{nihdl_cmd} extract-deps",
+            "name": "install-deps",
+            "command": f"{nihdl_cmd} install-deps --delete-allowed",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },

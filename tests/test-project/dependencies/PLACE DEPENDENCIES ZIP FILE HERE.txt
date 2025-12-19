@@ -1,5 +1,0 @@
-githubvisible=true
-
-Download the dependencies zip file from the GitHub FlexRIO release and put it in this DepsFolder
-
-Then run extractdependencies.bat to unzip the contents

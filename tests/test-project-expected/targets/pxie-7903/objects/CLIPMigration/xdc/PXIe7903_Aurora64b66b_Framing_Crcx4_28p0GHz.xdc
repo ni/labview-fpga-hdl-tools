@@ -1,19 +1,8 @@
-# 
-# This file was automatically processed for release on GitHub
-# All comments were removed and this header was added
-# 
-# 
-# Copyright (c) 2025 National Instruments Corporation
-# 
-# SPDX-License-Identifier: MIT
-# 
-# 
-
 # Constraints for an Aurora 12 port, 4 lane implementation using GTY transievers
 
 #vreview_group Ni7903AuroraStreamingConstraints
-#vreview_closed http:
-#vreview_closed http:
+#vreview_closed http://review-board.natinst.com/r/332346/
+#vreview_closed http://review-board.natinst.com/r/315309/
 #vreview_reviewers kygreen dhearn amoch
 
 set LineRateInGbs 28.0
@@ -913,4 +902,5 @@ set port11_TNM_HandShake_iRdyPushToggle_ms  [get_cells {UserRTL_PXIe7903_Aurora6
 set_max_delay -from $port11_TNM_HandShake_iStoredData        -to $port11_TNM_HandShake_oDataFlop         -datapath_only 10.0
 set_max_delay -from $port11_TNM_HandShake_iPushToggle        -to $port11_TNM_HandShake_oPushToggle0_ms   -datapath_only 10.0
 set_max_delay -from $port11_TNM_HandShake_oPushToggleToReady -to $port11_TNM_HandShake_iRdyPushToggle_ms -datapath_only 10.0
+
 

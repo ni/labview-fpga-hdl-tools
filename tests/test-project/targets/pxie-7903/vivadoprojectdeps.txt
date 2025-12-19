@@ -1,14 +1,14 @@
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/ClockCrossing/DoubleSync/DoubleSyncAsyncInBase.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/ClockCrossing/DoubleSync/DoubleSyncBase.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/ClockCrossing/DoubleSync/DoubleSyncBool.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/ClockCrossing/DoubleSync/DoubleSyncSL.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/DFlop/DFlopBoolVec.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/DFlop/DFlopSLV.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/DFlop/DFlopUnsigned.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/DFlopBase/Xilinx/DFlop.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/FIFO/Common/GenDataValid.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/FIFO/SingleClock/SingleClkFifo.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/FIFO/SingleClock/SingleClkFifoFlags.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/Xilinx/RAM/DualPortRAM.vhd
-../../dependencies/githubdeps/fpgaDigitalDesigns.25.1.0f405/source/rvi/Vivado/HDL/CommonFiles/NiCores/Xilinx/RAM/DualPortRAM_Vivado.vhd
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncAsyncInBase.vhd
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncBase.vhd
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncBool.vhd
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncSL.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlopBoolVec.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlopSLV.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlopUnsigned.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlop.vhd
+../../deps/flexrio-deps/flexrio-deps/GenDataValid.vhd
+../../deps/flexrio-deps/flexrio-deps/SingleClkFifo.vhd
+../../deps/flexrio-deps/flexrio-deps/SingleClkFifoFlags.vhd
+../../deps/flexrio-deps/flexrio-deps/DualPortRAM.vhd
+../../deps/flexrio-deps/flexrio-deps/DualPortRAM_Vivado.vhd
 

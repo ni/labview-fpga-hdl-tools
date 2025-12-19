@@ -1,31 +1,20 @@
--- 
--- This file was automatically processed for release on GitHub
--- All comments were removed and this header was added
--- 
--- 
--- Copyright (c) 2025 National Instruments Corporation
--- 
--- SPDX-License-Identifier: MIT
--- 
--- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-------------------------------------------------------------------------------
+--
+-- File: MgtTest_DRP_bridge.vhd
+-- Author: Brandon Griffith
+-- Original Project: UltraScale MgtTest
+-- Date: 23 August 2016
+--
+-------------------------------------------------------------------------------
+-- (c) 2016 Copyright National Instruments Corporation
+-- All Rights Reserved
+-- National Instruments Internal Information
+-------------------------------------------------------------------------------
+--
+-- Purpose: Bridge logic for AXI4-Lite to UltraScale 
+-- GT core with vector DRP ports
+--
+-------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -33,10 +22,10 @@ library ieee;
 
 library work;
 
-
+--synthesis translate_off
 library unisim;
   use unisim.vcomponents.all;
-
+--synthesis translate_on
 
 
 entity MgtTest_DRP_bridge is
@@ -45,14 +34,14 @@ generic(
     kADDR_SIZE : integer := 9
 );
 port (
-    
-    
-    
+    -- Asynchronous reset signal from the LabVIEW FPGA environment.
+    -- This signal *must* be present in the port interface for all IO Socket CLIPs.
+    -- You should reset your CLIP logic whenever this signal is logic high.
     aResetSl     : in  std_logic;
 
-
-
-
+-------------------------------------------------------------------------------
+-- DRP interface to GT core, names are w.r.t. the GT core
+-------------------------------------------------------------------------------
     gtwiz_drpclk     : out std_logic_vector(kNUM_LANES-1 downto 0);
     gtwiz_drpaddr_in : out std_logic_vector(kNUM_LANES*kADDR_SIZE-1 downto 0);
     gtwiz_drpdi_in   : out std_logic_vector(kNUM_LANES*16-1 downto 0);
@@ -61,12 +50,12 @@ port (
     gtwiz_drpwe_in   : out std_logic_vector(kNUM_LANES-1 downto 0);
     gtwiz_drprdy_out : in  std_logic_vector(kNUM_LANES-1 downto 0);
 
-
-
-
+-------------------------------------------------------------------------------
+-- AXI interfaces for LVFPGA Instruction Framework
+-------------------------------------------------------------------------------
     s_aclk : in  std_logic;
 
-    
+    -- AXI4-Lite Interface for Channel DRP
     drp_s_axi_awaddr  : in  std_logic_vector(31 downto 0);
     drp_s_axi_awvalid : in  std_logic;
     drp_s_axi_awready : out std_logic;
@@ -91,23 +80,23 @@ end MgtTest_DRP_bridge;
 architecture rtl of MgtTest_DRP_bridge is
     signal aReset_n : std_logic;
 
-    
+    -- AXI4-Lite Read Data vectors from the DRP endpoints in the cores
     subtype AxiData_t is std_logic_vector(31 downto 0);
     type AxiDataAry_t is array(natural range <>) of AxiData_t;
     signal drp_s_axi_rdata_lane   : AxiDataAry_t(kNUM_LANES-1 downto 0);
     signal drp_s_axi_rdata_lcl    : AxiData_t;
 
-    
+    -- DRP Address signals
     subtype DrpMgtAddr_t is std_logic_vector(kADDR_SIZE-1 downto 0);
     type DrpMgtAddrAry_t is array(natural range <>) of DrpMgtAddr_t;
     signal gtwiz_lane_drpaddr_in : DrpMgtAddrAry_t(kNUM_LANES-1 downto 0);
 
-    
+    -- DRP Data signals
     subtype DrpData_t is std_logic_vector(15 downto 0);
     type DrpDataAry_t is array(natural range <>) of DrpData_t;
     signal gtwiz_lane_drpdi_in, gtwiz_lane_drpdo_out : DrpDataAry_t(kNUM_LANES-1 downto 0);
 
-    
+    -- AXI4-Lite Valid and Ready signal vectors
     signal drp_s_axi_awvalid_slv, drp_s_axi_awready_slv, drp_s_axi_wvalid_slv, drp_s_axi_wready_slv,
            drp_s_axi_bvalid_slv,  drp_s_axi_arvalid_slv, drp_s_axi_arready_slv,
            drp_s_axi_rvalid_slv,  drp_s_axi_rready_slv,  drp_s_axi_bready_slv : std_logic_vector(kNUM_LANES-1 downto 0);
@@ -122,10 +111,10 @@ architecture rtl of MgtTest_DRP_bridge is
     end to_StdLogic;
 
 begin
-    
-    
-    
-    
+    ---------------------------------------------------------------------------
+    -- GT Wizard Channel AXI4-Lite and DRP Handlers
+    ---------------------------------------------------------------------------
+    -- Address map to go from a single AXI4-Lite bus to multiple endpoints
     AXI4_Lite_Address_Map_drp_gtwiz_ch : entity work.PXIe659XR_AXI4_Lite_Address_Map(rtl)
     generic map (
         kNumEndpoints  => kNUM_LANES,
@@ -159,9 +148,9 @@ begin
         s_axi_rvalid_slv  => drp_s_axi_rvalid_slv,
         s_axi_rready_slv  => drp_s_axi_rready_slv
     );
-    
+    -- Generate statement for the AXI4-Lite to DRP lane components
     GenGtwizAxiDrp : for i in 0 to kNUM_LANES-1 generate
-        
+        -- Signal vectorization for GT Wizard Verilog core --
         gtwiz_drpclk        (i) <= s_aclk;
         gtwiz_drpaddr_in    ((i+1)*kADDR_SIZE-1 downto i*kADDR_SIZE) <= gtwiz_lane_drpaddr_in(i);
         gtwiz_drpdi_in      ((i+1)*16-1 downto i*16) <= gtwiz_lane_drpdi_in  (i);
@@ -209,7 +198,7 @@ begin
         drp_s_axi_rdata_lcl <= drp_s_axi_rdata_temp;
     end process;
         
-    
+    -- Drive active low reset.
     aReset_n <= not aResetSl;
 
 end rtl;
