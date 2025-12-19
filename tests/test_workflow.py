@@ -530,7 +530,7 @@ if __name__ == "__main__":
 
     # Exit with appropriate status code
     success = all(results) and validation_success
-    
+
     # Print final test summary
     print(f"\n{'=' * 80}")
     print(f"{BLUE}FINAL TEST SUMMARY{RESET}")
@@ -544,5 +544,5 @@ if __name__ == "__main__":
         if not validation_success:
             print(f"  - Output validation: {RED}FAILED{RESET}")
     print(f"{'=' * 80}\n")
-    
+
     sys.exit(0 if success else 1)
