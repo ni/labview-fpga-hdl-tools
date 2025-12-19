@@ -145,11 +145,18 @@ def extract_deps_cmd(ctx):
     is_flag=True,
     help="Automatically delete and re-clone existing repositories without prompting",
 )
+@click.option(
+    "--pre-release",
+    is_flag=True,
+    help="Include pre-release versions when resolving 'latest' tag",
+)
 @click.pass_context
-def install_deps_cmd(ctx, delete_allowed):
+def install_deps_cmd(ctx, delete_allowed, pre_release):
     """Install GitHub dependencies from dependencies.toml."""
     try:
-        result = install_dependencies.install_dependencies(delete_allowed=delete_allowed)
+        result = install_dependencies.install_dependencies(
+            delete_allowed=delete_allowed, allow_prerelease=pre_release
+        )
         return result
     except Exception as e:
         handle_exception(e)
