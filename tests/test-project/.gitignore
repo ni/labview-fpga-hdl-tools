@@ -13,4 +13,3 @@ __pycache__/
 ~*.pptx
 ~*.docx
 ~*.tmp
-deps/
