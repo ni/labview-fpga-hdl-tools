@@ -46,8 +46,8 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path, delete_allowed: bool
 
     # Check if already exists and prompt user
     if repo_path.exists():
-        print(f"  ℹ Repository {repo_name} already exists at {repo_path}")
-        
+        print(f"  [INFO] Repository {repo_name} already exists at {repo_path}")
+
         if delete_allowed:
             response = "y"
             print(f"    Auto-deleting and re-cloning (--delete-allowed flag set)")
@@ -65,7 +65,7 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path, delete_allowed: bool
                     shutil.rmtree(repo_path, onerror=_remove_readonly)  # type: ignore[call-arg]
                 print(f"    Deleted successfully")
             except Exception as e:
-                print(f"    ✗ Failed to delete: {e}")
+                print(f"    [FAIL] Failed to delete: {e}")
                 return False
         else:
             print(f"    Skipping clone")
@@ -79,11 +79,11 @@ def _clone_repo_at_tag(repo: str, tag: str, base_dir: Path, delete_allowed: bool
             text=True,
             check=True,
         )
-        print(f"  ✓ Successfully cloned {repo_name}")
+        print(f"  [OK] Successfully cloned {repo_name}")
         return True
 
     except subprocess.CalledProcessError as e:
-        print(f"  ✗ Failed to clone {repo}: {e.stderr}")
+        print(f"  [FAIL] Failed to clone {repo}: {e.stderr}")
         return False
 
 
