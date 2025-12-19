@@ -536,9 +536,9 @@ if __name__ == "__main__":
     print(f"{BLUE}FINAL TEST SUMMARY{RESET}")
     print(f"{'=' * 80}")
     if success:
-        print(f"{GREEN}✓ ALL TESTS PASSED{RESET}")
+        print(f"{GREEN}[PASS] ALL TESTS PASSED{RESET}")
     else:
-        print(f"{RED}✗ SOME TESTS FAILED{RESET}")
+        print(f"{RED}[FAIL] SOME TESTS FAILED{RESET}")
         if not all(results):
             print(f"  - Command tests: {RED}FAILED{RESET}")
         if not validation_success:
