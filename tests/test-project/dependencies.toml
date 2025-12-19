@@ -1,4 +1,5 @@
 dependencies = [
     "ni/flexrio-deps:26.0.0.dev3",
-    "ni/flexrio-aurora-clip:26.0.0.dev1"
+    "ni/flexrio-aurora-clip:26.0.0.dev1",
+    "ni/daqmx-python:1.3.0"
 ]
