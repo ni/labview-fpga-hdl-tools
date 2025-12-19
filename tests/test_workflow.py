@@ -134,12 +134,12 @@ def test_set_no_errors():
     nihdl_cmd = get_nihdl_command()
 
     return [
-        { #### DISABLED - We can't install deps from GitHub in the runner yet 
-          #### need to figure out authentication
+        {  #### DISABLED - We can't install deps from GitHub in the runner yet
+            #### need to figure out authentication
             "name": "install-deps",
             "command": f"{nihdl_cmd} install-deps --delete-allowed",
             "working_dir": paths["target_dir"],
-            "disable_test": True, 
+            "disable_test": True,
         },
         {
             "name": "migrate-clip",
