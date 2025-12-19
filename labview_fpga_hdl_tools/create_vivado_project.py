@@ -198,7 +198,7 @@ def _copy_long_path_files(file_list):
                 shutil.copy2(file, target_path)
                 new_file_list.append(target_path)
                 print(f"WARNING: Long path file {original_file}")
-                print(f"         was copied into the objects/gathereddeps folder.")
+                print(f"         was copied into the objects/gatheredfiles folder.")
                 print(
                     f"         You must run 'nihdl create-project --update' to pull in any changes to the source file."
                 )
