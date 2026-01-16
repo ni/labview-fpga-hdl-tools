@@ -57,9 +57,11 @@ class FileConfiguration:
     custom_signals_csv: Optional[str] = None  # Path to CSV containing signal definitions
     boardio_output: Optional[str] = None  # Path where BoardIO XML will be written
     clock_output: Optional[str] = None  # Path where Clock XML will be written
-    window_vhdl_template: Optional[str] = None  # Template for TheWindow.vhd generation
-    window_vhdl_output: Optional[str] = None  # Output path for TheWindow.vhd
-    window_instantiation_example: Optional[str] = None  # Path for instantiation example output
+    window_vhdl_templates: List[str] = field(
+        default_factory=list
+    )  # Template for TheWindow.vhd generation
+    window_vhdl_output_folder: Optional[str] = None  # Output folder for TheWindow.vhd
+    board_io_signal_assignments_example: Optional[str] = None  # Path for instantiation example output
     target_xml_templates: List[str] = field(
         default_factory=list
     )  # Templates for target XML generation
@@ -194,9 +196,8 @@ def load_config(config_path=None):
     files.custom_signals_csv = resolve_path(settings.get("LVTargetBoardIO"))
     files.boardio_output = resolve_path(settings.get("BoardIOXML"))
     files.clock_output = resolve_path(settings.get("ClockXML"))
-    files.window_vhdl_template = resolve_path(settings.get("WindowVhdlTemplate"))
-    files.window_vhdl_output = resolve_path(settings.get("WindowVhdlOutput"))
-    files.window_instantiation_example = resolve_path(settings.get("WindowInstantiationExample"))
+    files.window_vhdl_output_folder = resolve_path(settings.get("WindowVhdlOutputFolder"))
+    files.board_io_signal_assignments_example = resolve_path(settings.get("BoardIOSignalAssignmentsExample"))
     files.lv_target_name = settings.get("LVTargetName")
     files.lv_target_guid = settings.get("LVTargetGUID")
     files.lv_target_plugin_folder = resolve_path(settings.get("LVTargetPluginFolder"))
@@ -204,10 +205,20 @@ def load_config(config_path=None):
     files.include_clip_socket_ports = _parse_bool(settings.get("IncludeCLIPSocket"), True)
     files.include_custom_io = _parse_bool(settings.get("IncludeLVTargetBoardIO"), True)
 
+    # Load Window VHDL templates
+    vhdl_template_files = settings.get("WindowVhdlTemplates")
+    if vhdl_template_files:
+        for template_file in vhdl_template_files.strip().split("\n"):
+            template_file = template_file.strip()
+            if template_file:
+                abs_template_file = resolve_path(template_file)
+                if abs_template_file is not None:  # Add None check
+                    files.window_vhdl_templates.append(abs_template_file)
+
     # Load XML templates
-    template_files = settings.get("TargetXMLTemplates")
-    if template_files:
-        for template_file in template_files.strip().split("\n"):
+    xml_template_files = settings.get("TargetXMLTemplates")
+    if xml_template_files:
+        for template_file in xml_template_files.strip().split("\n"):
             template_file = template_file.strip()
             if template_file:
                 abs_template_file = resolve_path(template_file)

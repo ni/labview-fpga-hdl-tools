@@ -333,24 +333,58 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
         sys.exit(1)
 
 
-def _generate_window_vhdl_from_csv(
-    csv_path, template_path, output_path, include_clip_socket, include_custom_io
-):
-    """Generate Window VHDL from CSV using a Mako template.
+def _get_board_io_signals(csv_path):
+    """Read Board IO signals from CSV file.
 
-    Creates the Window VHDL file that serves as the interface between LabVIEW FPGA
+    Reads signal definitions from the CSV and returns a list of signal dictionaries.
+    Each dictionary contains properties of a signal such as LV name, HDL name,
+    direction, data type, etc.
+
+    Args:
+        csv_path (str): Path to the CSV containing signal definitions
+    Returns:
+        list: List of dictionaries representing Board IO signals
+    """
+    # Read signals from CSV
+    signals = []
+    with open(csv_path, "r", newline="", encoding="utf-8") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if row["SignalType"].lower() == "clock" and row["Direction"] == "output":
+                # Clocks going to the CLIP are not driven from TheWindow.  They are connected
+                # manually when the CLIP HDL is instantiated in the top level HDL design
+                continue
+
+            signals.append(
+                {
+                    "name": row["HDLName"],
+                    "direction": "in" if row["Direction"] == "input" else "out",
+                    "type": _map_datatype_to_vhdl(row["DataType"]),
+                    "lv_name": row["LVName"],
+                }
+            )
+    return signals
+
+
+def _generate_window_vhdl_from_csv(
+    csv_path, template_paths, output_folder, include_clip_socket, include_custom_io
+):
+    """Generate Window VHDL from CSV using Mako templates.
+
+    Creates Window VHDL files that serve as the interface between LabVIEW FPGA
     and custom hardware. Uses a template-based approach with Mako templates.
+    Processes multiple templates if provided.
 
     The function:
     1. Reads signal information from CSV
     2. Maps data types to VHDL equivalents
-    3. Renders the Mako template with the signal data
-    4. Writes the generated VHDL to the output file
+    3. Renders each Mako template with the signal data
+    4. Writes the generated VHDL files to the output folder
 
     Args:
         csv_path (str): Path to the CSV containing signal definitions
-        template_path (str): Path to the Mako template for VHDL generation
-        output_path (str): Path where the VHDL file will be written
+        template_paths (list): List of paths to Mako templates for VHDL generation
+        output_folder (str): Folder where the generated VHDL files will be written
         include_clip_socket (bool): Whether to include CLIP socket ports
         include_custom_io (bool): Whether to include custom I/O
 
@@ -358,41 +392,39 @@ def _generate_window_vhdl_from_csv(
         SystemExit: If an error occurs during VHDL generation
     """
     try:
-        # Read signals from CSV
-        signals = []
-        with open(csv_path, "r", newline="", encoding="utf-8") as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                if row["SignalType"].lower() == "clock" and row["Direction"] == "output":
-                    # Clocks going to the CLIP are not driven from TheWindow.  They are connected
-                    # manually when the CLIP HDL is instantiated in the top level HDL design
-                    continue
+        signals = _get_board_io_signals(csv_path)
 
-                signals.append(
-                    {
-                        "name": row["HDLName"],
-                        "direction": "in" if row["Direction"] == "input" else "out",
-                        "type": _map_datatype_to_vhdl(row["DataType"]),
-                        "lv_name": row["LVName"],
-                    }
-                )
+        # Process each template
+        for template_path in template_paths:
+            # Convert absolute template path to relative path (from current working directory)
+            # to preserve the folder hierarchy specified in the INI file
+            cwd = os.getcwd()
+            template_relpath = os.path.relpath(template_path, cwd)
+            
+            # Remove .mako extension to get output filename
+            output_filename = template_relpath[:-5] if template_relpath.endswith('.mako') else template_relpath
+            
+            # Form full output path, preserving the folder hierarchy
+            output_path = os.path.join(output_folder, output_filename)
+            
+            print(f"Processing template: {template_path} -> {output_path}")
 
-        # Render template
-        with open(template_path, "r", encoding="utf-8") as f:
-            template = Template(f.read())
+            # Render template
+            with open(template_path, "r", encoding="utf-8") as f:
+                template = Template(f.read())
 
-        output_text = template.render(
-            custom_signals=signals,
-            include_clip_socket=include_clip_socket,
-            include_custom_io=include_custom_io,
-        )
+            output_text = template.render(
+                custom_signals=signals,
+                include_clip_socket=include_clip_socket,
+                include_custom_io=include_custom_io,
+            )
 
-        # Write output file
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(output_text)
+            # Write output file
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(output_text)
 
-        print(f"Generated VHDL file: {output_path}")
+            print(f"Generated VHDL file: {output_path}")
 
     except Exception as e:
         print(f"Error generating VHDL from CSV: {e}")
@@ -475,30 +507,38 @@ def _generate_target_xml(
         sys.exit(1)
 
 
-def _generate_window_vhdl_instantiation_example(vhdl_path, output_path):
-    """Generate Window VHDL entity instantiation example from VHDL file.
+def _generate_board_io_signal_assignments_example(csv_path, output_path):
+    """Generate Board IO signal assignments example from CSV file.
 
-    Creates a VHDL file that demonstrates how to instantiate TheWindow entity
-    in a larger design. This is useful for integrating the generated VHDL
-    components into custom hardware designs.
-
-    The function leverages the common module's entity instantiation functionality
-    to create consistent instantiation syntax across the project.
+    Creates a VHDL file containing signal assignments for all Board IO signals.
+    Each signal is assigned to itself (e.g., signala <= signala) which can be
+    used as a template for connecting signals in HDL designs.
 
     Args:
-        vhdl_path (str): Path to the input VHDL file (TheWindow.vhd)
-        output_path (str): Path where the instantiation example will be written
+        csv_path (str): Path to the CSV containing signal definitions
+        output_path (str): Path where the signal assignments file will be written
 
     Raises:
         SystemExit: If an error occurs during example generation
     """
     try:
-        # Use the common module's function to generate instantiation
-        common.generate_hdl_instantiation_example(vhdl_path, output_path, use_component=True)
-        print(f"Generated TheWindow VHDL instantiation example: {output_path}")
+        signals = _get_board_io_signals(csv_path)
+        
+        # Generate signal assignments
+        assignments = []
+        for signal in signals:
+            signal_name = signal["name"]
+            assignments.append(f"{signal_name} <= {signal_name};")
+        
+        # Write to output file
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(assignments))
+        
+        print(f"Generated Board IO signal assignments: {output_path}")
 
     except Exception as e:
-        print(f"Error generating TheWindow VHDL instantiation example: {e}")
+        print(f"Error generating Board IO signal assignments: {e}")
         sys.exit(1)
 
 
@@ -670,20 +710,22 @@ def _validate_ini(config):
     if not config.clock_output:
         missing_settings.append("LVFPGATargetSettings.ClockXML")
 
-    if not config.window_vhdl_template:
-        missing_settings.append("LVFPGATargetSettings.WindowVhdlTemplate")
+    if not config.window_vhdl_templates:
+        missing_settings.append("LVFPGATargetSettings.WindowVhdlTemplates")
     else:
-        invalid_path = common.validate_path(
-            config.window_vhdl_template, "LVFPGATargetSettings.WindowVhdlTemplate", "file"
-        )
-        if invalid_path:
-            invalid_paths.append(invalid_path)
+        # Validate each template file path
+        for i, template_path in enumerate(config.window_vhdl_templates):
+            invalid_path = common.validate_path(
+                template_path, f"LVFPGATargetSettings.WindowVhdlTemplates[{i}]", "file"
+            )
+            if invalid_path:
+                invalid_paths.append(invalid_path)
 
-    if not config.window_vhdl_output:
-        missing_settings.append("LVFPGATargetSettings.WindowVhdlOutput")
+    if not config.window_vhdl_output_folder:
+        missing_settings.append("LVFPGATargetSettings.WindowVhdlOutputFolder")
 
-    if not config.window_instantiation_example:
-        missing_settings.append("LVFPGATargetSettings.WindowInstantiationExample")
+    if not config.board_io_signal_assignments_example:
+        missing_settings.append("LVFPGATargetSettings.BoardIOSignalAssignmentsExample")
 
     # Check list settings
     if not config.hdl_file_lists:
@@ -756,14 +798,15 @@ def gen_lv_target_support(config_path=None):
 
     _generate_window_vhdl_from_csv(
         config.custom_signals_csv,
-        config.window_vhdl_template,
-        config.window_vhdl_output,
+        config.window_vhdl_templates,
+        config.window_vhdl_output_folder,
         config.include_clip_socket_ports,
         config.include_custom_io,
     )
 
-    _generate_window_vhdl_instantiation_example(
-        config.window_vhdl_output, config.window_instantiation_example
+    _generate_board_io_signal_assignments_example(
+        config.custom_signals_csv,
+        config.board_io_signal_assignments_example
     )
 
     _generate_target_xml(
