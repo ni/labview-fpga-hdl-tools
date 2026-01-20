@@ -61,7 +61,7 @@ class FileConfiguration:
         default_factory=list
     )  # Template for TheWindow.vhd generation
     window_vhdl_output_folder: Optional[str] = None  # Output folder for TheWindow.vhd
-    board_io_signal_assignments_example: Optional[str] = None  # Path for instantiation example output
+    board_io_signal_assignments_example: Optional[str] = None  # Path for example output
     target_xml_templates: List[str] = field(
         default_factory=list
     )  # Templates for target XML generation
@@ -197,7 +197,9 @@ def load_config(config_path=None):
     files.boardio_output = resolve_path(settings.get("BoardIOXML"))
     files.clock_output = resolve_path(settings.get("ClockXML"))
     files.window_vhdl_output_folder = resolve_path(settings.get("WindowVhdlOutputFolder"))
-    files.board_io_signal_assignments_example = resolve_path(settings.get("BoardIOSignalAssignmentsExample"))
+    files.board_io_signal_assignments_example = resolve_path(
+        settings.get("BoardIOSignalAssignmentsExample")
+    )
     files.lv_target_name = settings.get("LVTargetName")
     files.lv_target_guid = settings.get("LVTargetGUID")
     files.lv_target_plugin_folder = resolve_path(settings.get("LVTargetPluginFolder"))

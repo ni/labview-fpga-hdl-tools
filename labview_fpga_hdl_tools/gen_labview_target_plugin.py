@@ -400,13 +400,15 @@ def _generate_window_vhdl_from_csv(
             # to preserve the folder hierarchy specified in the INI file
             cwd = os.getcwd()
             template_relpath = os.path.relpath(template_path, cwd)
-            
+
             # Remove .mako extension to get output filename
-            output_filename = template_relpath[:-5] if template_relpath.endswith('.mako') else template_relpath
-            
+            output_filename = (
+                template_relpath[:-5] if template_relpath.endswith(".mako") else template_relpath
+            )
+
             # Form full output path, preserving the folder hierarchy
             output_path = os.path.join(output_folder, output_filename)
-            
+
             print(f"Processing template: {template_path} -> {output_path}")
 
             # Render template
@@ -523,18 +525,18 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
     """
     try:
         signals = _get_board_io_signals(csv_path)
-        
+
         # Generate signal assignments
         assignments = []
         for signal in signals:
             signal_name = signal["name"]
             assignments.append(f"{signal_name} <= {signal_name};")
-        
+
         # Write to output file
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(assignments))
-        
+
         print(f"Generated Board IO signal assignments: {output_path}")
 
     except Exception as e:
@@ -805,8 +807,7 @@ def gen_lv_target_support(config_path=None):
     )
 
     _generate_board_io_signal_assignments_example(
-        config.custom_signals_csv,
-        config.board_io_signal_assignments_example
+        config.custom_signals_csv, config.board_io_signal_assignments_example
     )
 
     _generate_target_xml(
