@@ -14,7 +14,9 @@ from . import common
 
 def _get_window_netlist(config, test=False):
     """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
-    get_netlist_tcl_path = os.path.join(os.getcwd(), config.vivado_tcl_scripts_folder, "GetWindowNetlist.tcl")
+    get_netlist_tcl_path = os.path.join(
+        os.getcwd(), config.vivado_tcl_scripts_folder, "GetWindowNetlist.tcl"
+    )
     print(f"Using TCL script at: {get_netlist_tcl_path}")
     current_dir = os.getcwd()
 

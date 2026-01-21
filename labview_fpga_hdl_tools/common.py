@@ -603,7 +603,7 @@ def process_constraints_template(config):
     for template_path in template_files:
         # Get base filename from template path
         template_basename = os.path.basename(template_path)
-        
+
         # Remove _template from filename to get output filename
         output_file = template_basename.replace("_template", "")
         output_path = os.path.join(output_folder, output_file)

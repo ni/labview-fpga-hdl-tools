@@ -18,7 +18,6 @@ Key functionalities:
 
 import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
-import re  # For regular expression operations
 import shutil  # For file copying operations
 import sys  # For command-line arguments and error handling
 import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
@@ -543,7 +542,12 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
 
 
 def _copy_fpgafiles(
-    hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target, target_exclude_files
+    hdl_file_lists,
+    lv_target_constraints_files,
+    plugin_folder,
+    target_family,
+    base_target,
+    target_exclude_files,
 ):
     """Copy HDL files to the FPGA files destination folder."""
     # Get all HDL files from file lists
@@ -582,7 +586,7 @@ def _copy_fpgafiles(
     for file in file_list:
         # Get the base filename
         base_filename = os.path.basename(file)
-        
+
         # Check if the base filename is in the exclude list
         should_exclude = base_filename in exclude_file_list
 
