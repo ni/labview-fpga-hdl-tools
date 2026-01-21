@@ -396,17 +396,15 @@ def _generate_window_vhdl_from_csv(
 
         # Process each template
         for template_path in template_paths:
-            # Convert absolute template path to relative path (from current working directory)
-            # to preserve the folder hierarchy specified in the INI file
-            cwd = os.getcwd()
-            template_relpath = os.path.relpath(template_path, cwd)
+            # Get base filename from template path
+            template_basename = os.path.basename(template_path)
 
             # Remove .mako extension to get output filename
             output_filename = (
-                template_relpath[:-5] if template_relpath.endswith(".mako") else template_relpath
+                template_basename[:-5] if template_basename.endswith(".mako") else template_basename
             )
 
-            # Form full output path, preserving the folder hierarchy
+            # Form full output path
             output_path = os.path.join(output_folder, output_filename)
 
             print(f"Processing template: {template_path} -> {output_path}")
@@ -545,7 +543,7 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
 
 
 def _copy_fpgafiles(
-    hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target
+    hdl_file_lists, lv_target_constraints_files, plugin_folder, target_family, base_target, target_exclude_files
 ):
     """Copy HDL files to the FPGA files destination folder."""
     # Get all HDL files from file lists
@@ -571,42 +569,29 @@ def _copy_fpgafiles(
     dest_deps_folder = os.path.join(plugin_folder, "FpgaFiles")
     os.makedirs(dest_deps_folder, exist_ok=True)
 
-    # FlexRIO has a file with regular expressions that is used to specify which files
-    # should not be included in the LV FPGA target plugin.  Other product families like
-    # cRIO may have a different implementation for this functionality so we look at the
-    # target family to determine if/how we exclude files.
-    exclude_regex_list = []
-    if target_family.lower() == "flexrio":
-        exclude_script_path = common.resolve_path("../lvfpgaexcludefiles.py")
-        if exclude_script_path is None:
-            print("Warning: Could not resolve path to lvfpgaexcludefiles.py")
-            # Use a default empty list for exclude patterns
-            exclude_regex_list = []
-        else:
-            # Get skip files from specified script
-            script_dir = os.path.dirname(exclude_script_path)
-            script_name = os.path.basename(exclude_script_path).split(".")[0]
-            sys.path.insert(0, script_dir)
-            try:
-                exclude_module = __import__(script_name)
-                exclude_regex_list = exclude_module.get_exclude_regex_list()
-            except ImportError:
-                print(f"Warning: Could not import {script_name} module")
-                exclude_regex_list = []
-            finally:
-                sys.path.pop(0)
+    # Read the list of files to exclude from the file
+    exclude_file_list = []
+    if target_exclude_files and os.path.exists(target_exclude_files):
+        with open(target_exclude_files, "r", encoding="utf-8") as f:
+            # Read each line, strip whitespace, and filter out empty lines
+            exclude_file_list = [line.strip() for line in f if line.strip()]
+        print(f"Loaded {len(exclude_file_list)} files to exclude from {target_exclude_files}")
     else:
-        raise ValueError(f"Unsupported target family: {target_family}.")
+        print("No exclude file list provided or file does not exist")
 
     for file in file_list:
-        # Check if any exclude pattern matches the file path
-        should_exclude = any(
-            re.search(exclude_pattern, file) for exclude_pattern in exclude_regex_list
-        )
+        # Get the base filename
+        base_filename = os.path.basename(file)
+        
+        # Check if the base filename is in the exclude list
+        should_exclude = base_filename in exclude_file_list
+
+        # print which files are being excluded for debugging
+        if should_exclude:
+            print(f"Excluding file: {file}")
 
         if not should_exclude:
-            file = os.path.abspath(file)
-            file = common.handle_long_path(file)
+            file = common.handle_long_path(os.path.abspath(file))
 
             # Get the base filename
             base_filename = os.path.basename(file)
@@ -827,6 +812,7 @@ def gen_lv_target_support(config_path=None):
         config.lv_target_plugin_folder,
         config.target_family,
         config.base_target,
+        config.target_exclude_files,
     )
 
     _copy_menu_files(config.lv_target_plugin_folder, config.lv_target_menus_folder)

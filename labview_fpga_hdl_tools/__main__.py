@@ -14,7 +14,6 @@ import click
 from . import (
     create_lvbitx,
     create_vivado_project,
-    extract_dependencies,
     gen_labview_target_plugin,
     get_window_netlist,
     install_dependencies,
@@ -127,18 +126,6 @@ def launch_vivado_cmd(ctx, config, test):
         return 1
 
 
-@cli.command("extract-deps", help="Extract dependency ZIP files (run from 'targets' folder)")
-@click.pass_context
-def extract_deps_cmd(ctx):
-    """Extract dependency ZIP files from current directory."""
-    try:
-        result = extract_dependencies.extract_deps_from_zip()
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
-
-
 @cli.command("install-deps", help="Install GitHub dependencies from dependencies.toml")
 @click.option(
     "--delete-allowed",
@@ -175,36 +162,6 @@ def create_lvbitx_cmd(ctx, config, test):
     """Create LabVIEW FPGA bitfile from Vivado output."""
     try:
         result = create_lvbitx.create_lv_bitx(test=test, config_path=config)
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
-
-
-@cli.command("install-lv-patch", help="Install LabVIEW patches")
-@config_option
-@click.pass_context
-def install_lv_patch_cmd(ctx, config):
-    """Install LabVIEW patches."""
-    try:
-        from . import patch_labview
-
-        result = patch_labview.install_labview_patch(config_path=config)
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
-
-
-@cli.command("uninstall-lv-patch", help="Uninstall LabVIEW patches and restore originals")
-@config_option
-@click.pass_context
-def uninstall_lv_patch_cmd(ctx, config):
-    """Uninstall LabVIEW patches and restore original files."""
-    try:
-        from . import patch_labview
-
-        result = patch_labview.uninstall_labview_patch(config_path=config)
         return result
     except Exception as e:
         handle_exception(e)

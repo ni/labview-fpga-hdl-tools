@@ -78,6 +78,7 @@ class FileConfiguration:
     lv_target_install_folder: Optional[str] = None  # Installation folder for target plugins
     lv_target_menus_folder: Optional[str] = None  # Folder containing target plugin menu files
     lv_target_info_ini: Optional[str] = None  # Path to TargetInfo.ini file
+    target_exclude_files: Optional[str] = None  # Path to Python script with file exclusion patterns
     # ----- CLIP MIGRATION SETTINGS -----
     input_xml_path: Optional[str] = None  # Path to source CLIP XML file
     output_csv_path: Optional[str] = None  # Path where CSV signals will be written
@@ -239,6 +240,7 @@ def load_config(config_path=None):
 
     files.lv_target_menus_folder = resolve_path(settings.get("LVTargetMenusFolder"))
     files.lv_target_info_ini = resolve_path(settings.get("LVTargetInfoIni"))
+    files.target_exclude_files = resolve_path(settings.get("TargetExcludeFiles"))
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
@@ -544,8 +546,7 @@ def process_constraints_template(config):
     Args:
         config (FileConfiguration): Configuration settings object with path information
     """
-    # Define source and destination directories
-    xdc_template_folder = os.path.join(os.getcwd(), "xdc")
+    # Define output directory
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
     window_constraints_path = os.path.join(
         config.the_window_folder_input, "TheWindowConstraints.xdc"
@@ -591,24 +592,23 @@ def process_constraints_template(config):
     else:
         print("No custom constraints file specified or file not found")
 
-    # Find all files in xdc folder that contain "_template"
-    template_files = []
-    for file in os.listdir(xdc_template_folder):
-        if "_template" in file and os.path.isfile(os.path.join(xdc_template_folder, file)):
-            template_files.append(file)
+    # Get template files from configuration
+    template_files = config.constraints_templates
 
     if not template_files:
-        print("No template constraint files found in xdc folder.")
+        print("No constraint templates specified in configuration.")
         return
 
     # Process each template file
-    for template_file in template_files:
-        # Construct paths
-        template_path = os.path.join(xdc_template_folder, template_file)
-        output_file = template_file.replace("_template", "")
+    for template_path in template_files:
+        # Get base filename from template path
+        template_basename = os.path.basename(template_path)
+        
+        # Remove _template from filename to get output filename
+        output_file = template_basename.replace("_template", "")
         output_path = os.path.join(output_folder, output_file)
 
-        print(f"Processing {template_file} -> {output_file}")
+        print(f"Processing {template_basename} -> {output_file}")
 
         # Read the template file
         with open(template_path, "r", encoding="utf-8") as f:

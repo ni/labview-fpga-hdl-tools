@@ -14,7 +14,8 @@ from . import common
 
 def _get_window_netlist(config, test=False):
     """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
-    get_netlist_tcl_path = os.path.join(os.getcwd(), "TCL/GetWindowNetlist.tcl")
+    get_netlist_tcl_path = os.path.join(os.getcwd(), config.vivado_tcl_scripts_folder, "GetWindowNetlist.tcl")
+    print(f"Using TCL script at: {get_netlist_tcl_path}")
     current_dir = os.getcwd()
 
     # Extract project directory and name from the XPR path
@@ -35,7 +36,7 @@ def _get_window_netlist(config, test=False):
     else:  # Linux or other OS
         vivado_executable = os.path.join(vivado_path, "bin", "vivado")
 
-    source_file = os.path.join(vivado_project_path, "TheWindow.edf")
+    source_file = os.path.join(vivado_project_path, "TheWindowFlatWrapper.v")
     destination_folder = config.the_window_folder_output
 
     # Create destination directory if it doesn't exist
@@ -45,11 +46,11 @@ def _get_window_netlist(config, test=False):
     if test:
         print("TEST MODE: Skipping Vivado execution")
 
-        # In test mode, create a mock EDF file if it doesn't exist
+        # In test mode, create a mock Verilog netlist file if it doesn't exist
         if not os.path.exists(source_file):
             with open(source_file, "w") as f:
-                f.write("# Mock EDF file created for testing\n")
-            print(f"Created mock EDF file for testing: {source_file}")
+                f.write("// Mock Verilog netlist file created for testing\n")
+            print(f"Created mock Verilog netlist file for testing: {source_file}")
     else:
         print(f"Current working directory: {os.getcwd()}")
         common.run_command(
@@ -85,7 +86,7 @@ def _get_window_netlist(config, test=False):
                 f"Vivado TCL script execution failed: Expected output file {source_file} was not generated."
             )
 
-    destination_file = os.path.join(destination_folder, "TheWindow.edf")
+    destination_file = os.path.join(destination_folder, "TheWindowFlatWrapper.v")
 
     try:
         if os.path.exists(source_file):
