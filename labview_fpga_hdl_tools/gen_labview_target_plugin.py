@@ -590,10 +590,6 @@ def _copy_fpgafiles(
         # Check if the base filename is in the exclude list
         should_exclude = base_filename in exclude_file_list
 
-        # print which files are being excluded for debugging
-        if should_exclude:
-            print(f"Excluding file: {file}")
-
         if not should_exclude:
             file = common.handle_long_path(os.path.abspath(file))
 

@@ -562,25 +562,29 @@ def process_constraints_template(config):
             constraints_content = f.read()
 
             # Extract content between markers
-            period_clip_pattern = r"# BEGIN_LV_FPGA_PERIOD_AND_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_AND_CLIP_CONSTRAINTS"
+            period_pattern = r"# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_CONSTRAINTS"
+            clip_pattern = r"# BEGIN_LV_FPGA_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_CLIP_CONSTRAINTS"
             from_to_pattern = (
                 r"# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS(.*?)# END_LV_FPGA_FROM_TO_CONSTRAINTS"
             )
 
-            period_clip_match = re.search(period_clip_pattern, constraints_content, re.DOTALL)
+            period_match = re.search(period_pattern, constraints_content, re.DOTALL)
+            clip_match = re.search(clip_pattern, constraints_content, re.DOTALL)
             from_to_match = re.search(from_to_pattern, constraints_content, re.DOTALL)
 
-            if not period_clip_match or not from_to_match:
+            if not period_match or not clip_match or not from_to_match:
                 print(
-                    "Error: Could not find one or both marker sections in TheWindowConstraints.xdc"
+                    "Error: Could not find one or more marker sections in TheWindowConstraints.xdc"
                 )
                 return
 
-            period_clip_content = period_clip_match.group(1)
+            period_content = period_match.group(1)
+            clip_content = clip_match.group(1)
             from_to_content = from_to_match.group(1)
     else:
         print(f"TheWindowConstraints.xdc file not found at {window_constraints_path}")
-        period_clip_content = ""
+        period_content = ""
+        clip_content = ""
         from_to_content = ""
 
     # Read custom constraints file if specified
@@ -617,28 +621,28 @@ def process_constraints_template(config):
         # Replace content between markers
         final_content = template_content
 
-        # Replace PERIOD_AND_CLIP section
-        final_content = re.sub(
-            r"# BEGIN_LV_NETLIST_PERIOD_AND_CLIP_CONSTRAINTS(.*?)# END_LV_NETLIST_PERIOD_AND_CLIP_CONSTRAINTS",
-            f"# BEGIN_LV_NETLIST_PERIOD_AND_CLIP_CONSTRAINTS{period_clip_content}# END_LV_NETLIST_PERIOD_AND_CLIP_CONSTRAINTS",
-            final_content,
-            flags=re.DOTALL,
+        # Replace PERIOD macro token
+        final_content = final_content.replace(
+            "#LabVIEWFPGA_Macro macro_periodConstraints",
+            period_content
         )
 
-        # Replace FROM_TO section
-        final_content = re.sub(
-            r"# BEGIN_LV_NETLIST_FROM_TO_CONSTRAINTS(.*?)# END_LV_NETLIST_FROM_TO_CONSTRAINTS",
-            f"# BEGIN_LV_NETLIST_FROM_TO_CONSTRAINTS{from_to_content}# END_LV_NETLIST_FROM_TO_CONSTRAINTS",
-            final_content,
-            flags=re.DOTALL,
+        # Replace _CLIP macro token
+        final_content = final_content.replace(
+            "#LabVIEWFPGA_Macro macro_clipConstraints",
+            clip_content
         )
 
-        # Replace GITHUB_CUSTOM_CONSTRAINTS section
-        final_content = re.sub(
-            r"# BEGIN_GITHUB_CUSTOM_CONSTRAINTS(.*?)# END_GITHUB_CUSTOM_CONSTRAINTS",
-            f"# BEGIN_GITHUB_CUSTOM_CONSTRAINTS\n{custom_constraints_content}\n# END_GITHUB_CUSTOM_CONSTRAINTS",
-            final_content,
-            flags=re.DOTALL,
+        # Replace FROM_TO macro token
+        final_content = final_content.replace(
+            "#LabVIEWFPGA_Macro macro_fromToConstraints",
+            from_to_content
+        )
+      
+        # Replace GITHUB_CUSTOM_CONSTRAINTS macro token
+        final_content = final_content.replace(
+            "#LabVIEWFPGA_Macro macro_GitHubCustomConstraints",
+            custom_constraints_content
         )
 
         # Write the processed content to output file
