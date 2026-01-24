@@ -254,8 +254,12 @@ def _override_lv_window_files(config, file_list):
     # Add all remaining window files that weren't used as replacements
     for name_without_ext, file_path in window_files.items():
         if name_without_ext not in replaced_files:
-            print(f"Adding window file: {file_path}")
-            updated_list.append(file_path)
+            # Exclude .lvtxt and .xdc files - these are not needed by the Vivado project
+            # There is another part of the script that processes the constraints .xdc files
+            file_ext = os.path.splitext(file_path)[1].lower()
+            if file_ext not in ['.lvtxt', '.xdc']:
+                print(f"Adding window file: {file_path}")
+                updated_list.append(file_path)
 
     return updated_list
 

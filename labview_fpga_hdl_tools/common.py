@@ -621,29 +621,45 @@ def process_constraints_template(config):
         # Replace content between markers
         final_content = template_content
 
-        # Replace PERIOD macro token
-        final_content = final_content.replace(
-            "#LabVIEWFPGA_Macro macro_periodConstraints",
-            period_content
+        # Replace PERIOD macro token (case insensitive)
+        final_content, count = re.subn(
+            r"#LabVIEWFPGA_Macro\s+macro_periodConstraints",
+            period_content,
+            final_content,
+            flags=re.IGNORECASE
         )
+        if count == 0:
+            raise ValueError(f"macro_periodConstraints token not found in template {template_basename}")
 
-        # Replace _CLIP macro token
-        final_content = final_content.replace(
-            "#LabVIEWFPGA_Macro macro_clipConstraints",
-            clip_content
+        # Replace _CLIP macro token (case insensitive)
+        final_content, count = re.subn(
+            r"#LabVIEWFPGA_Macro\s+macro_ClipConstraints",
+            clip_content,
+            final_content,
+            flags=re.IGNORECASE
         )
+        if count == 0:
+            raise ValueError(f"macro_ClipConstraints token not found in template {template_basename}")
 
-        # Replace FROM_TO macro token
-        final_content = final_content.replace(
-            "#LabVIEWFPGA_Macro macro_fromToConstraints",
-            from_to_content
+        # Replace FROM_TO macro token (case insensitive)
+        final_content, count = re.subn(
+            r"#LabVIEWFPGA_Macro\s+macro_fromToConstraints",
+            from_to_content,
+            final_content,
+            flags=re.IGNORECASE
         )
+        if count == 0:
+            raise ValueError(f"macro_fromToConstraints token not found in template {template_basename}")
       
-        # Replace GITHUB_CUSTOM_CONSTRAINTS macro token
-        final_content = final_content.replace(
-            "#LabVIEWFPGA_Macro macro_GitHubCustomConstraints",
-            custom_constraints_content
+        # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
+        final_content, count = re.subn(
+            r"#LabVIEWFPGA_Macro\s+macro_GitHubCustomConstraints",
+            custom_constraints_content,
+            final_content,
+            flags=re.IGNORECASE
         )
+        if count == 0:
+            raise ValueError(f"macro_GitHubCustomConstraints token not found in template {template_basename}")
 
         # Write the processed content to output file
         with open(output_path, "w", encoding="utf-8") as f:
