@@ -562,7 +562,9 @@ def process_constraints_template(config):
             constraints_content = f.read()
 
             # Extract content between markers
-            period_pattern = r"# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_CONSTRAINTS"
+            period_pattern = (
+                r"# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_CONSTRAINTS"
+            )
             clip_pattern = r"# BEGIN_LV_FPGA_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_CLIP_CONSTRAINTS"
             from_to_pattern = (
                 r"# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS(.*?)# END_LV_FPGA_FROM_TO_CONSTRAINTS"
@@ -626,40 +628,48 @@ def process_constraints_template(config):
             r"#LabVIEWFPGA_Macro\s+macro_periodConstraints",
             period_content,
             final_content,
-            flags=re.IGNORECASE
+            flags=re.IGNORECASE,
         )
         if count == 0:
-            raise ValueError(f"macro_periodConstraints token not found in template {template_basename}")
+            raise ValueError(
+                f"macro_periodConstraints token not found in template {template_basename}"
+            )
 
         # Replace _CLIP macro token (case insensitive)
         final_content, count = re.subn(
             r"#LabVIEWFPGA_Macro\s+macro_ClipConstraints",
             clip_content,
             final_content,
-            flags=re.IGNORECASE
+            flags=re.IGNORECASE,
         )
         if count == 0:
-            raise ValueError(f"macro_ClipConstraints token not found in template {template_basename}")
+            raise ValueError(
+                f"macro_ClipConstraints token not found in template {template_basename}"
+            )
 
         # Replace FROM_TO macro token (case insensitive)
         final_content, count = re.subn(
             r"#LabVIEWFPGA_Macro\s+macro_fromToConstraints",
             from_to_content,
             final_content,
-            flags=re.IGNORECASE
+            flags=re.IGNORECASE,
         )
         if count == 0:
-            raise ValueError(f"macro_fromToConstraints token not found in template {template_basename}")
-      
+            raise ValueError(
+                f"macro_fromToConstraints token not found in template {template_basename}"
+            )
+
         # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
         final_content, count = re.subn(
             r"#LabVIEWFPGA_Macro\s+macro_GitHubCustomConstraints",
             custom_constraints_content,
             final_content,
-            flags=re.IGNORECASE
+            flags=re.IGNORECASE,
         )
         if count == 0:
-            raise ValueError(f"macro_GitHubCustomConstraints token not found in template {template_basename}")
+            raise ValueError(
+                f"macro_GitHubCustomConstraints token not found in template {template_basename}"
+            )
 
         # Write the processed content to output file
         with open(output_path, "w", encoding="utf-8") as f:
