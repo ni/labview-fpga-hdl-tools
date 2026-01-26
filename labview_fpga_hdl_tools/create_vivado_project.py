@@ -624,17 +624,16 @@ def _create_project_handler(config, overwrite=False, update=False):
     return project_mode
 
 
-def create_project(overwrite=False, update=False, test=False, config_path=None):
+def create_project(overwrite=False, update=False, test=False):
     """Main entry point for the script.
 
     Args:
         overwrite (bool): Force creation of a new project, overwriting existing
         update (bool): Update files in an existing project
         test (bool): Test mode - validate settings but don't run Vivado
-        config_path (str, optional): Path to alternate configuration file
     """
     # Load configuration with optional custom config path
-    config = common.load_config(config_path)
+    config = common.load_config()
 
     # Validate that all required settings are present
     try:

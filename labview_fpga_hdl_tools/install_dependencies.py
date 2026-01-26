@@ -29,17 +29,26 @@ def _parse_version(tag):
     """Parse a version tag into comparable components.
 
     Args:
-        tag: Version tag string (e.g., "26.0.0.dev3", "v1.2.3", "1.0.0")
+        tag: Version tag string (e.g., "26.0.0.dev3", "v1.2.3", "1.0.0", "v.03")
 
     Returns:
         Tuple of (version_numbers, full_tag) for sorting
     """
     # Remove common prefixes
     clean_tag = tag.lstrip("v").lstrip("V")
+    
+    # Handle special case of tags starting with dot like "v.03" -> ".03"
+    if clean_tag.startswith("."):
+        # Convert ".03" to "0.0.3" format for proper parsing
+        clean_tag = "0.0" + clean_tag.lstrip(".")
 
     # Extract version numbers (e.g., "26.0.0.dev3" -> [26, 0, 0, 3])
     # Match sequences of digits
     numbers = [int(n) for n in re.findall(r"\d+", clean_tag)]
+    
+    # Ensure we have at least some version numbers for comparison
+    if not numbers:
+        numbers = [0]
 
     return (numbers, tag)
 

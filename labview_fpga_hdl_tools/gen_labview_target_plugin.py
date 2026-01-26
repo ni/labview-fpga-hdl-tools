@@ -756,10 +756,10 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def gen_lv_target_support(config_path=None):
+def gen_lv_target_support():
     """Generate target support files."""
     # Load configuration
-    config = common.load_config(config_path)
+    config = common.load_config()
     has_validation_errors = False
     validation_errors = []
 

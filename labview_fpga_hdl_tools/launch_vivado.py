@@ -43,15 +43,14 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def launch_vivado(test=False, config_path=None):
+def launch_vivado(test=False):
     """Launch Vivado using settings from projectsettings.ini.
 
     Args:
         test (bool): If True, validate settings but don't launch Vivado
-        config_path: Optional path to configuration INI file
     """
     # Load configuration from projectsettings.ini
-    config = common.load_config(config_path)
+    config = common.load_config()
 
     # Validate that all required settings are present and paths exist
     try:

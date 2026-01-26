@@ -12,6 +12,7 @@ import click
 
 # Import main functions from all the tool modules
 from . import (
+    __version__,
     create_lvbitx,
     create_vivado_project,
     gen_labview_target_plugin,
@@ -23,7 +24,7 @@ from . import (
 )
 
 
-@click.group(help="LabVIEW FPGA HDL Tools")
+@click.group(help=f"LabVIEW FPGA HDL Tools (v{__version__})")
 @click.pass_context
 def cli(ctx):
     """Command-line interface for LabVIEW FPGA HDL Tools."""
@@ -31,23 +32,12 @@ def cli(ctx):
     ctx.ensure_object(dict)
 
 
-# Common options
-def config_option(f):
-    """Add a --config option to specify an alternate configuration file."""
-    return click.option(
-        "--config",
-        type=click.Path(exists=False, dir_okay=False, readable=True),
-        help="Path to alternate project settings file",
-    )(f)
-
-
 @cli.command("migrate-clip", help="Migrate CLIP files for FlexRIO custom devices")
-@config_option
 @click.pass_context
-def migrate_clip_cmd(ctx, config):
+def migrate_clip_cmd(ctx):
     """Migrate CLIP files for FlexRIO custom devices."""
     try:
-        result = migrate_clip.migrate_clip(config_path=config)
+        result = migrate_clip.migrate_clip()
         return result
     except Exception as e:
         handle_exception(e)
@@ -55,12 +45,11 @@ def migrate_clip_cmd(ctx, config):
 
 
 @cli.command("install-target", help="Install LabVIEW FPGA target support files")
-@config_option
 @click.pass_context
-def install_target_cmd(ctx, config):
+def install_target_cmd(ctx):
     """Install LabVIEW FPGA target support files."""
     try:
-        result = install_labview_target_plugin.install_lv_target_support(config_path=config)
+        result = install_labview_target_plugin.install_lv_target_support()
         return result
     except Exception as e:
         handle_exception(e)
@@ -68,13 +57,12 @@ def install_target_cmd(ctx, config):
 
 
 @cli.command("get-window", help="Extract window netlist from Vivado project")
-@config_option
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
 @click.pass_context
-def get_window_cmd(ctx, config, test):
+def get_window_cmd(ctx, test):
     """Extract window netlist from Vivado project."""
     try:
-        result = get_window_netlist.get_window(test=test, config_path=config)
+        result = get_window_netlist.get_window(test=test)
         return result
     except Exception as e:
         handle_exception(e)
@@ -82,12 +70,11 @@ def get_window_cmd(ctx, config, test):
 
 
 @cli.command("gen-target", help="Generate LabVIEW FPGA target support files")
-@config_option
 @click.pass_context
-def gen_target_cmd(ctx, config):
+def gen_target_cmd(ctx):
     """Generate LabVIEW FPGA target support files."""
     try:
-        result = gen_labview_target_plugin.gen_lv_target_support(config_path=config)
+        result = gen_labview_target_plugin.gen_lv_target_support()
         return result
     except Exception as e:
         handle_exception(e)
@@ -95,16 +82,15 @@ def gen_target_cmd(ctx, config):
 
 
 @cli.command("create-project", help="Create or update Vivado project")
-@config_option
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
 @click.pass_context
-def create_project_cmd(ctx, config, overwrite, update, test):
+def create_project_cmd(ctx, overwrite, update, test):
     """Create or update Vivado project."""
     try:
         result = create_vivado_project.create_project(
-            overwrite=overwrite, update=update, test=test, config_path=config
+            overwrite=overwrite, update=update, test=test
         )
         return result
     except Exception as e:
@@ -113,13 +99,12 @@ def create_project_cmd(ctx, config, overwrite, update, test):
 
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
-@config_option
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't launch Vivado")
 @click.pass_context
-def launch_vivado_cmd(ctx, config, test):
+def launch_vivado_cmd(ctx, test):
     """Launch Vivado with the current project."""
     try:
-        result = launch_vivado.launch_vivado(test=test, config_path=config)
+        result = launch_vivado.launch_vivado(test=test)
         return result
     except Exception as e:
         handle_exception(e)
@@ -151,17 +136,16 @@ def install_deps_cmd(ctx, delete_allowed, pre_release):
 
 
 @cli.command("create-lvbitx", help="Create LabVIEW FPGA bitfile from Vivado output")
-@config_option
 @click.option(
     "--test",
     is_flag=True,
     help="Test mode - validate settings but don't run the createBitfile tool",
 )
 @click.pass_context
-def create_lvbitx_cmd(ctx, config, test):
+def create_lvbitx_cmd(ctx, test):
     """Create LabVIEW FPGA bitfile from Vivado output."""
     try:
-        result = create_lvbitx.create_lv_bitx(test=test, config_path=config)
+        result = create_lvbitx.create_lv_bitx(test=test)
         return result
     except Exception as e:
         handle_exception(e)

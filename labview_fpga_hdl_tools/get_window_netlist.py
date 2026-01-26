@@ -257,14 +257,14 @@ def _validate_ini(config, test):
         raise ValueError(error_msg)
 
 
-def get_window(test=False, config_path=None):
+def get_window(test=False):
     """Main entry point for the script.
 
     Args:
         test (bool): If True, validate settings but don't run Vivado
-        config_path: Optional path to configuration INI file
     """
-    config = common.load_config(config_path)
+    # Load configuration
+    config = common.load_config()
 
     # Validate that all required settings are present
     try:
