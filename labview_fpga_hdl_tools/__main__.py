@@ -22,6 +22,8 @@ from . import (
     launch_vivado,
     migrate_clip,
 )
+from .common import generate_guid
+from .common import generate_guid
 
 
 @click.group(help=f"LabVIEW FPGA HDL Tools (v{__version__})")
@@ -147,6 +149,20 @@ def create_lvbitx_cmd(ctx, test):
     try:
         result = create_lvbitx.create_lv_bitx(test=test)
         return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("gen-guid", help="Generate a new GUID for LabVIEW FPGA target plugins")
+@click.pass_context
+def gen_guid_cmd(ctx):
+    """Generate a new GUID for LabVIEW FPGA target plugins."""
+    try:
+        guid = generate_guid()
+        print("Generated GUID:", guid)
+        print("Copy and paste this GUID into LVTargetGUID in the projectsettings.ini file.")
+        return 0
     except Exception as e:
         handle_exception(e)
         return 1

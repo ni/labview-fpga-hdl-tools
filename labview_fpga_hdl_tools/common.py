@@ -11,6 +11,7 @@ import re
 import subprocess
 import sys
 import traceback
+import uuid
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -750,3 +751,12 @@ def get_invalid_paths_error(invalid_paths):
         for path in invalid_paths:
             error_msg += f"  - {path}\n"
     return error_msg
+
+
+def generate_guid():
+    """Generate a new GUID (UUID4) in standard format.
+    
+    Returns:
+        str: A new GUID in lowercase format with hyphens (e.g., '8943868e-fc0c-4e48-a2e9-1ebce7779d5c')
+    """
+    return str(uuid.uuid4())
