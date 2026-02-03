@@ -439,6 +439,7 @@ def _generate_target_xml(
     clock_path,
     lv_target_name,
     lv_target_guid,
+    num_hdl_registers,
 ):
     """Generate Target XML files from multiple Mako templates.
 
@@ -454,6 +455,7 @@ def _generate_target_xml(
         clock_path (str): Path to the Clock XML (for filename extraction)
         lv_target_name (str): Name of the LabVIEW FPGA target
         lv_target_guid (str): GUID for the LabVIEW FPGA target
+        num_hdl_registers (int): Number of HDL registers
 
     Raises:
         SystemExit: If an error occurs during XML generation
@@ -462,6 +464,11 @@ def _generate_target_xml(
         # Extract filenames for BoardIO and Clock
         boardio_filename = os.path.basename(boardio_path)
         clock_filename = os.path.basename(clock_path)
+
+        # Calculate min_lv_reg_offset from num_hdl_registers
+        # Formula: num_hdl_registers * 4, converted to hex with 5 hex digits (0x00000 format)
+        offset_value = num_hdl_registers * 4 if num_hdl_registers is not None else 0
+        min_lv_reg_offset = f"0x{offset_value:05X}"
 
         # Ensure output directory exists
         os.makedirs(output_folder, exist_ok=True)
@@ -490,6 +497,7 @@ def _generate_target_xml(
                     custom_target=True,
                     lv_target_name=lv_target_name,
                     lv_target_guid=lv_target_guid,
+                    min_lv_reg_offset=min_lv_reg_offset,
                 )
 
                 # Write output file
@@ -547,7 +555,7 @@ def _copy_fpgafiles(
     plugin_folder,
     target_family,
     base_target,
-    target_exclude_files,
+    lv_target_exclude_files,
 ):
     """Copy HDL files to the FPGA files destination folder."""
     # Get all HDL files from file lists
@@ -575,11 +583,11 @@ def _copy_fpgafiles(
 
     # Read the list of files to exclude from the file
     exclude_file_list = []
-    if target_exclude_files and os.path.exists(target_exclude_files):
-        with open(target_exclude_files, "r", encoding="utf-8") as f:
+    if lv_target_exclude_files and os.path.exists(lv_target_exclude_files):
+        with open(lv_target_exclude_files, "r", encoding="utf-8") as f:
             # Read each line, strip whitespace, and filter out empty lines
             exclude_file_list = [line.strip() for line in f if line.strip()]
-        print(f"Loaded {len(exclude_file_list)} files to exclude from {target_exclude_files}")
+        print(f"Loaded {len(exclude_file_list)} files to exclude from {lv_target_exclude_files}")
     else:
         print("No exclude file list provided or file does not exist")
 
@@ -804,6 +812,7 @@ def gen_lv_target_support():
         config.clock_output,
         config.lv_target_name,
         config.lv_target_guid,
+        config.num_hdl_registers,
     )
 
     _copy_fpgafiles(
@@ -812,7 +821,7 @@ def gen_lv_target_support():
         config.lv_target_plugin_folder,
         config.target_family,
         config.base_target,
-        config.target_exclude_files,
+        config.lv_target_exclude_files,
     )
 
     _copy_menu_files(config.lv_target_plugin_folder, config.lv_target_menus_folder)

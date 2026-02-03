@@ -79,7 +79,8 @@ class FileConfiguration:
     lv_target_install_folder: Optional[str] = None  # Installation folder for target plugins
     lv_target_menus_folder: Optional[str] = None  # Folder containing target plugin menu files
     lv_target_info_ini: Optional[str] = None  # Path to TargetInfo.ini file
-    target_exclude_files: Optional[str] = None  # Path to Python script with file exclusion patterns
+    lv_target_exclude_files: Optional[str] = None  # Path to Python script with file exclusion patterns
+    num_hdl_registers: Optional[int] = None  # Number of HDL registers
     # ----- CLIP MIGRATION SETTINGS -----
     input_xml_path: Optional[str] = None  # Path to source CLIP XML file
     output_csv_path: Optional[str] = None  # Path where CSV signals will be written
@@ -241,7 +242,9 @@ def load_config(config_path=None):
 
     files.lv_target_menus_folder = resolve_path(settings.get("LVTargetMenusFolder"))
     files.lv_target_info_ini = resolve_path(settings.get("LVTargetInfoIni"))
-    files.target_exclude_files = resolve_path(settings.get("TargetExcludeFiles"))
+    files.lv_target_exclude_files = resolve_path(settings.get("LVTargetExcludeFiles"))
+    num_hdl_registers_str = settings.get("NumHdlRegisters")
+    files.num_hdl_registers = int(num_hdl_registers_str) if num_hdl_registers_str else None
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
