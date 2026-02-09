@@ -552,46 +552,48 @@ def process_constraints_template(config):
     """
     # Define output directory
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
-    window_constraints_path = os.path.join(
-        config.the_window_folder_input, "TheWindowConstraints.xdc"
-    )
-
-    # Create output directory if it doesn't exist
-    os.makedirs(output_folder, exist_ok=True)
-
-    # Check if the window constraints file exists
-    if os.path.exists(window_constraints_path):
-        with open(window_constraints_path, "r", encoding="utf-8") as f:
-            # Read the window constraints file
-            constraints_content = f.read()
-
-            # Extract content between markers
-            period_pattern = (
-                r"# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_CONSTRAINTS"
-            )
-            clip_pattern = r"# BEGIN_LV_FPGA_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_CLIP_CONSTRAINTS"
-            from_to_pattern = (
-                r"# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS(.*?)# END_LV_FPGA_FROM_TO_CONSTRAINTS"
-            )
-
-            period_match = re.search(period_pattern, constraints_content, re.DOTALL)
-            clip_match = re.search(clip_pattern, constraints_content, re.DOTALL)
-            from_to_match = re.search(from_to_pattern, constraints_content, re.DOTALL)
-
-            if not period_match or not clip_match or not from_to_match:
-                print(
-                    "Error: Could not find one or more marker sections in TheWindowConstraints.xdc"
-                )
-                return
-
-            period_content = period_match.group(1)
-            clip_content = clip_match.group(1)
-            from_to_content = from_to_match.group(1)
+    if config.the_window_folder_input is None:
+        print("TheWindowFolder input is not specified in the configuration.")
     else:
-        print(f"TheWindowConstraints.xdc file not found at {window_constraints_path}")
-        period_content = ""
-        clip_content = ""
-        from_to_content = ""
+        window_constraints_path = os.path.join(
+            config.the_window_folder_input, "TheWindowConstraints.xdc"
+        )
+        # Create output directory if it doesn't exist
+        os.makedirs(output_folder, exist_ok=True)
+
+        # Check if the window constraints file exists
+        if os.path.exists(window_constraints_path):
+            with open(window_constraints_path, "r", encoding="utf-8") as f:
+                # Read the window constraints file
+                constraints_content = f.read()
+
+                # Extract content between markers
+                period_pattern = (
+                    r"# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_CONSTRAINTS"
+                )
+                clip_pattern = r"# BEGIN_LV_FPGA_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_CLIP_CONSTRAINTS"
+                from_to_pattern = (
+                    r"# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS(.*?)# END_LV_FPGA_FROM_TO_CONSTRAINTS"
+                )
+
+                period_match = re.search(period_pattern, constraints_content, re.DOTALL)
+                clip_match = re.search(clip_pattern, constraints_content, re.DOTALL)
+                from_to_match = re.search(from_to_pattern, constraints_content, re.DOTALL)
+
+                if not period_match or not clip_match or not from_to_match:
+                    print(
+                        "Error: Could not find one or more marker sections in TheWindowConstraints.xdc"
+                    )
+                    return
+
+                period_content = period_match.group(1)
+                clip_content = clip_match.group(1)
+                from_to_content = from_to_match.group(1)
+        else:
+            print(f"TheWindowConstraints.xdc file not found at {window_constraints_path}")
+            period_content = ""
+            clip_content = ""
+            from_to_content = ""
 
     # Read custom constraints file if specified
     custom_constraints_content = ""
