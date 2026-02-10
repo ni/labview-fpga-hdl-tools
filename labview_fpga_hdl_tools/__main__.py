@@ -124,12 +124,17 @@ def launch_vivado_cmd(ctx, test):
     is_flag=True,
     help="Include pre-release versions when resolving 'latest' tag",
 )
+@click.option(
+    "--latest",
+    is_flag=True,
+    help="Ignore versions in dependencies.toml and use latest version for all dependencies",
+)
 @click.pass_context
-def install_deps_cmd(ctx, delete_allowed, pre_release):
+def install_deps_cmd(ctx, delete_allowed, pre_release, latest):
     """Install GitHub dependencies from dependencies.toml."""
     try:
         result = install_dependencies.install_dependencies(
-            delete_allowed=delete_allowed, allow_prerelease=pre_release
+            delete_allowed=delete_allowed, allow_prerelease=pre_release, use_latest=latest
         )
         return result
     except Exception as e:

@@ -198,12 +198,13 @@ def _clone_repo_at_tag(repo, tag, base_dir, delete_allowed=False, allow_prerelea
         return False
 
 
-def install_dependencies(delete_allowed=False, allow_prerelease=False):
+def install_dependencies(delete_allowed=False, allow_prerelease=False, use_latest=False):
     """Install dependencies from a TOML file.
 
     Args:
         delete_allowed: If True, automatically delete existing repos without prompting
         allow_prerelease: If True, include pre-release versions when resolving "latest"
+        use_latest: If True, ignore versions in dependencies.toml and use latest for all
 
     Returns:
         0 if successful, 1 if errors occurred
@@ -251,9 +252,9 @@ def install_dependencies(delete_allowed=False, allow_prerelease=False):
         print("No dependencies found in TOML file")
         return 1
 
-    # Check if any dependencies use "latest" and warn user
+    # Check if any dependencies use "latest" and warn user (skip warning if --latest flag is used)
     has_latest = any("latest" in dep.lower() for dep in dependencies)
-    if has_latest:
+    if has_latest and not use_latest:
         print()
         print("=" * 80)
         print("WARNING - This project is depending on 'latest' versions.")
@@ -263,6 +264,15 @@ def install_dependencies(delete_allowed=False, allow_prerelease=False):
         print("=" * 80)
         print()
         input("Press Enter to continue...")
+        print()
+
+    # If --latest flag is used, inform the user
+    if use_latest:
+        version_type = "pre-release" if allow_prerelease else "release"
+        print("=" * 80)
+        print(f"Using --latest flag: Installing latest {version_type} versions")
+        print("Versions in dependencies.toml will be ignored.")
+        print("=" * 80)
         print()
 
     # Parse and clone each dependency
@@ -277,6 +287,11 @@ def install_dependencies(delete_allowed=False, allow_prerelease=False):
             continue
 
         repo, tag = dep_string.rsplit(":", 1)
+        
+        # Override tag with "latest" if --latest flag is used
+        if use_latest:
+            tag = "latest"
+        
         total_count += 1
 
         if _clone_repo_at_tag(repo, tag, deps_dir, delete_allowed, allow_prerelease):
