@@ -243,8 +243,8 @@ def load_config(config_path=None):
     files.lv_target_menus_folder = resolve_path(settings.get("LVTargetMenusFolder"))
     files.lv_target_info_ini = resolve_path(settings.get("LVTargetInfoIni"))
     files.lv_target_exclude_files = resolve_path(settings.get("LVTargetExcludeFiles"))
-    num_hdl_registers_str = settings.get("NumHdlRegisters")
-    files.num_hdl_registers = int(num_hdl_registers_str) if num_hdl_registers_str else None
+    max_hdl_reg_offset_str = settings.get("MaxHdlRegOffset")
+    files.max_hdl_reg_offset = int(max_hdl_reg_offset_str) if max_hdl_reg_offset_str else None
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
