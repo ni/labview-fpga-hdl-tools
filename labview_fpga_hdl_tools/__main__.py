@@ -115,14 +115,14 @@ def launch_vivado_cmd(ctx, test):
 
 @cli.command("install-deps", help="Install GitHub dependencies from dependencies.toml")
 @click.option(
-    "--delete-allowed",
+    "--delete",
     is_flag=True,
     help="Automatically delete and re-clone existing repositories without prompting",
 )
 @click.option(
-    "--pre-release",
+    "--pre",
     is_flag=True,
-    help="Include pre-release versions when resolving 'latest' tag",
+    help="Include pre-release versions (dev, alpha, beta, rc) when resolving versions",
 )
 @click.option(
     "--latest",
@@ -130,11 +130,11 @@ def launch_vivado_cmd(ctx, test):
     help="Ignore versions in dependencies.toml and use latest version for all dependencies",
 )
 @click.pass_context
-def install_deps_cmd(ctx, delete_allowed, pre_release, latest):
+def install_deps_cmd(ctx, delete, pre, latest):
     """Install GitHub dependencies from dependencies.toml."""
     try:
         result = install_dependencies.install_dependencies(
-            delete_allowed=delete_allowed, allow_prerelease=pre_release, use_latest=latest
+            delete_allowed=delete, allow_prerelease=pre, use_latest=latest
         )
         return result
     except Exception as e:
