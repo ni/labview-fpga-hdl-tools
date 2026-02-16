@@ -1,0 +1,1 @@
+@echo Running fake Vivado for test

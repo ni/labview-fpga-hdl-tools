@@ -1,0 +1,425 @@
+<CodeGenerationResults.lvtxt>
+<CodeGenerationScratchPad>
+   <AllowEnableRemoval>false</AllowEnableRemoval>
+   <ClipInstanceList>
+      <ClipInstance name="Routing">
+         <Value>theCLIPs/Routing_CLIP0</Value>
+      </ClipInstance>
+   </ClipInstanceList>
+   <DerivedClockSourcePinList></DerivedClockSourcePinList>
+   <FpgaCompilation>
+      <Architecture>rtl</Architecture>
+      <DeviceCategory>FlexRIO Coprocessor Modules</DeviceCategory>
+      <DeviceFamily>virtexup</DeviceFamily>
+      <DeviceFamilyForLabVIEW>VirtexUltraScalePlusLike</DeviceFamilyForLabVIEW>
+      <FPGADevice>xcvu11p</FPGADevice>
+      <Package>flgb2104</Package>
+      <PartNumber>xcvu11p-flgb2104-2-e</PartNumber>
+      <ProcessPropertyList>
+         <Process name="Synthesize - Vivado">
+            <CommandArguments>
+               <Command name="synth_design">
+                  <Option name="flatten_hierarchy">
+                     <Value>full</Value>
+                  </Option>
+                  <Flag name="keep_equivalent_registers">
+                  </Flag>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="(param)synth.elaboration.rodinMoreOptions">
+                  <Value>rt::set_parameter max_loop_limit 1000000;</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+         <Process name="Optimize Logic">
+            <CommandArguments>
+               <Command name="opt_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList></PropertyList>
+         </Process>
+         <Process name="Place">
+            <CommandArguments>
+               <Command name="place_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="general.maxThreads">
+                  <Value>4</Value>
+               </Property>
+            </PropertyList>
+            <XdcFileList>
+               <XdcFile>constraints_place.xdc</XdcFile>
+            </XdcFileList>
+         </Process>
+         <Process name="Optimize Timing">
+            <CommandArguments>
+               <Command name="phys_opt_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList></PropertyList>
+         </Process>
+         <Process name="Route">
+            <CommandArguments>
+               <Command name="route_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="general.maxThreads">
+                  <Value>4</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+         <Process name="Generate Programming File">
+            <CommandArguments>
+               <Command name="write_bitstream">
+                  <Flag name="bin_file">
+                  </Flag>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="BITSTREAM.GENERAL.COMPRESS">
+                  <Value>True</Value>
+               </Property>
+               <Property name="BITSTREAM.GENERAL.CRC">
+                  <Value>Enable</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.CCLKPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.M0PIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.M1PIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.M2PIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.DONEPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.INITPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TCKPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TDIPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TDOPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.TMSPIN">
+                  <Value>Pullup</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.UNUSEDPIN">
+                  <Value>Pullnone</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.DONE_CYCLE">
+                  <Value>4</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.MATCH_CYCLE">
+                  <Value>3</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.LCK_CYCLE">
+                  <Value>NoWait</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.GTS_CYCLE">
+                  <Value>5</Value>
+               </Property>
+               <Property name="BITSTREAM.STARTUP.GWE_CYCLE">
+                  <Value>6</Value>
+               </Property>
+               <Property name="BITSTREAM.ENCRYPTION.ENCRYPT">
+                  <Value>No</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.USR_ACCESS">
+                  <Value>TIMESTAMP</Value>
+               </Property>
+               <Property name="BITSTREAM.CONFIG.USERID">
+                  <Value>0x00000003</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+         <Process name="Post-Route Optimize Timing">
+            <CommandArguments>
+               <Command name="phys_opt_design">
+                  <Option name="directive">
+                     <Value>Explore</Value>
+                  </Option>
+               </Command>
+            </CommandArguments>
+            <PropertyList>
+               <Property name="maxViolationInNanoseconds">
+                  <Value>0.5</Value>
+               </Property>
+               <Property name="maxNumberOfAttempts">
+                  <Value>1</Value>
+               </Property>
+            </PropertyList>
+         </Process>
+      </ProcessPropertyList>
+      <SpeedGrade>-2</SpeedGrade>
+      <Top>SasquatchTop</Top>
+      <UseBinaryConfiguration>TRUE</UseBinaryConfiguration>
+   </FpgaCompilation>
+   <NiFpga>
+      <ControlAndIndicatorNamesAndTypes></ControlAndIndicatorNamesAndTypes>
+      <RunWhenLoaded>false</RunWhenLoaded>
+      <signatures>
+         <fpgaSignature>wdAAB3rUa65vi/2mKa05fw==</fpgaSignature>
+         <guidSignature>Tc2LfzfAaU5pkFIATrqniA==</guidSignature>
+         <namesSignature>2da15kTf9t62H8gMB4VoKw==</namesSignature>
+      </signatures>
+      <version>1</version>
+      <VivadoProjectExport>true</VivadoProjectExport>
+   </NiFpga>
+   <ResourceList>
+      <Slices>162000</Slices>
+      <Luts>1296000</Luts>
+      <FlipFlops>2592000</FlipFlops>
+      <BRam>2016</BRam>
+      <DSP48E>9216</DSP48E>
+      <UltraRAM>960</UltraRAM>
+   </ResourceList>
+</CodeGenerationScratchPad><CompilerVersion><DisplayString>Xilinx Vivado 2021.1 (64-bit)</DisplayString><Compiler>Xilinx Vivado</Compiler><Bits>64bit</Bits><MajorVersion>2021</MajorVersion><MinorVersion>1</MinorVersion></CompilerVersion><EstimateResources>false</EstimateResources><StepList><Step>Generate Xilinx IP</Step><Step>Synthesize - Vivado</Step><Step>Optimize Logic</Step><Step>Place</Step><Step>Optimize Timing</Step><Step>Route</Step><Step>Post-Route Optimize Timing</Step><Step>Generate Programming File</Step></StepList><MergedIdenticalDerivedClocks>true</MergedIdenticalDerivedClocks><BitfileContents><?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Bitfile>
+	<BitfileVersion>4.0</BitfileVersion>
+	<Documentation>
+		<BuildSpecVersion />
+		<BuildSpecDescription />
+	</Documentation>
+	<SignatureRegister>C1D000077AD46BAE6F8BFDA629AD397F</SignatureRegister>
+	<SignatureGuids>4DCD8B7F37C0694E699052004EBAA788</SignatureGuids>
+	<SignatureNames>D9D6B5E644DFF6DEB61FC80C0785682B</SignatureNames>
+	<TimeStamp></TimeStamp>
+	<CompilationStatus></CompilationStatus>
+	<BitstreamVersion>2</BitstreamVersion>
+	<VI>
+		<Name>BlankVI.vi</Name>
+		<RegisterList>
+			<Register>
+				<Name>ViControl</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196600</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>DiagramReset</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196604</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>ViSignature</Name>
+				<Hidden>true</Hidden>
+				<Indicator>true</Indicator>
+				<Datatype>
+					<Array>
+						<Name></Name>
+						<Size>4</Size>
+						<Type>
+							<U32>
+								<Name></Name>
+							</U32>
+						</Type>
+					</Array>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196596</Offset>
+				<SizeInBits>128</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>false</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>InterruptEnable</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196580</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>InterruptMask</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196588</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+			<Register>
+				<Name>InterruptStatus</Name>
+				<Hidden>false</Hidden>
+				<Indicator>false</Indicator>
+				<Datatype>
+					<U32>
+						<Name></Name>
+					</U32>
+				</Datatype>
+				<FlattenedType></FlattenedType>
+				<Grouping />
+				<Offset>196592</Offset>
+				<SizeInBits>32</SizeInBits>
+				<Class>0</Class>
+				<Internal>true</Internal>
+				<TypedefPath></TypedefPath>
+				<TypedefRelativePath></TypedefRelativePath>
+				<ID>0</ID>
+				<Bidirectional>true</Bidirectional>
+				<Synchronous>false</Synchronous>
+				<MechanicalAction>Switch When Pressed</MechanicalAction>
+				<AccessMayTimeout>false</AccessMayTimeout>
+				<RegisterNode>false</RegisterNode>
+				<SubControlList />
+			</Register>
+		</RegisterList>
+		<Icon>
+			<ImageType>0</ImageType>
+			<ImageDepth>8</ImageDepth>
+			<Image>////////////////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA/////////////////////////wAAAAAAAAAAAP//AAD/+fn5+fn5+fn5+fn59/ks+SzgAAAAAAAAAAAA//8AAP/5///////////////3+Sz5LP8AAAAAAAAAAAD//wAA//n/6OTo////6OTo//f8K/ws/wAAAAAAAAAAAP//AAD/+f/k/+T////k/+T/9ywsLCzgAAAAAAAAAAAA//8AAP/56OT/5Oj/6OT/5Oj3K/wrLP8AAAAAAAAAAAD//wAA//nk6P/o5P/k6P/o5Pf8CPws/wAAAAAAAAAAAP//AAD/+eT////k/+T////k9/wI/Cz/AAAAAAAAAAAA//8AAP/5/////+jk6P/////3K/wrLP8AAAAAAAAAAAD//wAA//n///////////////csLCws/wAAAAAAAAAAAP//AAD/9/f39/f39/f39/f39ywsg4P/AAAAAAAAAAAA//8AAP8sLCwsLCwsLCwsLCwsLCyDBYODAAAAAAAAAAD//wAA/yz8LCwsLCz8LCwsLCMjI4MFBQWDgwAAAAAAAP//AAD//PD8LCws/CP8LCMjLCwsgwUF/wUFg4MAAAAA//8AAP8s7ywsLCwjLCwjLCwsLCyDBf///wUFBYMjIwD//wAA///w////I///I////////4MFBf8FBYODAAAAAP//AAAAAO8AAAAjAAAjAADw7+/wgwUFBYODAAAAAAAA//8AAAAAAPAAAAAjIwAA7wAAAACDBYODAAAAAAAAAAD//wAAAAAAAO/vAAAAAPAAAAAAAIODAAAAAAAAAAAAAP//AAAAAAAAAADw7/DvAAAAAAAAAAAAAAD/////AAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAA/wAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///////////////////////////////////////////w==</Image>
+			<Mask>//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=</Mask>
+			<Colors>AP///wD//8wA//+ZAP//ZgD//zMA//8AAP/M/wD/zMwA/8yZAP/MZgD/zDMA/8wAAP+Z/wD/mcwA/5mZAP+ZZgD/mTMA/5kAAP9m/wD/ZswA/2aZAP9mZgD/ZjMA/2YAAP8z/wD/M8wA/zOZAP8zZgD/MzMA/zMAAP8A/wD/AMwA/wCZAP8AZgD/ADMA/wAAAMz//wDM/8wAzP+ZAMz/ZgDM/zMAzP8AAMzM/wDMzMwAzMyZAMzMZgDMzDMAzMwAAMyZ/wDMmcwAzJmZAMyZZgDMmTMAzJkAAMxm/wDMZswAzGaZAMxmZgDMZjMAzGYAAMwz/wDMM8wAzDOZAMwzZgDMMzMAzDMAAMwA/wDMAMwAzACZAMwAZgDMADMAzAAAAJn//wCZ/8wAmf+ZAJn/ZgCZ/zMAmf8AAJnM/wCZzMwAmcyZAJnMZgCZzDMAmcwAAJmZ/wCZmcwAmZmZAJmZZgCZmTMAmZkAAJlm/wCZZswAmWaZAJlmZgCZZjMAmWYAAJkz/wCZM8wAmTOZAJkzZgCZMzMAmTMAAJkA/wCZAMwAmQCZAJkAZgCZADMAmQAAAGb//wBm/8wAZv+ZAGb/ZgBm/zMAZv8AAGbM/wBmzMwAZsyZAGbMZgBmzDMAZswAAGaZ/wBmmcwAZpmZAGaZZgBmmTMAZpkAAGZm/wBmZswAZmaZAGZmZgBmZjMAZmYAAGYz/wBmM8wAZjOZAGYzZgBmMzMAZjMAAGYA/wBmAMwAZgCZAGYAZgBmADMAZgAAADP//wAz/8wAM/+ZADP/ZgAz/zMAM/8AADPM/wAzzMwAM8yZADPMZgAzzDMAM8wAADOZ/wAzmcwAM5mZADOZZgAzmTMAM5kAADNm/wAzZswAM2aZADNmZgAzZjMAM2YAADMz/wAzM8wAMzOZADMzZgAzMzMAMzMAADMA/wAzAMwAMwCZADMAZgAzADMAMwAAAAD//wAA/8wAAP+ZAAD/ZgAA/zMAAP8AAADM/wAAzMwAAMyZAADMZgAAzDMAAMwAAACZ/wAAmcwAAJmZAACZZgAAmTMAAJkAAABm/wAAZswAAGaZAABmZgAAZjMAAGYAAAAz/wAAM8wAADOZAAAzZgAAMzMAADMAAAAA/wAAAMwAAACZAAAAZgAAADMA7gAAAN0AAAC7AAAAqgAAAIgAAAB3AAAAVQAAAEQAAAAiAAAAEQAAAADuAAAA3QAAALsAAACqAAAAiAAAAHcAAABVAAAARAAAACIAAAARAAAAAO4AAADdAAAAuwAAAKoAAACIAAAAdwAAAFUAAABEAAAAIgAAABEA7u7uAN3d3QC7u7sAqqqqAIiIiAB3d3cAVVVVAERERAAiIiIAERERAAAAAA==</Colors>
+			<Rectangle>
+				<Left>0</Left>
+				<Top>0</Top>
+				<Right>32</Right>
+				<Bottom>32</Bottom>
+			</Rectangle>
+		</Icon>
+	</VI>
+	<Project>
+		<TargetClass>PXIe-7903</TargetClass>
+		<AutoRunWhenDownloaded>false</AutoRunWhenDownloaded>
+		<CompilationResultsTree>
+<CompilationResults>
+   <NiFpga>
+      <BaseAddressOnDevice>0</BaseAddressOnDevice>
+      <DmaChannelAllocationList></DmaChannelAllocationList>
+      <UsedBaseClockList>
+         <BaseClock name="PXIe_Clk100">
+         </BaseClock>
+         <BaseClock name="DmaClk">
+         </BaseClock>
+         <BaseClock name="BusClk">
+         </BaseClock>
+         <BaseClock name="ReliableClkIn">
+         </BaseClock>
+         <BaseClock name="80 MHz Clock">
+         </BaseClock>
+      </UsedBaseClockList>
+      <version>1</version>
+   </NiFpga>
+   <TargetSpecificData>
+      <IOModuleID>0x10937AEC</IOModuleID>
+      <RoutingAliases>
+         <Count>0</Count>
+      </RoutingAliases>
+      <Target>PXIe-7903R</Target>
+   </TargetSpecificData>
+</CompilationResults> </CompilationResultsTree>
+		<MultipleUserClocks>false</MultipleUserClocks>
+		<AllowImplicitEnableRemoval>false</AllowImplicitEnableRemoval>
+	</Project>
+	<ClientData />
+	<BitstreamMD5></BitstreamMD5>
+	<Bitstream></Bitstream>
+</Bitfile>
+</BitfileContents><ProcessedClockData><Clock><DerivedClock>false</DerivedClock><NominalFrequency>80000000.000</NominalFrequency><TimeSpecName>TimingEnginex/TimingStage1x/ReliableClkPllx/inst/mmcme4_adv_inst/CLKOUT1</TimeSpecName><SignalName/><Alias>80 MHz Clock</Alias><ClockName>PllClk80</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>100000000.000</NominalFrequency><TimeSpecName>PxieClk100_p</TimeSpecName><SignalName/><Alias>PXIe_Clk100</Alias><ClockName>PxieClk100</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>250000000.000</NominalFrequency><TimeSpecName>TS_DmaClk</TimeSpecName><SignalName/><Alias>DmaClk (Used by non-diagram components)</Alias><ClockName>DmaClk</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>80000000.000</NominalFrequency><TimeSpecName>TS_BusClk</TimeSpecName><SignalName/><Alias>BusClk (Used by non-diagram components)</Alias><ClockName>BusClk</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>100000000.000</NominalFrequency><TimeSpecName>TS_ReliableClkIn</TimeSpecName><SignalName/><Alias>ReliableClkIn (Used by non-diagram components)</Alias><ClockName>ReliableClkIn</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram0ClkSocket</TimeSpecName><SignalName/><Alias>Dram0ClkSocket (Used by non-diagram components)</Alias><ClockName>Dram0ClkSocket</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram1ClkSocket</TimeSpecName><SignalName/><Alias>Dram1ClkSocket (Used by non-diagram components)</Alias><ClockName>Dram1ClkSocket</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram0ClkUser</TimeSpecName><SignalName/><Alias>Dram0ClkUser (Used by non-diagram components)</Alias><ClockName>Dram0ClkUser</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>334000000.000</NominalFrequency><TimeSpecName>TS_Dram1ClkUser</TimeSpecName><SignalName/><Alias>Dram1ClkUser (Used by non-diagram components)</Alias><ClockName>Dram1ClkUser</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>250000000.000</NominalFrequency><TimeSpecName>TS_dHmbDmaClkSocket</TimeSpecName><SignalName/><Alias>dHmbDmaClkSocket (Used by non-diagram components)</Alias><ClockName>dHmbDmaClkSocket</ClockName></Clock><Clock><DerivedClock>false</DerivedClock><NominalFrequency>250000000.000</NominalFrequency><TimeSpecName>TS_dLlbDmaClkSocket</TimeSpecName><SignalName/><Alias>dLlbDmaClkSocket (Used by non-diagram components)</Alias><ClockName>dLlbDmaClkSocket</ClockName></Clock></ProcessedClockData><DocumentationInfo><Documentation><BuildSpecVersion>1.0.0.0</BuildSpecVersion><BuildSpecDescription/></Documentation></DocumentationInfo></CodeGenerationResults.lvtxt>
+<!-- githubvisible=true -->
