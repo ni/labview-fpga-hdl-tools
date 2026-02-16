@@ -8,18 +8,18 @@ Follows PEP 440 version specifiers, matching pip install behavior:
 
 Pre-release handling (--pre flag):
   Follows pip's PEP 440 pre-release behavior:
-  
+
   Without --pre:
     - Pre-release versions (dev, alpha, beta, rc, etc.) are excluded
     - Example: ">=26.0.0" matches only 26.0.0, 26.0.1, etc.
     - Example: ">=26.0.0" does NOT match 26.0.0.dev0 (pre-releases come before releases)
-  
+
   With --pre:
     - Pre-release versions are included in version resolution
     - Example: ">=26.0.0.dev0" matches 26.0.0.dev0, 26.0.0.dev1, 26.0.0, 26.0.1, etc.
     - Example: ">=26.0.0" matches 26.0.0, 26.0.1, 26.1.0.dev0, etc.
     - Note: 26.0.0.dev0 < 26.0.0 in PEP 440 (pre-releases sort before releases)
-  
+
 Version ordering (PEP 440):
   - 25.0.0 < 26.0.0.dev0 < 26.0.0.dev1 < 26.0.0 < 26.0.1
 
