@@ -46,8 +46,8 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib  # type: ignore[import]
 
-from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
+from packaging.version import InvalidVersion, Version
 
 
 def _remove_readonly(func, path, exc_info):
@@ -58,12 +58,12 @@ def _remove_readonly(func, path, exc_info):
 
 def _normalize_tag(tag):
     """Normalize a git tag to a PEP 440 compliant version string.
-    
+
     Removes 'v' or 'V' prefix to match PEP 440 format.
-    
+
     Args:
         tag: Git tag string (e.g., "v26.0.0", "26.0.0.dev3")
-        
+
     Returns:
         Normalized version string without 'v' prefix (e.g., "26.0.0", "26.0.0.dev3")
     """
@@ -72,49 +72,49 @@ def _normalize_tag(tag):
 
 def _parse_dependency(dep_string):
     """Parse dependency string with PEP 440 version specifier.
-    
+
     Supports the same specifiers as pip install:
       owner/repo==1.2.3       - exact version
       owner/repo>=1.2.3       - minimum version
       owner/repo<2.0.0        - maximum version
       owner/repo~=1.2.3       - compatible release (>=1.2.3, <1.3.0)
-    
+
     Args:
         dep_string: Dependency string
-        
+
     Returns:
         tuple: (repo, specifier, version) where specifier is one of '==', '>=', '<', '~='
                Returns (None, None, None) if parsing fails
     """
     # Try each specifier in order of length (longest first to avoid conflicts)
-    specifiers = ['~=', '>=', '==', '<']
-    
+    specifiers = ["~=", ">=", "==", "<"]
+
     for spec in specifiers:
         if spec in dep_string:
             parts = dep_string.split(spec, 1)
             if len(parts) == 2:
                 return parts[0].strip(), spec, parts[1].strip()
-    
+
     return None, None, None
 
 
 def _filter_tags_by_specifier(tags, specifier, version, allow_prerelease=False):
     """Filter tags based on version specifier using PEP 440.
-    
+
     Uses packaging library for PEP 440 compliance, matching pip install behavior.
-    
+
     Args:
         tags: List of tag names
         specifier: Version specifier ('==', '>=', '<', '~=')
         version: Version string
         allow_prerelease: Include pre-release versions (equivalent to pip --pre)
-        
+
     Returns:
         Best matching tag, or None if no match
     """
     # Create specifier set (PEP 440)
     spec_set = SpecifierSet(f"{specifier}{version}", prereleases=allow_prerelease)
-    
+
     # Filter tags that match the specifier
     matching_tags = []
     for tag in tags:
@@ -126,10 +126,10 @@ def _filter_tags_by_specifier(tags, specifier, version, allow_prerelease=False):
         except InvalidVersion:
             # Skip tags that aren't valid PEP 440 versions
             continue
-    
+
     if not matching_tags:
         return None
-    
+
     # Sort by version (highest first) and return the best match
     matching_tags.sort(reverse=True, key=lambda x: x[0])
     return matching_tags[0][1]
@@ -205,21 +205,21 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
     tag = tag_or_spec
     specifier = None
     version = None
-    
+
     # Check for version specifiers
-    for spec in ['~=', '>=', '==', '<']:
+    for spec in ["~=", ">=", "==", "<"]:
         if tag_or_spec.startswith(spec):
             specifier = spec
-            version = tag_or_spec[len(spec):]
+            version = tag_or_spec[len(spec) :]
             break
-    
+
     # Resolve version if specifier is used (or if --latest flag forces "latest")
     if specifier or tag_or_spec.lower() == "latest":
         if specifier:
             print(f"Resolving version {specifier}{version} for {repo}...")
         else:
             print(f"Resolving latest version for {repo}...")
-        
+
         try:
             all_tags = _get_all_tags(repo_url, allow_prerelease)
             if not all_tags:
@@ -227,7 +227,9 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
                 return False
             else:
                 if specifier:
-                    matched_tag = _filter_tags_by_specifier(all_tags, specifier, version, allow_prerelease)
+                    matched_tag = _filter_tags_by_specifier(
+                        all_tags, specifier, version, allow_prerelease
+                    )
                 else:
                     # "latest" - get the latest tag
                     valid_tags = []
@@ -238,7 +240,7 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
                             continue
                     valid_tags.sort(reverse=True, key=lambda x: x[0])
                     matched_tag = valid_tags[0][1] if valid_tags else None
-                
+
                 if matched_tag:
                     print(f"    [INFO] Resolved to tag: {matched_tag}")
                     tag = matched_tag
@@ -376,19 +378,19 @@ def install_dependencies(delete_allowed=False, allow_prerelease=False, use_lates
     for dep_string in dependencies:
         # Parse the dependency string
         repo, specifier, version = _parse_dependency(dep_string)
-        
+
         if repo is None:
             print(f"Warning: Invalid dependency format: {dep_string}")
             print(f"         Expected format: owner/repo==version or owner/repo>=version")
             continue
-        
+
         # Build the tag/version string for cloning
         tag_or_spec = specifier + version
-        
+
         # Override with "latest" if --latest flag is used
         if use_latest:
             tag_or_spec = "latest"
-        
+
         total_count += 1
 
         if _clone_repo_at_tag(repo, tag_or_spec, deps_dir, delete_allowed, allow_prerelease):

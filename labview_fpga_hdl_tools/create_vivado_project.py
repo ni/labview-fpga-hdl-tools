@@ -653,17 +653,16 @@ def create_project(overwrite=False, update=False, test=False, config_path=None):
     # Process the xdc_template to ensure that we have one for the Vivado project
     common.process_constraints_template(config)
 
- 
     # Validate that all constraints files exist - do this after processing the templates
     try:
         _validate_constraints_files(config)
     except Exception as e:
         print(f"Error: {e}")
         return 1
-    
+
     if len(config.window_vhdl_templates) > 0:
-        # Run (or rerun) generate LV Window VHDL - this is needed to generate TheWindow.vhd that goes
-        # into the objects directory and which gets used in the Vivado project
+        # Run (or rerun) generate LV Window VHDL - this is needed to generate TheWindow.vhd that
+        # goes into the objects directory and which gets used in the Vivado project
         try:
             gen_labview_target_plugin.gen_window_vhdl(config_path=config_path)
         except Exception as e:
