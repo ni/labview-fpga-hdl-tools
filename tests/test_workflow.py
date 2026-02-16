@@ -138,7 +138,7 @@ def get_standard_test_paths():
     return paths
 
 
-def test_set_no_errors():
+def get_test_set_no_errors():
     """Define the standard set of tests."""
     paths = get_standard_test_paths()
     nihdl_cmd = get_nihdl_command()
@@ -208,7 +208,7 @@ def test_set_no_errors():
     ]
 
 
-def test_set_errors():
+def get_test_set_errors():
     """Define a set of tests for error handling."""
     paths = get_standard_test_paths()
     nihdl_cmd = get_nihdl_command()
@@ -285,6 +285,23 @@ def test_set_errors():
             "expected_exit_code": 1,  # Expect error
         },
     ]
+
+
+def test_set_no_errors():
+    """Validate the no-error test set structure."""
+    tests = get_test_set_no_errors()
+    assert isinstance(tests, list)
+    assert len(tests) > 0
+    assert all("name" in test and "command" in test for test in tests)
+
+
+def test_set_errors():
+    """Validate the error-handling test set structure."""
+    tests = get_test_set_errors()
+    assert isinstance(tests, list)
+    assert len(tests) > 0
+    assert any(test.get("expected_exit_code") == 1 for test in tests)
+    assert any("--config=badsettings.ini" in test["command"] for test in tests)
 
 
 def run_test_cases(tests, test_name="Unnamed Test Set"):
@@ -530,7 +547,7 @@ if __name__ == "__main__":
     results = []
 
     # Run test cases - no expected errors
-    results.append(run_test_cases(test_set_no_errors(), "No Error Tests"))
+    results.append(run_test_cases(get_test_set_no_errors(), "No Error Tests"))
     # Validate output folders
     validation_success = run_output_validations()
 
@@ -538,7 +555,7 @@ if __name__ == "__main__":
     clean_target_directories(paths["target_dir"])
 
     # Run project creation tests
-    results.append(run_test_cases(test_set_errors(), "Expect Error Tests"))
+    results.append(run_test_cases(get_test_set_errors(), "Expect Error Tests"))
 
     # Exit with appropriate status code
     success = all(results) and validation_success

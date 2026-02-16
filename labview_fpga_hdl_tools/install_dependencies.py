@@ -384,6 +384,10 @@ def install_dependencies(delete_allowed=False, allow_prerelease=False, use_lates
             print(f"         Expected format: owner/repo==version or owner/repo>=version")
             continue
 
+        if specifier is None or version is None:
+            print(f"Warning: Invalid dependency version specifier: {dep_string}")
+            continue
+
         # Build the tag/version string for cloning
         tag_or_spec = specifier + version
 

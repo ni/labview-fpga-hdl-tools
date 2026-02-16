@@ -59,6 +59,13 @@ DATA_TYPE_PROTOTYPES = {
 }
 
 
+def _ensure_text(value):
+    """Return template output as a text string."""
+    if isinstance(value, bytes):
+        return value.decode("utf-8")
+    return value
+
+
 def _write_tree_to_xml(root, output_file):
     """Write an XML tree to a formatted XML file.
 
@@ -422,7 +429,7 @@ def _generate_window_vhdl_from_csv(
             # Write output file
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w", encoding="utf-8") as f:
-                f.write(output_text)
+                f.write(_ensure_text(output_text))
 
             print(f"Generated VHDL file: {output_path}")
 
@@ -504,7 +511,7 @@ def _generate_target_xml(
 
                 # Write output file
                 with open(current_output_path, "w", encoding="utf-8") as f:
-                    f.write(output_text)
+                    f.write(_ensure_text(output_text))
 
                 print(f"Generated Target XML file: {current_output_path}")
 

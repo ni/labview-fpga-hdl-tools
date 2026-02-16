@@ -83,6 +83,7 @@ class FileConfiguration:
         None  # Path to Python script with file exclusion patterns
     )
     num_hdl_registers: Optional[int] = None  # Number of HDL registers
+    max_hdl_reg_offset: Optional[int] = None  # Maximum HDL register byte offset
     # ----- CLIP MIGRATION SETTINGS -----
     input_xml_path: Optional[str] = None  # Path to source CLIP XML file
     output_csv_path: Optional[str] = None  # Path where CSV signals will be written
@@ -554,6 +555,10 @@ def process_constraints_template(config):
     """
     # Define output directory
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
+    period_content = ""
+    clip_content = ""
+    from_to_content = ""
+
     if config.the_window_folder_input is None:
         print("TheWindowFolder input is not specified in the configuration.")
     else:
