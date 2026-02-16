@@ -1,0 +1,11 @@
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Source/vhdl/AXI4_Lite_to_DRP.vhd
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Source/vhdl/AxiLiteToMgtDrp.vhd
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Source/vhdl/MgtTest_DRP_bridge.vhd
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Source/vhdl/PkgAXI4Lite_GTYE4_Control.vhd
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Source/vhdl/PXIe659XR_AXI4_Lite_Address_Map.vhd
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Source/vhdl/UserRTL_PXIe7903_Aurora64b66b_Framing_Crcx4_28p0GHz.vhd
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Target/aurora64b66b_framing_crcx4_28p0GHz.dcp
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Target/AXI4Lite_GTYE4_Control_Regs4.edf
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Target/AxiFramingRegx4.edf
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Target/AxiLiteClockConverterWrapper.edf
+../../deps/flexrio-aurora-clip/aurora64b66b_framing_crcx4_28p0GHz/Target/SasquatchClipFixedLogic.dcp

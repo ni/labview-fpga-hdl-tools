@@ -1,0 +1,6 @@
+# githubvisible=true
+
+# The requirements file containing Python module and dependency versions is located in the root targets folder one level above here.
+# We place a redirect requirements.txt file in this target-specific folder because this is where all the LabVIEW FPGA HDL tools are run.
+
+-r ../requirements.txt

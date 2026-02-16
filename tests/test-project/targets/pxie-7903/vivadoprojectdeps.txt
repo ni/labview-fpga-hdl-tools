@@ -1,0 +1,14 @@
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncAsyncInBase.vhd
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncBase.vhd
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncBool.vhd
+../../deps/flexrio-deps/flexrio-deps/DoubleSyncSL.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlopBoolVec.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlopSLV.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlopUnsigned.vhd
+../../deps/flexrio-deps/flexrio-deps/DFlop.vhd
+../../deps/flexrio-deps/flexrio-deps/GenDataValid.vhd
+../../deps/flexrio-deps/flexrio-deps/SingleClkFifo.vhd
+../../deps/flexrio-deps/flexrio-deps/SingleClkFifoFlags.vhd
+../../deps/flexrio-deps/flexrio-deps/DualPortRAM.vhd
+../../deps/flexrio-deps/flexrio-deps/DualPortRAM_Vivado.vhd
+

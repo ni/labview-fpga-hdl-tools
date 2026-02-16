@@ -1,0 +1,4 @@
+dependencies = [
+    "ni/flexrio-deps:26.0.0.dev3",
+    "ni/flexrio-aurora-clip:26.0.0.dev1"
+]
