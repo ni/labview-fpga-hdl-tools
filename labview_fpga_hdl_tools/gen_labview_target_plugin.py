@@ -59,6 +59,13 @@ DATA_TYPE_PROTOTYPES = {
 }
 
 
+def _ensure_text(value):
+    """Return template output as a text string."""
+    if isinstance(value, bytes):
+        return value.decode("utf-8")
+    return value
+
+
 def _write_tree_to_xml(root, output_file):
     """Write an XML tree to a formatted XML file.
 
@@ -422,7 +429,7 @@ def _generate_window_vhdl_from_csv(
             # Write output file
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w", encoding="utf-8") as f:
-                f.write(output_text)
+                f.write(_ensure_text(output_text))
 
             print(f"Generated VHDL file: {output_path}")
 
@@ -467,7 +474,8 @@ def _generate_target_xml(
         clock_filename = os.path.basename(clock_path)
 
         # Calculate min_lv_reg_offset from max_hdl_reg_offset
-        # Formula: max_hdl_reg_offset + 4 (next 32-bit register), converted to hex with 5 hex digits (0x00000 format)
+        # Formula: max_hdl_reg_offset + 4 (next 32-bit register), converted to hex with
+        # 5 hex digits (0x00000 format)
         offset_value = max_hdl_reg_offset + 4 if max_hdl_reg_offset is not None else 0
         min_lv_reg_offset = f"0x{offset_value:05X}"
 
@@ -503,7 +511,7 @@ def _generate_target_xml(
 
                 # Write output file
                 with open(current_output_path, "w", encoding="utf-8") as f:
-                    f.write(output_text)
+                    f.write(_ensure_text(output_text))
 
                 print(f"Generated Target XML file: {current_output_path}")
 

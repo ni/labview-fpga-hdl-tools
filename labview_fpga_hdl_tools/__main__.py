@@ -23,7 +23,6 @@ from . import (
     migrate_clip,
 )
 from .common import generate_guid
-from .common import generate_guid
 
 
 @click.group(help=f"LabVIEW FPGA HDL Tools (v{__version__})")

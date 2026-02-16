@@ -79,8 +79,11 @@ class FileConfiguration:
     lv_target_install_folder: Optional[str] = None  # Installation folder for target plugins
     lv_target_menus_folder: Optional[str] = None  # Folder containing target plugin menu files
     lv_target_info_ini: Optional[str] = None  # Path to TargetInfo.ini file
-    lv_target_exclude_files: Optional[str] = None  # Path to Python script with file exclusion patterns
+    lv_target_exclude_files: Optional[str] = (
+        None  # Path to Python script with file exclusion patterns
+    )
     num_hdl_registers: Optional[int] = None  # Number of HDL registers
+    max_hdl_reg_offset: Optional[int] = None  # Maximum HDL register byte offset
     # ----- CLIP MIGRATION SETTINGS -----
     input_xml_path: Optional[str] = None  # Path to source CLIP XML file
     output_csv_path: Optional[str] = None  # Path where CSV signals will be written
@@ -552,6 +555,10 @@ def process_constraints_template(config):
     """
     # Define output directory
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
+    period_content = ""
+    clip_content = ""
+    from_to_content = ""
+
     if config.the_window_folder_input is None:
         print("TheWindowFolder input is not specified in the configuration.")
     else:
@@ -571,7 +578,9 @@ def process_constraints_template(config):
                 period_pattern = (
                     r"# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS(.*?)# END_LV_FPGA_PERIOD_CONSTRAINTS"
                 )
-                clip_pattern = r"# BEGIN_LV_FPGA_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_CLIP_CONSTRAINTS"
+                clip_pattern = (
+                    r"# BEGIN_LV_FPGA_CLIP_CONSTRAINTS(.*?)# END_LV_FPGA_CLIP_CONSTRAINTS"
+                )
                 from_to_pattern = (
                     r"# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS(.*?)# END_LV_FPGA_FROM_TO_CONSTRAINTS"
                 )
@@ -760,8 +769,9 @@ def get_invalid_paths_error(invalid_paths):
 
 def generate_guid():
     """Generate a new GUID (UUID4) in standard format.
-    
+
     Returns:
-        str: A new GUID in lowercase format with hyphens (e.g., '8943868e-fc0c-4e48-a2e9-1ebce7779d5c')
+        str: A new GUID in lowercase format with hyphens
+        (e.g., '8943868e-fc0c-4e48-a2e9-1ebce7779d5c')
     """
     return str(uuid.uuid4())
