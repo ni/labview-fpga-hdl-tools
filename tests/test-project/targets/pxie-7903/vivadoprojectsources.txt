@@ -1,10 +1,4 @@
-../common/rtl-lvfpga/G3UspGtyHostInterface.vhd
-../common/rtl-lvfpga/IoRefClkSelect.vhd
-../common/rtl-lvfpga/SasquatchIoBuffers.vhd
-../common/rtl-lvfpga/SasquatchIoBuffersStage1.vhd
-../common/rtl-lvfpga/lvgen/PkgCommIntConfiguration.vhd
-../common/rtl-lvfpga/lvgen/PkgDmaPortCommIfcRegs.vhd
-../common/rtl-lvfpga/packages/PkgSasquatch.vhd
-objects/rtl-lvfpga/lvgen/TheWindow.vhd
-rtl-lvfpga/PkgFlexRioTargetConfig.vhd
+objects/GeneratedHDL/PkgTheWindowFlatWrapper.vhd
+objects/GeneratedHDL/TheWindow.vhd
+objects/GeneratedHDL/TheWindowFlatWrapper.vhd
 rtl-lvfpga/SasquatchTopTemplate.vhd

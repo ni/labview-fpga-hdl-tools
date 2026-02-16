@@ -52,6 +52,13 @@ def run_command(cmd, working_dir=None, expected_exit_code=0, timeout=60):
 
         # Check if command succeeded
         success = result.returncode == expected_exit_code
+        has_traceback = "Traceback (most recent call last):" in result.stderr
+
+        # Even when a non-zero exit code is expected, an unhandled traceback indicates
+        # the command crashed rather than failing in a controlled way.
+        if has_traceback:
+            success = False
+
         status = f"{GREEN}SUCCESS{RESET}" if success else f"{RED}FAILED{RESET}"
 
         print(
@@ -70,6 +77,7 @@ def run_command(cmd, working_dir=None, expected_exit_code=0, timeout=60):
             "stdout": result.stdout,
             "stderr": result.stderr,
             "duration": duration,
+            "has_traceback": has_traceback,
         }
 
     except subprocess.TimeoutExpired:
@@ -80,6 +88,7 @@ def run_command(cmd, working_dir=None, expected_exit_code=0, timeout=60):
             "stdout": "",
             "stderr": "Command timed out",
             "duration": time.time() - start_time,
+            "has_traceback": False,
         }
     except Exception as e:
         print(f"{RED}Error running command: {str(e)}{RESET}")
@@ -89,6 +98,7 @@ def run_command(cmd, working_dir=None, expected_exit_code=0, timeout=60):
             "stdout": "",
             "stderr": str(e),
             "duration": time.time() - start_time,
+            "has_traceback": False,
         }
 
 
@@ -330,8 +340,9 @@ def run_test_cases(tests, test_name="Unnamed Test Set"):
 
     for name, result in results.items():
         status = f"{GREEN}PASSED{RESET}" if result["success"] else f"{RED}FAILED{RESET}"
+        reason = " - unexpected traceback" if result.get("has_traceback", False) else ""
         print(
-            f"{name}: {status} (Exit Code: {result['exit_code']}, Time: {result['duration']:.2f}s)"
+            f"{name}: {status}{reason} (Exit Code: {result['exit_code']}, Time: {result['duration']:.2f}s)"
         )
 
         if result["success"]:

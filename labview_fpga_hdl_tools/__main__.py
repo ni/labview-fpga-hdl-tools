@@ -35,11 +35,12 @@ def cli(ctx):
 
 
 @cli.command("migrate-clip", help="Migrate CLIP files for FlexRIO custom devices")
+@click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def migrate_clip_cmd(ctx):
+def migrate_clip_cmd(ctx, config):
     """Migrate CLIP files for FlexRIO custom devices."""
     try:
-        result = migrate_clip.migrate_clip()
+        result = migrate_clip.migrate_clip(config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
@@ -47,11 +48,12 @@ def migrate_clip_cmd(ctx):
 
 
 @cli.command("install-target", help="Install LabVIEW FPGA target support files")
+@click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def install_target_cmd(ctx):
+def install_target_cmd(ctx, config):
     """Install LabVIEW FPGA target support files."""
     try:
-        result = install_labview_target_plugin.install_lv_target_support()
+        result = install_labview_target_plugin.install_lv_target_support(config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
@@ -60,11 +62,12 @@ def install_target_cmd(ctx):
 
 @cli.command("get-window", help="Extract window netlist from Vivado project")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def get_window_cmd(ctx, test):
+def get_window_cmd(ctx, test, config):
     """Extract window netlist from Vivado project."""
     try:
-        result = get_window_netlist.get_window(test=test)
+        result = get_window_netlist.get_window(test=test, config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
@@ -72,11 +75,12 @@ def get_window_cmd(ctx, test):
 
 
 @cli.command("gen-target", help="Generate LabVIEW FPGA target support files")
+@click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def gen_target_cmd(ctx):
+def gen_target_cmd(ctx, config):
     """Generate LabVIEW FPGA target support files."""
     try:
-        result = gen_labview_target_plugin.gen_lv_target_support()
+        result = gen_labview_target_plugin.gen_lv_target_support(config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
@@ -87,12 +91,13 @@ def gen_target_cmd(ctx):
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def create_project_cmd(ctx, overwrite, update, test):
+def create_project_cmd(ctx, overwrite, update, test, config):
     """Create or update Vivado project."""
     try:
         result = create_vivado_project.create_project(
-            overwrite=overwrite, update=update, test=test
+            overwrite=overwrite, update=update, test=test, config_path=config
         )
         return result
     except Exception as e:
@@ -102,11 +107,12 @@ def create_project_cmd(ctx, overwrite, update, test):
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't launch Vivado")
+@click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def launch_vivado_cmd(ctx, test):
+def launch_vivado_cmd(ctx, test, config):
     """Launch Vivado with the current project."""
     try:
-        result = launch_vivado.launch_vivado(test=test)
+        result = launch_vivado.launch_vivado(test=test, config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
@@ -148,11 +154,12 @@ def install_deps_cmd(ctx, delete, pre, latest):
     is_flag=True,
     help="Test mode - validate settings but don't run the createBitfile tool",
 )
+@click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def create_lvbitx_cmd(ctx, test):
+def create_lvbitx_cmd(ctx, test, config):
     """Create LabVIEW FPGA bitfile from Vivado output."""
     try:
-        result = create_lvbitx.create_lv_bitx(test=test)
+        result = create_lvbitx.create_lv_bitx(test=test, config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
@@ -181,7 +188,14 @@ def handle_exception(e):
 
 def main():
     """Main entry point for the command-line interface."""
-    return cli(args=sys.argv[1:], standalone_mode=False)
+    try:
+        return cli(args=sys.argv[1:], standalone_mode=False)
+    except click.ClickException as e:
+        e.show()
+        return 1
+    except click.Abort:
+        click.echo("Aborted!", err=True)
+        return 1
 
 
 if __name__ == "__main__":

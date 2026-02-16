@@ -624,16 +624,17 @@ def _create_project_handler(config, overwrite=False, update=False):
     return project_mode
 
 
-def create_project(overwrite=False, update=False, test=False):
+def create_project(overwrite=False, update=False, test=False, config_path=None):
     """Main entry point for the script.
 
     Args:
         overwrite (bool): Force creation of a new project, overwriting existing
         update (bool): Update files in an existing project
         test (bool): Test mode - validate settings but don't run Vivado
+        config_path (str | None): Optional path to INI settings file
     """
     # Load configuration with optional custom config path
-    config = common.load_config()
+    config = common.load_config(config_path)
 
     # Validate that all required settings are present
     try:
@@ -664,7 +665,7 @@ def create_project(overwrite=False, update=False, test=False):
         # Run (or rerun) generate LV Window VHDL - this is needed to generate TheWindow.vhd that goes
         # into the objects directory and which gets used in the Vivado project
         try:
-            gen_labview_target_plugin.gen_window_vhdl()
+            gen_labview_target_plugin.gen_window_vhdl(config_path=config_path)
         except Exception as e:
             print(f"Error: {e}")
             return 1
