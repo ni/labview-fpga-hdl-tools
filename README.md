@@ -1,5 +1,7 @@
 Pre-release LabVIEW FPGA HDL Tools for use with the ni/flexrio repository.
 
+Start with the flexrio-custom repository to use this: https://github.com/ni/flexrio-custom
+
 # Getting Started
 This document is a reference guide for the LabVIEW FPGA HDL Tools.
 
