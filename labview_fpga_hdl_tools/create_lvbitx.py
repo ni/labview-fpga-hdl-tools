@@ -20,7 +20,6 @@ def _create_lv_bitfile(test, config_path=None):
             "WARNING: This function must be run from within the implementation folder of a Vivado project.\n(e.g. C:\\dev\\github\\flexrio\\targets\\pxie-7903\\VivadoProject\\MySasquatchProj.runs\\impl_1)"
         )
 
-
     # This script is run by a TCL script in Vivado after the bitstream is generated and the
     # directory that Vivado is in is the implementation run directory. So we must go up a
     # few directories to the PXIe-7xxx folder where these scripts normally run
