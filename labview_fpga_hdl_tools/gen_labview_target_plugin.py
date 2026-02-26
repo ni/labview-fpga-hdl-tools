@@ -18,6 +18,7 @@ Key functionalities:
 
 import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
+import re
 import shutil  # For file copying operations
 import sys  # For command-line arguments and error handling
 import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
@@ -64,6 +65,61 @@ def _ensure_text(value):
     if isinstance(value, bytes):
         return value.decode("utf-8")
     return value
+
+
+def _parse_register_offset(offset_text):
+    """Parse a register offset string as an integer.
+
+    Supports hex (0x...) and decimal formats.
+    """
+    return int(offset_text.strip(), 0)
+
+
+def _validate_target_xml_register_space(xml_path):
+    """Validate HDL/LabVIEW shared register space usage in generated target XML.
+
+    Returns:
+        tuple[str, str] | None: (severity, message) where severity is "warning"
+            or "error", or None if no issue is detected.
+    """
+    with open(xml_path, "r", encoding="utf-8") as f:
+        xml_text = f.read()
+
+    max_match = re.search(
+        r"<MaxLabVIEWFPGARegisterOffset>\s*([^<\s]+)\s*</MaxLabVIEWFPGARegisterOffset>",
+        xml_text,
+    )
+    min_match = re.search(
+        r"<MinLabVIEWFPGARegisterOffset>\s*([^<\s]+)\s*</MinLabVIEWFPGARegisterOffset>",
+        xml_text,
+    )
+
+    max_offset_text = max_match.group(1) if max_match else None
+    min_offset_text = min_match.group(1) if min_match else None
+
+    if not max_offset_text or not min_offset_text:
+        return None
+
+    max_offset_value = _parse_register_offset(max_offset_text)
+    min_offset_value = _parse_register_offset(min_offset_text)
+
+    if min_offset_value >= max_offset_value:
+        return (
+            "error",
+            f"HDL register space ({min_offset_text.strip()}) exceeds the shared space for the "
+            f"LabVIEW/HDL register space ({max_offset_text.strip()})"
+            "\nPlease reduce the HDL register usage."
+        )
+
+    if min_offset_value > (0.9 * max_offset_value):
+        return (
+            "warning",
+            f"HDL Register space ({min_offset_text.strip()}) exceeds 90% of the shared "
+            f"LabVIEW/HDL register space ({max_offset_text.strip()})"
+            "\nConsider reducing HDL register usage to avoid potential issues."
+        )
+
+    return None
 
 
 def _write_tree_to_xml(root, output_file):
@@ -465,9 +521,16 @@ def _generate_target_xml(
         lv_target_guid (str): GUID for the LabVIEW FPGA target
         max_hdl_reg_offset (int): Maximum HDL register offset (byte address)
 
+    Returns:
+        tuple[list[str], list[str]]: (warnings, errors) collected while validating
+            generated target XML register-space values.
+
     Raises:
-        SystemExit: If an error occurs during XML generation
+        SystemExit: If an unexpected error occurs during XML generation
     """
+    register_warnings = []
+    register_errors = []
+
     try:
         # Extract filenames for BoardIO and Clock
         boardio_filename = os.path.basename(boardio_path)
@@ -513,6 +576,14 @@ def _generate_target_xml(
                 with open(current_output_path, "w", encoding="utf-8") as f:
                     f.write(_ensure_text(output_text))
 
+                register_space_result = _validate_target_xml_register_space(current_output_path)
+                if register_space_result:
+                    severity, message = register_space_result
+                    if severity == "error":
+                        register_errors.append(message)
+                    elif severity == "warning":
+                        register_warnings.append(message)
+
                 print(f"Generated Target XML file: {current_output_path}")
 
             except Exception as e:
@@ -521,6 +592,8 @@ def _generate_target_xml(
     except Exception as e:
         print(f"Error generating Target XML: {e}")
         sys.exit(1)
+
+    return register_warnings, register_errors
 
 
 def _generate_board_io_signal_assignments_example(csv_path, output_path):
@@ -817,6 +890,8 @@ def gen_lv_target_support(config_path=None):
     config = common.load_config(config_path)
     has_validation_errors = False
     validation_errors = []
+    register_space_warnings = []
+    register_space_errors = []
 
     # Validate that all required settings are present
     try:
@@ -850,7 +925,7 @@ def gen_lv_target_support(config_path=None):
         config.custom_signals_csv, config.board_io_signal_assignments_example
     )
 
-    _generate_target_xml(
+    register_space_warnings, register_space_errors = _generate_target_xml(
         config.target_xml_templates,
         config.lv_target_plugin_folder,
         config.include_clip_socket_ports,
@@ -875,6 +950,20 @@ def gen_lv_target_support(config_path=None):
 
     _copy_targetinfo_ini(config.lv_target_plugin_folder, config.lv_target_info_ini)
 
+    if register_space_warnings:
+        print("\n" + "!" * 80)
+        print("!!! WARNING SUMMARY: HDL/LabVIEW register-space usage is high !!!")
+        for warning in register_space_warnings:
+            print(f"  ! WARNING: {warning}")
+        print("!" * 80)
+
+    if register_space_errors:
+        print("\n" + "#" * 80)
+        print("### ERROR SUMMARY: HDL/LabVIEW register-space overflow detected ###")
+        for error in register_space_errors:
+            print(f"  # ERROR: {error}")
+        print("#" * 80)
+
     # Report validation errors at the end
     if has_validation_errors:
         print("\n" + "=" * 80)
@@ -884,6 +973,9 @@ def gen_lv_target_support(config_path=None):
         print("\nThe target files were generated but may contain incorrect values.")
         print("Please correct these errors in your CSV file and regenerate.")
         print("=" * 80)
+        return 1
+
+    if register_space_errors:
         return 1
 
     print("Target support file generation complete.")
