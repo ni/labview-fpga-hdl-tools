@@ -86,6 +86,19 @@ def gen_target_cmd(ctx, config):
         return 1
 
 
+@cli.command("gen-hdl", help="Generate Window VHDL files from CSV/templates")
+@click.option("--config", default=None, help="Path to INI settings file")
+@click.pass_context
+def gen_hdl_cmd(ctx, config):
+    """Generate Window VHDL files only."""
+    try:
+        result = gen_labview_target_plugin.gen_window_vhdl(config_path=config)
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
 @cli.command("create-project", help="Create or update Vivado project")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
