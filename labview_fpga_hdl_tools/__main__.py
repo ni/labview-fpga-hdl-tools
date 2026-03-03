@@ -13,6 +13,7 @@ import click
 # Import main functions from all the tool modules
 from . import (
     __version__,
+    common,
     create_lvbitx,
     create_vivado_project,
     gen_labview_target_plugin,
@@ -22,7 +23,6 @@ from . import (
     launch_vivado,
     migrate_clip,
 )
-from .common import generate_guid
 
 
 @click.group(help=f"LabVIEW FPGA HDL Tools (v{__version__})")
@@ -93,6 +93,19 @@ def gen_hdl_cmd(ctx, config):
     """Generate Window VHDL files only."""
     try:
         result = gen_labview_target_plugin.gen_window_vhdl(config_path=config)
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("gen-xdc", help="Generate XDC constraint files from templates")
+@click.option("--config", default=None, help="Path to INI settings file")
+@click.pass_context
+def gen_xdc_cmd(ctx, config):
+    """Generate XDC constraint files from templates."""
+    try:
+        result = common.process_constraints(config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
@@ -183,7 +196,7 @@ def create_lvbitx_cmd(ctx, test, config):
 def gen_guid_cmd(ctx):
     """Generate a new GUID for LabVIEW FPGA target plugins."""
     try:
-        guid = generate_guid()
+        guid = common.generate_guid()
         print("Generated GUID:", guid)
         print("Copy and paste this GUID into LVTargetGUID in the projectsettings.ini file.")
         return 0

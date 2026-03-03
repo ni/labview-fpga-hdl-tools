@@ -181,16 +181,27 @@ def _copy_long_path_files(file_list):
     for file in file_list:
         # Store original file path before modification
         original_file = file
+        absolute_file_path = os.path.abspath(original_file)
+        try:
+            relative_file_path = os.path.relpath(absolute_file_path, os.getcwd())
+        except ValueError:
+            relative_file_path = original_file
 
         # Handle long paths on Windows
         if os.name == "nt":
-            file = f"\\\\?\\{os.path.abspath(file)}"
+            file = f"\\\\?\\{absolute_file_path}"
             target_folder_long = f"\\\\?\\{os.path.abspath(target_folder)}"
         else:
             target_folder_long = target_folder
 
-        # Check if the file path is longer than 250 characters
-        if len(file) > 250:
+        # Vivado has a problem with adding long file paths to the project, so we check if the file path is too long and
+        # if so we copy it to a local folder and add it from there instead. We check both the absolute path and the 
+        # relative path because Vivado might be using either one when processing the TCL script, and we want to ensure
+        # that we catch all cases where the path length could be an issue.
+        MAX_PATH = 200 if os.name == "nt" else 4096
+
+        # Check if the absolute or relative path is longer than MAX_PATH characters
+        if len(absolute_file_path) > MAX_PATH or len(relative_file_path) > MAX_PATH:
             target_path = os.path.join(target_folder_long, os.path.basename(file))
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
@@ -318,7 +329,7 @@ def _validate_files(file_list):
         error_msg = "The following files do not exist:\n"
         for file in invalid_files:
             error_msg += f"  {file}\n"
-        error_msg += "\ncreate-project FAILED!\n\n* Check your source and dependency file paths\n* Ensure that the dependency zip file was unzipped"
+        error_msg += "\ncreate-project FAILED!\n\n* Check your source and dependency file paths\n* Ensure that the install-deps was run using the correct dependency version"
         raise FileNotFoundError(error_msg)
 
 

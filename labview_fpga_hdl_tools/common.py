@@ -695,6 +695,19 @@ def process_constraints_template(config):
         print(f"Successfully processed and saved: {output_path}")
 
 
+def process_constraints(config_path=None):
+    """Load config and process XDC constraint templates.
+
+    Args:
+        config_path (str | None): Optional path to INI settings file.
+
+    Returns:
+        int: 0 on success.
+    """
+    config = load_config(config_path)
+    process_constraints_template(config)
+    return 0
+
 def run_command(cmd, cwd=None, capture_output=True):
     """Run a shell command and return its output."""
     print(f"Running command: {cmd}")
