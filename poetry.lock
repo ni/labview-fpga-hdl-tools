@@ -1107,7 +1107,7 @@ version = "2.0.1"
 description = "A lil' TOML parser"
 optional = false
 python-versions = ">=3.7"
-groups = ["lint", "test"]
+groups = ["main", "lint", "test"]
 markers = "python_version < \"3.11\""
 files = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
@@ -1130,4 +1130,4 @@ markers = {test = "python_version < \"3.11\""}
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.8,<4.0"
-content-hash = "2fbfd245ce9417738220189dabea12ac4190f193cb61a8a1bdbebb4ca0e209ae"
+content-hash = "fbd52f921ccd6242b7d82ef51c950aed411ede85c926436ebc09189d311d8cf9"
