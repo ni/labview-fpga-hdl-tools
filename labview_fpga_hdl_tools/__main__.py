@@ -22,6 +22,7 @@ from . import (
     install_labview_target_plugin,
     launch_vivado,
     migrate_clip,
+    process_constraints,
 )
 
 
@@ -105,7 +106,7 @@ def gen_hdl_cmd(ctx, config):
 def gen_xdc_cmd(ctx, config):
     """Generate XDC constraint files from templates."""
     try:
-        result = common.process_constraints(config_path=config)
+        result = process_constraints.process_constraints(config_path=config)
         return result
     except Exception as e:
         handle_exception(e)

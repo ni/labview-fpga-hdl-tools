@@ -20,7 +20,7 @@ import shutil
 from collections import defaultdict
 from enum import Enum
 
-from . import common, gen_labview_target_plugin
+from . import common, gen_labview_target_plugin, process_constraints
 
 
 def _has_spaces(file_path):
@@ -662,7 +662,7 @@ def create_project(overwrite=False, update=False, test=False, config_path=None):
         return 1
 
     # Process the xdc_template to ensure that we have one for the Vivado project
-    common.process_constraints_template(config)
+    process_constraints.process_constraints_template(config)
 
     # Validate that all constraints files exist - do this after processing the templates
     try:

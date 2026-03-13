@@ -545,7 +545,7 @@ def get_vivado_project_files(lists_of_files):
     return file_list
 
 
-def process_constraints_template(config):
+def run_command(cmd, cwd=None, capture_output=True):
     """Process XDC constraint template files.
 
     This function:
@@ -691,22 +691,6 @@ def process_constraints_template(config):
         # Write the processed content to output file
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(final_content)
-
-        print(f"Successfully processed and saved: {output_path}")
-
-
-def process_constraints(config_path=None):
-    """Load config and process XDC constraint templates.
-
-    Args:
-        config_path (str | None): Optional path to INI settings file.
-
-    Returns:
-        int: 0 on success.
-    """
-    config = load_config(config_path)
-    process_constraints_template(config)
-    return 0
 
 def run_command(cmd, cwd=None, capture_output=True):
     """Run a shell command and return its output."""
