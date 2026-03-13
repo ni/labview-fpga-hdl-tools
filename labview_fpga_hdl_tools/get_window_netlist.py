@@ -38,7 +38,7 @@ def _get_window_netlist(config, test=False):
     else:  # Linux or other OS
         vivado_executable = os.path.join(vivado_path, "bin", "vivado")
 
-    source_file = os.path.join(vivado_project_path, "TheWindowFlatWrapper.v")
+    source_file = os.path.join(vivado_project_path, "TheLvWindowFlatWrapper.v")
     destination_folder = config.the_window_folder_output
 
     # Create destination directory if it doesn't exist
