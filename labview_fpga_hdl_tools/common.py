@@ -69,7 +69,7 @@ class FileConfiguration:
     lv_target_constraints_files: List[str] = field(
         default_factory=list
     )  # List of LabVIEW target constraint file paths
-    include_clip_socket_ports: Optional[bool] = (
+    include_target_io_ports: Optional[bool] = (
         None  # Whether to include CLIP socket ports in generated files
     )
     include_custom_io: Optional[bool] = None  # Whether to include custom I/O in generated files
@@ -210,7 +210,7 @@ def load_config(config_path=None):
     files.lv_target_guid = settings.get("LVTargetGUID")
     files.lv_target_plugin_folder = resolve_path(settings.get("LVTargetPluginFolder"))
     files.lv_target_install_folder = settings.get("LVTargetInstallFolder")
-    files.include_clip_socket_ports = _parse_bool(settings.get("IncludeCLIPSocket"), True)
+    files.include_target_io_ports = _parse_bool(settings.get("IncludeCLIPSocket"), True)
     files.include_custom_io = _parse_bool(settings.get("IncludeLVTargetBoardIO"), True)
 
     # Load Window VHDL templates
@@ -678,7 +678,7 @@ def process_constraints_template(config):
 
         # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
         final_content, count = re.subn(
-            r"#LabVIEWFPGA_Macro\s+macro_GitHubCustomConstraints",
+            r"#LabVIEWFPGAHdlTools_Macro\s+macro_GitHubCustomConstraints",
             custom_constraints_content,
             final_content,
             flags=re.IGNORECASE,

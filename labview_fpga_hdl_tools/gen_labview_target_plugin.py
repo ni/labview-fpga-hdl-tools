@@ -430,7 +430,7 @@ def _get_board_io_signals(csv_path):
 
 
 def _generate_window_vhdl_from_csv(
-    csv_path, template_paths, output_folder, include_clip_socket, include_custom_io
+    csv_path, template_paths, output_folder, include_target_io, include_custom_io
 ):
     """Generate Window VHDL from CSV using Mako templates.
 
@@ -448,7 +448,7 @@ def _generate_window_vhdl_from_csv(
         csv_path (str): Path to the CSV containing signal definitions
         template_paths (list): List of paths to Mako templates for VHDL generation
         output_folder (str): Folder where the generated VHDL files will be written
-        include_clip_socket (bool): Whether to include CLIP socket ports
+        include_target_io (bool): Whether to include CLIP socket ports
         include_custom_io (bool): Whether to include custom I/O
 
     Raises:
@@ -478,7 +478,7 @@ def _generate_window_vhdl_from_csv(
 
             output_text = template.render(
                 custom_signals=signals,
-                include_clip_socket=include_clip_socket,
+                include_target_io=include_target_io,
                 include_custom_io=include_custom_io,
             )
 
@@ -497,7 +497,7 @@ def _generate_window_vhdl_from_csv(
 def _generate_target_xml(
     template_paths,
     output_folder,
-    include_clip_socket,
+    include_target_io,
     include_custom_io,
     boardio_path,
     clock_path,
@@ -513,7 +513,7 @@ def _generate_target_xml(
     Args:
         template_paths (list): List of paths to Mako templates for target XML
         output_folder (str): Folder where the target XML files will be written
-        include_clip_socket (bool): Whether to include CLIP socket ports
+        include_target_io (bool): Whether to include CLIP socket ports
         include_custom_io (bool): Whether to include custom I/O
         boardio_path (str): Path to the BoardIO XML (for filename extraction)
         clock_path (str): Path to the Clock XML (for filename extraction)
@@ -561,16 +561,21 @@ def _generate_target_xml(
                 with open(template_path, "r", encoding="utf-8") as f:
                     template = Template(f.read())
 
-                output_text = template.render(
-                    include_clip_socket=include_clip_socket,
-                    include_custom_io=include_custom_io,
-                    custom_boardio=boardio_filename,
-                    custom_clock=clock_filename,
-                    custom_target=True,
-                    lv_target_name=lv_target_name,
-                    lv_target_guid=lv_target_guid,
-                    min_lv_reg_offset=min_lv_reg_offset,
-                )
+                render_kwargs = {
+                    "include_target_io": include_target_io,
+                    "include_custom_io": include_custom_io,
+                    "custom_boardio": boardio_filename,
+                    "custom_clock": clock_filename,
+                    "custom_target": True,
+                    "lv_target_name": lv_target_name,
+                    "lv_target_guid": lv_target_guid,
+                    "min_lv_reg_offset": min_lv_reg_offset,
+                    "include_current_instance_path_for_window": True,
+                    "net_path_to_the_window": "TheLvWindowWrapper/TheLvWindow",
+                    "current_instance_path_for_window": "TheLvWindowWrapper",
+                }
+
+                output_text = template.render(**render_kwargs)
 
                 # Write output file
                 with open(current_output_path, "w", encoding="utf-8") as f:
@@ -876,7 +881,7 @@ def gen_window_vhdl(config_path=None):
         config.custom_signals_csv,
         config.window_vhdl_templates,
         config.window_vhdl_output_folder,
-        config.include_clip_socket_ports,
+        config.include_target_io_ports,
         config.include_custom_io,
     )
 
@@ -917,7 +922,7 @@ def gen_lv_target_support(config_path=None):
         config.custom_signals_csv,
         config.window_vhdl_templates,
         config.window_vhdl_output_folder,
-        config.include_clip_socket_ports,
+        config.include_target_io_ports,
         config.include_custom_io,
     )
 
@@ -928,7 +933,7 @@ def gen_lv_target_support(config_path=None):
     register_space_warnings, register_space_errors = _generate_target_xml(
         config.target_xml_templates,
         config.lv_target_plugin_folder,
-        config.include_clip_socket_ports,
+        config.include_target_io_ports,
         config.include_custom_io,
         config.boardio_output,
         config.clock_output,
