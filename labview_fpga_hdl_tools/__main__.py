@@ -13,7 +13,9 @@ import click
 # Import main functions from all the tool modules
 from . import (
     __version__,
+    check_syntax,
     common,
+    compile_project,
     create_lvbitx,
     create_vivado_project,
     gen_labview_target_plugin,
@@ -126,6 +128,34 @@ def create_project_cmd(ctx, overwrite, update, test, config):
         result = create_vivado_project.create_project(
             overwrite=overwrite, update=update, test=test, config_path=config
         )
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("check-syntax", help="Check Vivado RTL syntax and hierarchy quickly")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--config", default=None, help="Path to INI settings file")
+@click.pass_context
+def check_syntax_cmd(ctx, test, config):
+    """Check Vivado RTL syntax and hierarchy using RTL elaboration."""
+    try:
+        result = check_syntax.check_syntax(test=test, config_path=config)
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("compile-project", help="Compile Vivado project using CompileProject.tcl")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--config", default=None, help="Path to INI settings file")
+@click.pass_context
+def compile_project_cmd(ctx, test, config):
+    """Compile Vivado project by running CompileProject.tcl."""
+    try:
+        result = compile_project.compile_project(test=test, config_path=config)
         return result
     except Exception as e:
         handle_exception(e)
