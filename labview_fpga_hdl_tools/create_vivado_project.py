@@ -72,7 +72,7 @@ def _get_tcl_add_files_text(file_list, file_dir):
 
 
 def _replace_placeholders_in_file(
-    file_path, new_file_path, add_files, project_name, top_entity, tcl_folder
+    file_path, new_file_path, add_files, project_name, top_entity, fpga_part, tcl_folder
 ):
     """Replaces placeholders in a template file with actual values.
 
@@ -82,6 +82,7 @@ def _replace_placeholders_in_file(
     - ADD_FILES: List of files to add to the project
     - PROJ_NAME: Name of the Vivado project
     - TOP_ENTITY: Top-level VHDL entity name
+    - FPGA_PART: FPGA part for create_project -part
 
     Args:
         file_path (str): Path to the template file
@@ -89,6 +90,7 @@ def _replace_placeholders_in_file(
         add_files (str): TCL commands to add files to the project
         project_name (str): Name of the Vivado project
         top_entity (str): Name of the top-level entity
+        fpga_part (str): FPGA part to pass to the Vivado project template
         tcl_folder (str): Path to the TCL scripts folder
     """
     with open(file_path, "r", encoding="utf-8") as file:
@@ -96,6 +98,7 @@ def _replace_placeholders_in_file(
     modified_contents = file_contents.replace("ADD_FILES", add_files)
     modified_contents = modified_contents.replace("PROJ_NAME", project_name)
     modified_contents = modified_contents.replace("TOP_ENTITY", top_entity)
+    modified_contents = modified_contents.replace("FPGA_PART", fpga_part)
     modified_contents = modified_contents.replace("TCL_FOLDER", tcl_folder)
 
     # Create the directory for the new file if it doesn't exist
@@ -356,6 +359,9 @@ def _validate_ini(config, test):
     if not config.top_level_entity:
         missing_settings.append("VivadoProjectSettings.TopLevelEntity")
 
+    if not config.fpga_part:
+        missing_settings.append("VivadoProjectSettings.FPGAPart")
+
     # Don't validate Vivado path if test arguement is set
     if not test:
         if not config.vivado_tools_path:
@@ -496,6 +502,7 @@ def _create_project(mode: ProjectMode, config, test):
     # Get settings from VivadoProjectSettings section
     project_name = config.vivado_project_name
     top_entity = config.top_level_entity
+    fpga_part = config.fpga_part
 
     # Replace placeholders in the template Vivado project scripts
     _replace_placeholders_in_file(
@@ -504,6 +511,7 @@ def _create_project(mode: ProjectMode, config, test):
         add_files,
         project_name,
         top_entity,
+        fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
     )
     _replace_placeholders_in_file(
@@ -512,6 +520,7 @@ def _create_project(mode: ProjectMode, config, test):
         add_files,
         project_name,
         top_entity,
+        fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
     )
 

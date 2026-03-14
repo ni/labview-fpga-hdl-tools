@@ -30,6 +30,7 @@ class FileConfiguration:
     lv_path: Optional[str] = None  # Path to LabVIEW installation
     # ----- VIVADO PROJECT SETTINGS -----
     top_level_entity: Optional[str] = None  # Top-level entity name for Vivado project
+    fpga_part: Optional[str] = None  # FPGA part used when creating the Vivado project
     vivado_project_name: Optional[str] = None  # Name of the Vivado project (no spaces allowed)
     vivado_tools_path: Optional[str] = None  # Path to Vivado tools
     hdl_file_lists: List[str] = field(
@@ -148,6 +149,7 @@ def load_config(config_path=None):
     # -----------------------------------------------------------------------
     settings = config["VivadoProjectSettings"]
     files.top_level_entity = settings.get("TopLevelEntity")
+    files.fpga_part = settings.get("FPGAPart")
     files.vivado_project_name = settings.get("VivadoProjectName")
     files.vivado_tools_path = settings.get("VivadoToolsPath")
 
