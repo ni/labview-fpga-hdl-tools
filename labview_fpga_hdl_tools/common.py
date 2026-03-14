@@ -30,6 +30,7 @@ class FileConfiguration:
     lv_path: Optional[str] = None  # Path to LabVIEW installation
     # ----- VIVADO PROJECT SETTINGS -----
     top_level_entity: Optional[str] = None  # Top-level entity name for Vivado project
+    fpga_part: Optional[str] = None  # FPGA part used when creating the Vivado project
     vivado_project_name: Optional[str] = None  # Name of the Vivado project (no spaces allowed)
     vivado_tools_path: Optional[str] = None  # Path to Vivado tools
     hdl_file_lists: List[str] = field(
@@ -69,7 +70,7 @@ class FileConfiguration:
     lv_target_constraints_files: List[str] = field(
         default_factory=list
     )  # List of LabVIEW target constraint file paths
-    include_clip_socket_ports: Optional[bool] = (
+    include_target_io_ports: Optional[bool] = (
         None  # Whether to include CLIP socket ports in generated files
     )
     include_custom_io: Optional[bool] = None  # Whether to include custom I/O in generated files
@@ -148,6 +149,7 @@ def load_config(config_path=None):
     # -----------------------------------------------------------------------
     settings = config["VivadoProjectSettings"]
     files.top_level_entity = settings.get("TopLevelEntity")
+    files.fpga_part = settings.get("FPGAPart")
     files.vivado_project_name = settings.get("VivadoProjectName")
     files.vivado_tools_path = settings.get("VivadoToolsPath")
 
@@ -210,7 +212,7 @@ def load_config(config_path=None):
     files.lv_target_guid = settings.get("LVTargetGUID")
     files.lv_target_plugin_folder = resolve_path(settings.get("LVTargetPluginFolder"))
     files.lv_target_install_folder = settings.get("LVTargetInstallFolder")
-    files.include_clip_socket_ports = _parse_bool(settings.get("IncludeCLIPSocket"), True)
+    files.include_target_io_ports = _parse_bool(settings.get("IncludeCLIPSocket"), True)
     files.include_custom_io = _parse_bool(settings.get("IncludeLVTargetBoardIO"), True)
 
     # Load Window VHDL templates
@@ -247,7 +249,9 @@ def load_config(config_path=None):
     files.lv_target_info_ini = resolve_path(settings.get("LVTargetInfoIni"))
     files.lv_target_exclude_files = resolve_path(settings.get("LVTargetExcludeFiles"))
     max_hdl_reg_offset_str = settings.get("MaxHdlRegOffset")
-    files.max_hdl_reg_offset = int(max_hdl_reg_offset_str) if max_hdl_reg_offset_str else None
+    files.max_hdl_reg_offset = (
+        int(max_hdl_reg_offset_str.strip(), 0) if max_hdl_reg_offset_str else None
+    )
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
@@ -543,7 +547,7 @@ def get_vivado_project_files(lists_of_files):
     return file_list
 
 
-def process_constraints_template(config):
+def run_command(cmd, cwd=None, capture_output=True):
     """Process XDC constraint template files.
 
     This function:
@@ -676,7 +680,7 @@ def process_constraints_template(config):
 
         # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
         final_content, count = re.subn(
-            r"#LabVIEWFPGA_Macro\s+macro_GitHubCustomConstraints",
+            r"#LabVIEWFPGAHdlTools_Macro\s+macro_GitHubCustomConstraints",
             custom_constraints_content,
             final_content,
             flags=re.IGNORECASE,
@@ -689,9 +693,6 @@ def process_constraints_template(config):
         # Write the processed content to output file
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(final_content)
-
-        print(f"Successfully processed and saved: {output_path}")
-
 
 def run_command(cmd, cwd=None, capture_output=True):
     """Run a shell command and return its output."""

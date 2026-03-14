@@ -20,7 +20,7 @@ import shutil
 from collections import defaultdict
 from enum import Enum
 
-from . import common, gen_labview_target_plugin
+from . import common, gen_labview_target_plugin, process_constraints
 
 
 def _has_spaces(file_path):
@@ -72,7 +72,7 @@ def _get_tcl_add_files_text(file_list, file_dir):
 
 
 def _replace_placeholders_in_file(
-    file_path, new_file_path, add_files, project_name, top_entity, tcl_folder
+    file_path, new_file_path, add_files, project_name, top_entity, fpga_part, tcl_folder
 ):
     """Replaces placeholders in a template file with actual values.
 
@@ -82,6 +82,7 @@ def _replace_placeholders_in_file(
     - ADD_FILES: List of files to add to the project
     - PROJ_NAME: Name of the Vivado project
     - TOP_ENTITY: Top-level VHDL entity name
+    - FPGA_PART: FPGA part for create_project -part
 
     Args:
         file_path (str): Path to the template file
@@ -89,6 +90,7 @@ def _replace_placeholders_in_file(
         add_files (str): TCL commands to add files to the project
         project_name (str): Name of the Vivado project
         top_entity (str): Name of the top-level entity
+        fpga_part (str): FPGA part to pass to the Vivado project template
         tcl_folder (str): Path to the TCL scripts folder
     """
     with open(file_path, "r", encoding="utf-8") as file:
@@ -96,6 +98,7 @@ def _replace_placeholders_in_file(
     modified_contents = file_contents.replace("ADD_FILES", add_files)
     modified_contents = modified_contents.replace("PROJ_NAME", project_name)
     modified_contents = modified_contents.replace("TOP_ENTITY", top_entity)
+    modified_contents = modified_contents.replace("FPGA_PART", fpga_part)
     modified_contents = modified_contents.replace("TCL_FOLDER", tcl_folder)
 
     # Create the directory for the new file if it doesn't exist
@@ -181,16 +184,27 @@ def _copy_long_path_files(file_list):
     for file in file_list:
         # Store original file path before modification
         original_file = file
+        absolute_file_path = os.path.abspath(original_file)
+        try:
+            relative_file_path = os.path.relpath(absolute_file_path, os.getcwd())
+        except ValueError:
+            relative_file_path = original_file
 
         # Handle long paths on Windows
         if os.name == "nt":
-            file = f"\\\\?\\{os.path.abspath(file)}"
+            file = f"\\\\?\\{absolute_file_path}"
             target_folder_long = f"\\\\?\\{os.path.abspath(target_folder)}"
         else:
             target_folder_long = target_folder
 
-        # Check if the file path is longer than 250 characters
-        if len(file) > 250:
+        # Vivado has a problem with adding long file paths to the project, so we check if the file path is too long and
+        # if so we copy it to a local folder and add it from there instead. We check both the absolute path and the 
+        # relative path because Vivado might be using either one when processing the TCL script, and we want to ensure
+        # that we catch all cases where the path length could be an issue.
+        MAX_PATH = 200 if os.name == "nt" else 4096
+
+        # Check if the absolute or relative path is longer than MAX_PATH characters
+        if len(absolute_file_path) > MAX_PATH or len(relative_file_path) > MAX_PATH:
             target_path = os.path.join(target_folder_long, os.path.basename(file))
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
@@ -318,7 +332,7 @@ def _validate_files(file_list):
         error_msg = "The following files do not exist:\n"
         for file in invalid_files:
             error_msg += f"  {file}\n"
-        error_msg += "\ncreate-project FAILED!\n\n* Check your source and dependency file paths\n* Ensure that the dependency zip file was unzipped"
+        error_msg += "\ncreate-project FAILED!\n\n* Check your source and dependency file paths\n* Ensure that the install-deps was run using the correct dependency version"
         raise FileNotFoundError(error_msg)
 
 
@@ -344,6 +358,9 @@ def _validate_ini(config, test):
 
     if not config.top_level_entity:
         missing_settings.append("VivadoProjectSettings.TopLevelEntity")
+
+    if not config.fpga_part:
+        missing_settings.append("VivadoProjectSettings.FPGAPart")
 
     # Don't validate Vivado path if test arguement is set
     if not test:
@@ -485,6 +502,7 @@ def _create_project(mode: ProjectMode, config, test):
     # Get settings from VivadoProjectSettings section
     project_name = config.vivado_project_name
     top_entity = config.top_level_entity
+    fpga_part = config.fpga_part
 
     # Replace placeholders in the template Vivado project scripts
     _replace_placeholders_in_file(
@@ -493,6 +511,7 @@ def _create_project(mode: ProjectMode, config, test):
         add_files,
         project_name,
         top_entity,
+        fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
     )
     _replace_placeholders_in_file(
@@ -501,6 +520,7 @@ def _create_project(mode: ProjectMode, config, test):
         add_files,
         project_name,
         top_entity,
+        fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
     )
 
@@ -651,7 +671,7 @@ def create_project(overwrite=False, update=False, test=False, config_path=None):
         return 1
 
     # Process the xdc_template to ensure that we have one for the Vivado project
-    common.process_constraints_template(config)
+    process_constraints.process_constraints_template(config)
 
     # Validate that all constraints files exist - do this after processing the templates
     try:
