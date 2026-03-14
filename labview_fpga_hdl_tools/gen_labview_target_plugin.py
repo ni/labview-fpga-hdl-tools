@@ -486,6 +486,7 @@ def _generate_window_vhdl_from_csv(
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(_ensure_text(output_text))
+                f.write(_ensure_text(output_text))
 
             print(f"Generated VHDL file: {output_path}")
 
@@ -537,6 +538,8 @@ def _generate_target_xml(
         clock_filename = os.path.basename(clock_path)
 
         # Calculate min_lv_reg_offset from max_hdl_reg_offset
+        # Formula: max_hdl_reg_offset + 4 (next 32-bit register), converted to hex with
+        # 5 hex digits (0x00000 format)
         # Formula: max_hdl_reg_offset + 4 (next 32-bit register), converted to hex with
         # 5 hex digits (0x00000 format)
         offset_value = max_hdl_reg_offset + 4 if max_hdl_reg_offset is not None else 0
