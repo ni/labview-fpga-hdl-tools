@@ -4835,7 +4835,7 @@ current_instance $TopInstance0
 #
 # BEGIN_GITHUB_CUSTOM_CONSTRAINTS
 #
-#LabVIEWFPGA_Macro macro_GitHubCustomConstraints
+#LabVIEWFPGAHdlTools_Macro macro_GitHubCustomConstraints
 #
 # END_GITHUB_CUSTOM_CONSTRAINTS
 

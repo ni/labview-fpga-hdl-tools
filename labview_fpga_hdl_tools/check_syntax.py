@@ -149,9 +149,7 @@ def _run_check_syntax(config, generated_tcl_path):
         log_contents = log_file.read()
 
     if result.returncode != 0 or "NIHDL_CHECK_SYNTAX=FAILED" in log_contents:
-        raise RuntimeError(
-            f"Vivado syntax check failed. See log for details: {log_path}"
-        )
+        raise RuntimeError(f"Vivado syntax check failed. See log for details: {log_path}")
 
     if "NIHDL_CHECK_SYNTAX=PASSED" not in log_contents:
         raise RuntimeError(

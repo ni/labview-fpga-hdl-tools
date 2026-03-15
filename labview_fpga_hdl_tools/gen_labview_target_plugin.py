@@ -108,7 +108,7 @@ def _validate_target_xml_register_space(xml_path):
             "error",
             f"HDL register space ({min_offset_text.strip()}) exceeds the shared space for the "
             f"LabVIEW/HDL register space ({max_offset_text.strip()})"
-            "\nPlease reduce the HDL register usage."
+            "\nPlease reduce the HDL register usage.",
         )
 
     if min_offset_value > (0.9 * max_offset_value):
@@ -116,7 +116,7 @@ def _validate_target_xml_register_space(xml_path):
             "warning",
             f"HDL Register space ({min_offset_text.strip()}) exceeds 90% of the shared "
             f"LabVIEW/HDL register space ({max_offset_text.strip()})"
-            "\nConsider reducing HDL register usage to avoid potential issues."
+            "\nConsider reducing HDL register usage to avoid potential issues.",
         )
 
     return None
@@ -485,7 +485,6 @@ def _generate_window_vhdl_from_csv(
             # Write output file
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w", encoding="utf-8") as f:
-                f.write(_ensure_text(output_text))
                 f.write(_ensure_text(output_text))
 
             print(f"Generated VHDL file: {output_path}")
