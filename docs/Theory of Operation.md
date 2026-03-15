@@ -45,10 +45,12 @@ The LabVIEW FPGA HDL Tools are a set of command line utilitites that move, gener
 
 * create-lvbitx   Create LabVIEW FPGA bitfile from Vivado output
 * create-project  Create or update Vivado project
+* check-syntax    Check Vivado RTL syntax and hierarchy quickly
 * extract-deps    Extract dependency ZIP files (run from 'targets' folder)
 * gen-target      Generate LabVIEW FPGA target support files
 * get-window      Extract window netlist from Vivado project
 * install-target  Install LabVIEW FPGA target support files
+* compile-project Compile Vivado project using CompileProject.tcl
 * launch-vivado   Launch Vivado with the current project
 * migrate-clip    Migrate CLIP files for FlexRIO custom devices
 
@@ -59,6 +61,8 @@ The projectsettings.ini file has multiple sections that map to the specific comm
     * Used by multiple commands
 * VivadoProjectSettings
     * create-project
+    * check-syntax
+    * compile-project
     * launch-vivado
 * LVFPGATargetSettings
     * gen-target

@@ -16,12 +16,3 @@ jobs:
     name: Run tests
     uses: ./.github/workflows/run_tests.yml
     needs: []
-  report_test_results:
-    name: Report test results
-    uses: ./.github/workflows/report_test_results.yml
-    needs: []
-    if: always()
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write

@@ -34,7 +34,9 @@ The current `nihdl` commands are:
 * `get-window` - Extracts TheWindow netlist and related files from a Vivado Project Export.
 * `gen-target` - Generates LabVIEW FPGA target support outputs (XML, stubs, plugin content).
 * `create-project` - Creates or updates the Vivado project using settings and source lists.
+* `check-syntax` - Runs a quick Vivado RTL syntax and hierarchy check on the current project.
 * `launch-vivado` - Opens the configured Vivado project.
+* `compile-project` - Runs Vivado implementation through bitstream generation using CompileProject.tcl.
 * `install-deps` - Clones dependency repositories declared in `dependencies.toml`.
 * `create-lvbitx` - Packages Vivado output into a LabVIEW `.lvbitx` bitfile.
 * `gen-guid` - Generates a GUID for `LVTargetGUID` in `projectsettings.ini`.
@@ -50,7 +52,9 @@ The current `nihdl` commands are:
 * `get-window` - Extracts TheWindow netlist and related files from a Vivado Project Export.
 * `gen-target` - Generates LabVIEW FPGA target support outputs (XML, stubs, plugin content).
 * `create-project` - Creates or updates the Vivado project using settings and source lists.
+* `check-syntax` - Runs a quick Vivado RTL syntax and hierarchy check on the current project.
 * `launch-vivado` - Opens the configured Vivado project.
+* `compile-project` - Runs Vivado implementation through bitstream generation using CompileProject.tcl.
 * `install-deps` - Clones dependency repositories declared in `dependencies.toml`.
 * `create-lvbitx` - Packages Vivado output into a LabVIEW `.lvbitx` bitfile.
 * `gen-guid` - Generates a GUID for `LVTargetGUID` in `projectsettings.ini`.
@@ -71,7 +75,7 @@ The tools use the projectsettings.ini file to specify file paths and other confi
 * <b>LabVIEWPath</b> - The disk path where LabVIEW is installed
 
 ### VivadoProjectSettings
-This section is used by the create-project and launch-vivado commands
+This section is used by the create-project, check-syntax, compile-project, and launch-vivado commands
 
 * <b>TopLevelEntity</b> - Top-level entity (same as its HDL file name) that is set in the Vivado project
 * <b>TopLevelEntity</b> - Top-level entity (same as its HDL file name) that is set in the Vivado project

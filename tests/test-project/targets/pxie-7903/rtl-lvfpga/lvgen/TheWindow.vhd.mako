@@ -184,7 +184,7 @@ entity TheWindow is
     aPxieDstarB            : in    std_logic;
     aPxieDstarC            : out   std_logic;
 
-% if include_clip_socket:
+% if include_target_io:
     -----------------------------------
     -- CLIP Socket ports
     -----------------------------------

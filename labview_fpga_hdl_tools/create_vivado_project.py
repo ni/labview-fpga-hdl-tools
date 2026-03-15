@@ -197,14 +197,17 @@ def _copy_long_path_files(file_list):
         else:
             target_folder_long = target_folder
 
-        # Vivado has a problem with adding long file paths to the project, so we check if the file path is too long and
-        # if so we copy it to a local folder and add it from there instead. We check both the absolute path and the 
-        # relative path because Vivado might be using either one when processing the TCL script, and we want to ensure
-        # that we catch all cases where the path length could be an issue.
-        MAX_PATH = 200 if os.name == "nt" else 4096
+        # Vivado has a problem with adding long file paths to the project,
+        # so we check if the file path is too long and if so we copy it
+        # to a local folder and add it from there instead. We check both
+        # the absolute path and the relative path because Vivado might be
+        # using either one when processing the TCL script, and we want to
+        # ensure that we catch all cases where the path length could be
+        # an issue.
+        max_path = 200 if os.name == "nt" else 4096
 
-        # Check if the absolute or relative path is longer than MAX_PATH characters
-        if len(absolute_file_path) > MAX_PATH or len(relative_file_path) > MAX_PATH:
+        # Check if the absolute or relative path is longer than max_path characters.
+        if len(absolute_file_path) > max_path or len(relative_file_path) > max_path:
             target_path = os.path.join(target_folder_long, os.path.basename(file))
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
