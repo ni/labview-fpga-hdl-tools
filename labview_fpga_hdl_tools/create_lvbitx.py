@@ -12,6 +12,10 @@ from . import common  # For shared utilities across tools
 
 def _create_lv_bitfile(test, config_path=None):
     """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool."""
+    if os.name != "nt":
+        print("Creating .lvbitx files is only supported on Windows")
+        return 0
+
     vivado_impl_folder = os.getcwd()
 
     path_parts = [part.lower() for part in os.path.normpath(vivado_impl_folder).split(os.sep)]
