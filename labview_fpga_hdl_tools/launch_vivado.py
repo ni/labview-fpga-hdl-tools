@@ -26,10 +26,18 @@ def _validate_ini(config):
         ValueError: If any required settings are missing
     """
     missing_settings = []
+    invalid_paths = []
 
     # Check required Vivado settings
     if not config.vivado_tools_path:
         missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
+    else:
+        invalid_path = common.validate_vivado_setting(
+            config.vivado_tools_path,
+            "VivadoProjectSettings.VivadoToolsPath",
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
 
     if not config.vivado_project_name:
         missing_settings.append("VivadoProjectSettings.VivadoProjectName")
@@ -42,16 +50,24 @@ def _validate_ini(config):
         error_msg += "\nCheck your projectsettings.ini file and try again."
         raise ValueError(error_msg)
 
+    if invalid_paths:
+        error_msg = "The following settings have invalid paths:\n"
+        for path in invalid_paths:
+            error_msg += f"  - {path}\n"
+        error_msg += "\nCheck your configuration and try again."
+        raise ValueError(error_msg)
 
-def launch_vivado(test=False, config_path=None):
+
+def launch_vivado(test=False, config_path=None, vivado_path=None):
     """Launch Vivado using settings from projectsettings.ini.
 
     Args:
         test (bool): If True, validate settings but don't launch Vivado
         config_path (str | None): Optional path to INI settings file
+        vivado_path (str | None): Optional Vivado path override
     """
     # Load configuration from projectsettings.ini
-    config = common.load_config(config_path)
+    config = common.load_config(config_path, vivado_path=vivado_path)
 
     # Validate that all required settings are present and paths exist
     try:
@@ -67,11 +83,10 @@ def launch_vivado(test=False, config_path=None):
     if not config.vivado_tools_path:
         raise ValueError("VivadoToolsPath setting is missing from configuration")
 
-    # Determine the Vivado executable with proper None check
-    if platform.system() == "Windows":
-        vivado_executable = os.path.join(config.vivado_tools_path, "bin", "vivado.bat")
-    else:  # Linux or other OS
-        vivado_executable = os.path.join(config.vivado_tools_path, "bin", "vivado")
+    # Determine Vivado executable from either direct executable path or tools dir.
+    vivado_executable = common.get_vivado_executable(config.vivado_tools_path)
+    if not vivado_executable:
+        raise ValueError("Unable to resolve Vivado executable from configuration")
 
     vivado_abs = os.path.abspath(vivado_executable)
 

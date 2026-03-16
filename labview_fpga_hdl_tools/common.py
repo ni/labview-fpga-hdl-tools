@@ -107,8 +107,15 @@ def _parse_bool(value, default=False):
     return value.lower() in ("true", "yes", "1")
 
 
-def load_config(config_path=None):
-    """Load configuration from INI file."""
+def load_config(config_path=None, vivado_path=None):
+    """Load configuration from INI file.
+
+    Args:
+        config_path (str | None): Optional path to INI settings file.
+        vivado_path (str | None): Optional Vivado path override. Can be either
+            a Vivado tools directory (containing bin/vivado) or a direct path
+            to the Vivado executable.
+    """
     if config_path is None:
         config_path = os.path.join(os.getcwd(), "projectsettings.ini")
     else:
@@ -152,6 +159,9 @@ def load_config(config_path=None):
     files.fpga_part = settings.get("FPGAPart")
     files.vivado_project_name = settings.get("VivadoProjectName")
     files.vivado_tools_path = settings.get("VivadoToolsPath")
+    if vivado_path and vivado_path.strip():
+        files.vivado_tools_path = vivado_path.strip()
+        print(f"Using Vivado override path: {files.vivado_tools_path}")
 
     # Load file lists
     hdl_file_lists = settings.get("VivadoProjectFilesLists")
@@ -338,6 +348,79 @@ def fix_file_slashes(path):
         str: Path with all backslashes converted to forward slashes
     """
     return path.replace("\\", "/")
+
+
+def _normalize_fs_path(path: Optional[str]) -> Optional[str]:
+    """Normalize a filesystem path string for consistent path handling."""
+    if path is None:
+        return None
+
+    normalized = str(path).strip()
+    if (
+        (normalized.startswith('"') and normalized.endswith('"'))
+        or (normalized.startswith("'") and normalized.endswith("'"))
+    ) and len(normalized) >= 2:
+        normalized = normalized[1:-1]
+
+    normalized = os.path.expandvars(os.path.expanduser(normalized))
+    return os.path.abspath(normalized)
+
+
+def get_vivado_executable(vivado_path: Optional[str]) -> Optional[str]:
+    """Resolve a Vivado executable path from either directory or executable input.
+
+    Args:
+        vivado_path (str | None): Vivado tools directory or direct executable path.
+
+    Returns:
+        str | None: Absolute path to Vivado executable, or None if input is empty.
+    """
+    if vivado_path is None or str(vivado_path).strip() == "":
+        return None
+
+    candidate = _normalize_fs_path(vivado_path)
+    if candidate is None:
+        return None
+
+    # If user provided the executable directly, keep it.
+    if os.path.isfile(candidate):
+        return candidate
+
+    vivado_name = "vivado.bat" if os.name == "nt" else "vivado"
+    return os.path.join(candidate, "bin", vivado_name)
+
+
+def validate_vivado_setting(vivado_path, setting_name):
+    """Validate Vivado path input as either tools directory or executable path.
+
+    Args:
+        vivado_path (str | None): Vivado tools directory or direct executable path.
+        setting_name (str): Name for error reporting.
+
+    Returns:
+        str | None: None when valid, otherwise an error string.
+    """
+    if vivado_path is None or str(vivado_path).strip() == "":
+        return f"{setting_name} - Path does not exist: {vivado_path}"
+
+    candidate = _normalize_fs_path(vivado_path)
+    if candidate is None:
+        return f"{setting_name} - Path does not exist: {vivado_path}"
+
+    if os.path.isfile(candidate):
+        return validate_path(candidate, setting_name, "file")
+
+    if os.path.isdir(candidate):
+        invalid_path = validate_path(candidate, setting_name, "directory")
+        if invalid_path:
+            return invalid_path
+
+        vivado_executable = get_vivado_executable(candidate)
+        if vivado_executable is None:
+            return f"{setting_name} executable - Path does not exist: {candidate}"
+        return validate_path(vivado_executable, f"{setting_name} executable", "file")
+
+    return f"{setting_name} - Path does not exist: {candidate}"
 
 
 def _parse_vhdl_entity(vhdl_path):
