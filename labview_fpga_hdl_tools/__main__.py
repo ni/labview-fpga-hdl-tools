@@ -147,12 +147,12 @@ def check_syntax_cmd(ctx, test, config):
         return 1
 
 
-@cli.command("compile-project", help="Compile Vivado project using CompileProject.tcl")
+@cli.command("compile-project", help="Compile Vivado project and generate a LabVIEW FPGA bitfile")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
 def compile_project_cmd(ctx, test, config):
-    """Compile Vivado project by running CompileProject.tcl."""
+    """Compile Vivado project and generate a LabVIEW FPGA bitfile."""
     try:
         result = compile_project.compile_project(test=test, config_path=config)
         return result

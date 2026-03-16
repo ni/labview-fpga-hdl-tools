@@ -106,6 +106,22 @@ def _validate_ini(config, test):
         raise ValueError(error_msg)
 
 
+def _get_check_syntax_status_from_log(log_contents):
+    """Return the final NIHDL check-syntax marker from non-comment log lines."""
+    status = None
+    for raw_line in log_contents.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        if "NIHDL_CHECK_SYNTAX=PASSED" in line:
+            status = "PASSED"
+        elif "NIHDL_CHECK_SYNTAX=FAILED" in line:
+            status = "FAILED"
+
+    return status
+
+
 def _run_check_syntax(config, generated_tcl_path):
     """Run the generated check-syntax TCL script in Vivado batch mode."""
     if os.name == "nt":
@@ -148,13 +164,31 @@ def _run_check_syntax(config, generated_tcl_path):
     with open(log_path, "r", encoding="utf-8", errors="replace") as log_file:
         log_contents = log_file.read()
 
-    if result.returncode != 0 or "NIHDL_CHECK_SYNTAX=FAILED" in log_contents:
+    status_marker = _get_check_syntax_status_from_log(log_contents)
+
+    # Vivado can return a non-zero process code due to startup/init scripts
+    # even when the check-syntax TCL path completes and logs PASSED.
+    # Prefer explicit NIHDL markers from the log to determine status.
+    if status_marker == "FAILED":
         raise RuntimeError(f"Vivado syntax check failed. See log for details: {log_path}")
 
-    if "NIHDL_CHECK_SYNTAX=PASSED" not in log_contents:
+    if status_marker == "PASSED":
+        if result.returncode != 0:
+            print(
+                "Warning: Vivado returned a non-zero exit code "
+                f"({result.returncode}) but NIHDL_CHECK_SYNTAX=PASSED was found."
+            )
+        return
+
+    if result.returncode != 0:
         raise RuntimeError(
-            f"Vivado syntax check completed without a success marker. See log: {log_path}"
+            "Vivado syntax check failed with a non-zero exit code "
+            f"({result.returncode}). See log for details: {log_path}"
         )
+
+    raise RuntimeError(
+        "Vivado syntax check completed without a status marker. " f"See log: {log_path}"
+    )
 
 
 def check_syntax(test=False, config_path=None):
