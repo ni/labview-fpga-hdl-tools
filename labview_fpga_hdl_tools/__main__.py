@@ -64,12 +64,13 @@ def install_target_cmd(ctx, config):
 
 @cli.command("get-window", help="Extract window netlist from Vivado project")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def get_window_cmd(ctx, test, config):
+def get_window_cmd(ctx, test, vivado, config):
     """Extract window netlist from Vivado project."""
     try:
-        result = get_window_netlist.get_window(test=test, config_path=config)
+        result = get_window_netlist.get_window(test=test, config_path=config, vivado_path=vivado)
         return result
     except Exception as e:
         handle_exception(e)
@@ -119,13 +120,18 @@ def gen_xdc_cmd(ctx, config):
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def create_project_cmd(ctx, overwrite, update, test, config):
+def create_project_cmd(ctx, overwrite, update, test, vivado, config):
     """Create or update Vivado project."""
     try:
         result = create_vivado_project.create_project(
-            overwrite=overwrite, update=update, test=test, config_path=config
+            overwrite=overwrite,
+            update=update,
+            test=test,
+            config_path=config,
+            vivado_path=vivado,
         )
         return result
     except Exception as e:
@@ -135,12 +141,13 @@ def create_project_cmd(ctx, overwrite, update, test, config):
 
 @cli.command("check-syntax", help="Check Vivado RTL syntax and hierarchy quickly")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def check_syntax_cmd(ctx, test, config):
+def check_syntax_cmd(ctx, test, vivado, config):
     """Check Vivado RTL syntax and hierarchy using RTL elaboration."""
     try:
-        result = check_syntax.check_syntax(test=test, config_path=config)
+        result = check_syntax.check_syntax(test=test, config_path=config, vivado_path=vivado)
         return result
     except Exception as e:
         handle_exception(e)
@@ -149,12 +156,13 @@ def check_syntax_cmd(ctx, test, config):
 
 @cli.command("compile-project", help="Compile Vivado project and generate a LabVIEW FPGA bitfile")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
+@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def compile_project_cmd(ctx, test, config):
+def compile_project_cmd(ctx, test, vivado, config):
     """Compile Vivado project and generate a LabVIEW FPGA bitfile."""
     try:
-        result = compile_project.compile_project(test=test, config_path=config)
+        result = compile_project.compile_project(test=test, config_path=config, vivado_path=vivado)
         return result
     except Exception as e:
         handle_exception(e)
@@ -163,12 +171,13 @@ def compile_project_cmd(ctx, test, config):
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't launch Vivado")
+@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
-def launch_vivado_cmd(ctx, test, config):
+def launch_vivado_cmd(ctx, test, vivado, config):
     """Launch Vivado with the current project."""
     try:
-        result = launch_vivado.launch_vivado(test=test, config_path=config)
+        result = launch_vivado.launch_vivado(test=test, config_path=config, vivado_path=vivado)
         return result
     except Exception as e:
         handle_exception(e)
@@ -176,21 +185,9 @@ def launch_vivado_cmd(ctx, test, config):
 
 
 @cli.command("install-deps", help="Install GitHub dependencies from dependencies.toml")
-@click.option(
-    "--delete",
-    is_flag=True,
-    help="Automatically delete and re-clone existing repositories without prompting",
-)
-@click.option(
-    "--pre",
-    is_flag=True,
-    help="Include pre-release versions (dev, alpha, beta, rc) when resolving versions",
-)
-@click.option(
-    "--latest",
-    is_flag=True,
-    help="Ignore versions in dependencies.toml and use latest version for all dependencies",
-)
+@click.option("--delete", is_flag=True, help="Automatically delete and re-clone without prompting")
+@click.option("--pre", is_flag=True, help="Include pre-release versions when resolving versions")
+@click.option("--latest", is_flag=True, help="Use latest version for all dependencies")
 @click.pass_context
 def install_deps_cmd(ctx, delete, pre, latest):
     """Install GitHub dependencies from dependencies.toml."""
@@ -205,11 +202,7 @@ def install_deps_cmd(ctx, delete, pre, latest):
 
 
 @cli.command("create-lvbitx", help="Create LabVIEW FPGA bitfile from Vivado output")
-@click.option(
-    "--test",
-    is_flag=True,
-    help="Test mode - validate settings but don't run the createBitfile tool",
-)
+@click.option("--test", is_flag=True, help="Test mode - validate settings only")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
 def create_lvbitx_cmd(ctx, test, config):

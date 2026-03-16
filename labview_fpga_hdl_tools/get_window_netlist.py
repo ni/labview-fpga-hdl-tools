@@ -29,14 +29,19 @@ def _get_window_netlist(config, test=False):
 
     os.chdir(vivado_project_path)
 
-    # Use the vivado_tools_path from the config instead of the XILINX environment variable
-    vivado_path = config.vivado_tools_path
+    # Determine Vivado executable from either direct executable path or tools dir.
+    vivado_executable = common.get_vivado_executable(config.vivado_tools_path)
+    if not vivado_executable:
+        os.chdir(current_dir)
+        raise ValueError("Unable to resolve Vivado executable from configuration")
 
-    # Determine the Vivado executable based on the operating system
-    if os.name == "nt":  # Windows
-        vivado_executable = os.path.join(vivado_path, "bin", "vivado.bat")
-    else:  # Linux or other OS
-        vivado_executable = os.path.join(vivado_path, "bin", "vivado")
+    vivado_abs = os.path.abspath(vivado_executable)
+    if not test and not os.path.exists(vivado_abs):
+        os.chdir(current_dir)
+        raise FileNotFoundError(
+            f"Vivado executable not found at: {vivado_abs}\n"
+            f"Please check your --vivado argument or VivadoToolsPath setting in projectsettings.ini"
+        )
 
     source_file = os.path.join(vivado_project_path, "TheLvWindowFlatWrapper.v")
     destination_folder = config.the_window_folder_output
@@ -56,7 +61,7 @@ def _get_window_netlist(config, test=False):
     else:
         print(f"Current working directory: {os.getcwd()}")
         common.run_command(
-            f'"{vivado_executable}" {project_name}.xpr -mode batch -source {get_netlist_tcl_path}',
+            f'"{vivado_abs}" {project_name}.xpr -mode batch -source {get_netlist_tcl_path}',
             cwd=os.getcwd(),
             capture_output=False,
         )
@@ -240,9 +245,10 @@ def _validate_ini(config, test):
     if not config.vivado_tools_path:
         missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
     else:
-        # Validate that the Vivado tools path exists
-        invalid_path = common.validate_path(
-            config.vivado_tools_path, "VivadoProjectSettings.VivadoToolsPath", "directory"
+        # Validate Vivado setting as either tools dir or executable path.
+        invalid_path = common.validate_vivado_setting(
+            config.vivado_tools_path,
+            "VivadoProjectSettings.VivadoToolsPath",
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -257,15 +263,16 @@ def _validate_ini(config, test):
         raise ValueError(error_msg)
 
 
-def get_window(test=False, config_path=None):
+def get_window(test=False, config_path=None, vivado_path=None):
     """Main entry point for the script.
 
     Args:
         test (bool): If True, validate settings but don't run Vivado
         config_path (str | None): Optional path to INI settings file
+        vivado_path (str | None): Optional Vivado path override
     """
     # Load configuration
-    config = common.load_config(config_path)
+    config = common.load_config(config_path, vivado_path=vivado_path)
 
     # Validate that all required settings are present
     try:

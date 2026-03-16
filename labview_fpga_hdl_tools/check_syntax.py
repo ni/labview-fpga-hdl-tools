@@ -82,10 +82,9 @@ def _validate_ini(config, test):
         if not config.vivado_tools_path:
             missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
         else:
-            invalid_path = common.validate_path(
+            invalid_path = common.validate_vivado_setting(
                 config.vivado_tools_path,
                 "VivadoProjectSettings.VivadoToolsPath",
-                "directory",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -124,16 +123,15 @@ def _get_check_syntax_status_from_log(log_contents):
 
 def _run_check_syntax(config, generated_tcl_path):
     """Run the generated check-syntax TCL script in Vivado batch mode."""
-    if os.name == "nt":
-        vivado_executable = os.path.join(config.vivado_tools_path, "bin", "vivado.bat")
-    else:
-        vivado_executable = os.path.join(config.vivado_tools_path, "bin", "vivado")
+    vivado_executable = common.get_vivado_executable(config.vivado_tools_path)
+    if not vivado_executable:
+        raise ValueError("VivadoToolsPath setting is missing from configuration")
 
     vivado_abs = os.path.abspath(vivado_executable)
     if not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your VivadoToolsPath setting in projectsettings.ini"
+            f"Please check your --vivado argument or VivadoToolsPath setting in projectsettings.ini"
         )
 
     vivado_project_path = os.path.join(os.getcwd(), "VivadoProject")
@@ -191,17 +189,18 @@ def _run_check_syntax(config, generated_tcl_path):
     )
 
 
-def check_syntax(test=False, config_path=None):
+def check_syntax(test=False, config_path=None, vivado_path=None):
     """Check Vivado RTL syntax and hierarchy using RTL elaboration.
 
     Args:
         test (bool): Test mode - validate settings but don't run Vivado
         config_path (str | None): Optional path to INI settings file
+        vivado_path (str | None): Optional Vivado path override
 
     Returns:
         int: 0 for success, 1 for error
     """
-    config = common.load_config(config_path)
+    config = common.load_config(config_path, vivado_path=vivado_path)
 
     try:
         _validate_ini(config, test)
