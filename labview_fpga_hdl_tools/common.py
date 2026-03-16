@@ -350,7 +350,7 @@ def fix_file_slashes(path):
     return path.replace("\\", "/")
 
 
-def _normalize_fs_path(path: str | None) -> str | None:
+def _normalize_fs_path(path: Optional[str]) -> Optional[str]:
     """Normalize a filesystem path string for consistent path handling."""
     if path is None:
         return None
@@ -366,7 +366,7 @@ def _normalize_fs_path(path: str | None) -> str | None:
     return os.path.abspath(normalized)
 
 
-def get_vivado_executable(vivado_path: str | None) -> str | None:
+def get_vivado_executable(vivado_path: Optional[str]) -> Optional[str]:
     """Resolve a Vivado executable path from either directory or executable input.
 
     Args:
