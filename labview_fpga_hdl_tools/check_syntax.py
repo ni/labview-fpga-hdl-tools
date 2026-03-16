@@ -187,8 +187,7 @@ def _run_check_syntax(config, generated_tcl_path):
         )
 
     raise RuntimeError(
-        "Vivado syntax check completed without a status marker. "
-        f"See log: {log_path}"
+        "Vivado syntax check completed without a status marker. " f"See log: {log_path}"
     )
 
 

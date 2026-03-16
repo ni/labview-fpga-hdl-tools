@@ -26,9 +26,7 @@ def _replace_placeholders_in_file(template_path, output_path, replacements):
 
 def _generate_compile_project_tcl(config, output_path):
     """Generate the TCL script used for compile-project."""
-    template_tcl_path = os.path.join(
-        config.vivado_tcl_scripts_folder, "CompileProjectTemplate.tcl"
-    )
+    template_tcl_path = os.path.join(config.vivado_tcl_scripts_folder, "CompileProjectTemplate.tcl")
 
     replacements = {
         "PROJECT_FILE_NAME": f"{config.vivado_project_name}.xpr",

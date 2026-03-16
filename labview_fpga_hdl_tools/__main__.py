@@ -147,9 +147,7 @@ def check_syntax_cmd(ctx, test, config):
         return 1
 
 
-@cli.command(
-    "compile-project", help="Compile Vivado project and generate a LabVIEW FPGA bitfile"
-)
+@cli.command("compile-project", help="Compile Vivado project and generate a LabVIEW FPGA bitfile")
 @click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
 @click.option("--config", default=None, help="Path to INI settings file")
 @click.pass_context
