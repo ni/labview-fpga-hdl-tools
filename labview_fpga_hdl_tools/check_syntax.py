@@ -148,10 +148,30 @@ def _run_check_syntax(config, generated_tcl_path):
     with open(log_path, "r", encoding="utf-8", errors="replace") as log_file:
         log_contents = log_file.read()
 
-    if result.returncode != 0 or "NIHDL_CHECK_SYNTAX=FAILED" in log_contents:
+    passed_marker = "NIHDL_CHECK_SYNTAX=PASSED" in log_contents
+    failed_marker = "NIHDL_CHECK_SYNTAX=FAILED" in log_contents
+
+    # Vivado can return a non-zero process code due to startup/init scripts
+    # even when the check-syntax TCL path completes and logs PASSED.
+    # Prefer explicit NIHDL markers from the log to determine status.
+    if failed_marker:
         raise RuntimeError(f"Vivado syntax check failed. See log for details: {log_path}")
 
-    if "NIHDL_CHECK_SYNTAX=PASSED" not in log_contents:
+    if passed_marker:
+        if result.returncode != 0:
+            print(
+                "Warning: Vivado returned a non-zero exit code "
+                f"({result.returncode}) but NIHDL_CHECK_SYNTAX=PASSED was found."
+            )
+        return
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Vivado syntax check failed with a non-zero exit code "
+            f"({result.returncode}). See log for details: {log_path}"
+        )
+
+    if not passed_marker:
         raise RuntimeError(
             f"Vivado syntax check completed without a success marker. See log: {log_path}"
         )

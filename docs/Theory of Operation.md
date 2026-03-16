@@ -50,7 +50,7 @@ The LabVIEW FPGA HDL Tools are a set of command line utilitites that move, gener
 * gen-target      Generate LabVIEW FPGA target support files
 * get-window      Extract window netlist from Vivado project
 * install-target  Install LabVIEW FPGA target support files
-* compile-project Compile Vivado project using CompileProject.tcl
+* compile-project Compile Vivado project using a script generated from CompileProjectTemplate.tcl
 * launch-vivado   Launch Vivado with the current project
 * migrate-clip    Migrate CLIP files for FlexRIO custom devices
 

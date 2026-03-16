@@ -6,20 +6,36 @@
 #
 
 import os
+import subprocess
 
 from . import common
 
 
-def _replace_proj_name_in_tcl(template_path, output_path, project_name):
-    """Replace PROJ_NAME token in CompileProject.tcl and write output script."""
+def _replace_placeholders_in_file(template_path, output_path, replacements):
+    """Read a template TCL file, replace placeholders, and write output TCL."""
     with open(template_path, "r", encoding="utf-8") as tcl_file:
         tcl_contents = tcl_file.read()
 
-    updated_contents = tcl_contents.replace("PROJ_NAME", project_name)
+    for placeholder, value in replacements.items():
+        tcl_contents = tcl_contents.replace(placeholder, value)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as output_file:
-        output_file.write(updated_contents)
+        output_file.write(tcl_contents)
+
+
+def _generate_compile_project_tcl(config, output_path):
+    """Generate the TCL script used for compile-project."""
+    template_tcl_path = os.path.join(
+        config.vivado_tcl_scripts_folder, "CompileProjectTemplate.tcl"
+    )
+
+    replacements = {
+        "PROJECT_FILE_NAME": f"{config.vivado_project_name}.xpr",
+        "PROJ_NAME": f"{config.vivado_project_name}.xpr",
+    }
+
+    _replace_placeholders_in_file(template_tcl_path, output_path, replacements)
 
 
 def _validate_ini(config, test):
@@ -41,10 +57,12 @@ def _validate_ini(config, test):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-        compile_template_path = os.path.join(config.vivado_tcl_scripts_folder, "CompileProject.tcl")
+        compile_template_path = os.path.join(
+            config.vivado_tcl_scripts_folder, "CompileProjectTemplate.tcl"
+        )
         invalid_path = common.validate_path(
             compile_template_path,
-            "VivadoProjectSettings.VivadoTclScriptsFolder/CompileProject.tcl",
+            "VivadoProjectSettings.VivadoTclScriptsFolder/CompileProjectTemplate.tcl",
             "file",
         )
         if invalid_path:
@@ -78,24 +96,8 @@ def _validate_ini(config, test):
         raise ValueError(error_msg)
 
 
-def _compile_project(config, test=False):
-    """Generate CompileProject TCL script and run Vivado in batch mode."""
-    current_dir = os.getcwd()
-    template_tcl_path = os.path.join(config.vivado_tcl_scripts_folder, "CompileProject.tcl")
-    generated_tcl_path = os.path.join(current_dir, "objects", "TCL", "CompileProject.tcl")
-
-    _replace_proj_name_in_tcl(
-        template_path=template_tcl_path,
-        output_path=generated_tcl_path,
-        project_name=config.vivado_project_name,
-    )
-
-    print(f"Generated TCL script: {generated_tcl_path}")
-
-    if test:
-        print("TEST MODE: Validation successful, skipping Vivado launch")
-        return 0
-
+def _run_compile_project(config, generated_tcl_path):
+    """Run the generated compile-project TCL script in Vivado batch mode."""
     if os.name == "nt":
         vivado_executable = os.path.join(config.vivado_tools_path, "bin", "vivado.bat")
     else:
@@ -108,20 +110,87 @@ def _compile_project(config, test=False):
             f"Please check your VivadoToolsPath setting in projectsettings.ini"
         )
 
+    current_dir = os.getcwd()
     vivado_project_path = os.path.join(current_dir, "VivadoProject")
-    command = f'"{vivado_abs}" -mode batch -source "{generated_tcl_path}"'
+    log_path = os.path.join(vivado_project_path, "compile_project.log")
+    journal_path = os.path.join(vivado_project_path, "compile_project.jou")
+
+    for path in [log_path, journal_path]:
+        if os.path.exists(path):
+            os.remove(path)
+
+    command = (
+        f'"{vivado_abs}" -mode batch '
+        f'-source "{generated_tcl_path}" '
+        f'-log "{log_path}" '
+        f'-journal "{journal_path}"'
+    )
 
     print(f"Vivado executable: {vivado_abs}")
     print(f"Working directory: {vivado_project_path}")
     print(f"Running command: {command}")
 
-    common.run_command(command, cwd=vivado_project_path, capture_output=False)
+    result = subprocess.run(command, cwd=vivado_project_path, shell=True, check=False)
+
+    if not os.path.exists(log_path):
+        raise RuntimeError("Vivado compile-project log file was not created.")
+
+    with open(log_path, "r", encoding="utf-8", errors="replace") as log_file:
+        log_contents = log_file.read()
+
+    compile_status = None
+    for line in log_contents.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        if stripped == "NIHDL_COMPILE_PROJECT=FAILED":
+            compile_status = "FAILED"
+        elif stripped == "NIHDL_COMPILE_PROJECT=PASSED":
+            compile_status = "PASSED"
+
+    if compile_status == "FAILED":
+        raise RuntimeError(f"Vivado project compile failed. See log for details: {log_path}")
+
+    if compile_status == "PASSED":
+        if result.returncode != 0:
+            print(
+                "Warning: Vivado returned a non-zero exit code "
+                f"({result.returncode}) but NIHDL_COMPILE_PROJECT=PASSED was found."
+            )
+        return
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Vivado project compile failed with a non-zero exit code "
+            f"({result.returncode}). See log for details: {log_path}"
+        )
+
+    raise RuntimeError(
+        f"Vivado project compile completed without a success marker. See log: {log_path}"
+    )
+
+
+def _compile_project(config, test=False):
+    """Generate CompileProject TCL script and run Vivado in batch mode."""
+    current_dir = os.getcwd()
+    generated_tcl_path = os.path.join(current_dir, "objects", "TCL", "CompileProject.tcl")
+
+    _generate_compile_project_tcl(config, generated_tcl_path)
+
+    print(f"Generated TCL script: {generated_tcl_path}")
+
+    if test:
+        print("TEST MODE: Validation successful, skipping Vivado launch")
+        return 0
+
+    _run_compile_project(config, generated_tcl_path)
 
     return 0
 
 
 def compile_project(test=False, config_path=None):
-    """Compile Vivado project by running CompileProject.tcl.
+    """Compile Vivado project by running a TCL script generated from CompileProjectTemplate.tcl.
 
     Args:
         test (bool): Test mode - validate settings but don't run Vivado
@@ -144,5 +213,5 @@ def compile_project(test=False, config_path=None):
         print(f"Error: {e}")
         return 1
 
-    print("Vivado project compile started successfully.")
+    print("Vivado project compile completed successfully.")
     return 0

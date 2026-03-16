@@ -36,7 +36,7 @@ The current `nihdl` commands are:
 * `create-project` - Creates or updates the Vivado project using settings and source lists.
 * `check-syntax` - Runs a quick Vivado RTL syntax and hierarchy check on the current project.
 * `launch-vivado` - Opens the configured Vivado project.
-* `compile-project` - Runs Vivado implementation through bitstream generation using CompileProject.tcl.
+* `compile-project` - Runs Vivado implementation through bitstream generation using a script generated from CompileProjectTemplate.tcl.
 * `install-deps` - Clones dependency repositories declared in `dependencies.toml`.
 * `create-lvbitx` - Packages Vivado output into a LabVIEW `.lvbitx` bitfile.
 * `gen-guid` - Generates a GUID for `LVTargetGUID` in `projectsettings.ini`.
@@ -54,7 +54,7 @@ The current `nihdl` commands are:
 * `create-project` - Creates or updates the Vivado project using settings and source lists.
 * `check-syntax` - Runs a quick Vivado RTL syntax and hierarchy check on the current project.
 * `launch-vivado` - Opens the configured Vivado project.
-* `compile-project` - Runs Vivado implementation through bitstream generation using CompileProject.tcl.
+* `compile-project` - Runs Vivado implementation through bitstream generation using a script generated from CompileProjectTemplate.tcl.
 * `install-deps` - Clones dependency repositories declared in `dependencies.toml`.
 * `create-lvbitx` - Packages Vivado output into a LabVIEW `.lvbitx` bitfile.
 * `gen-guid` - Generates a GUID for `LVTargetGUID` in `projectsettings.ini`.
