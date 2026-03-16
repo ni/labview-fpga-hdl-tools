@@ -10,12 +10,14 @@ Pre-release handling (--pre flag):
   Follows pip's PEP 440 pre-release behavior:
 
   Without --pre:
-    - Pre-release versions (dev, alpha, beta, rc, etc.) are excluded
+        - Pre-release versions (dev, alpha, beta, rc, etc.) are excluded unless
+            the dependency specifier itself references a pre-release version
     - Example: ">=26.0.0" matches only 26.0.0, 26.0.1, etc.
     - Example: ">=26.0.0" does NOT match 26.0.0.dev0 (pre-releases come before releases)
+        - Example: "~=26.2.0.dev0" can match 26.2.0.dev3 without global --pre
 
   With --pre:
-    - Pre-release versions are included in version resolution
+        - Pre-release versions are included in version resolution for all dependencies
     - Example: ">=26.0.0.dev0" matches 26.0.0.dev0, 26.0.0.dev1, 26.0.0, 26.0.1, etc.
     - Example: ">=26.0.0" matches 26.0.0, 26.0.1, 26.1.0.dev0, etc.
     - Note: 26.0.0.dev0 < 26.0.0 in PEP 440 (pre-releases sort before releases)
@@ -96,6 +98,14 @@ def _parse_dependency(dep_string):
                 return parts[0].strip(), spec, parts[1].strip()
 
     return None, None, None
+
+
+def _dependency_requests_prerelease(version):
+    """Return True when a dependency version explicitly references a pre-release."""
+    try:
+        return Version(version).is_prerelease
+    except InvalidVersion:
+        return False
 
 
 def _filter_tags_by_specifier(tags, specifier, version, allow_prerelease=False):
@@ -213,22 +223,28 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
             version = tag_or_spec[len(spec) :]
             break
 
+    dependency_allow_prerelease = allow_prerelease
+    if specifier and version and _dependency_requests_prerelease(version):
+        dependency_allow_prerelease = True
+
     # Resolve version if specifier is used (or if --latest flag forces "latest")
     if specifier or tag_or_spec.lower() == "latest":
         if specifier:
             print(f"Resolving version {specifier}{version} for {repo}...")
+            if dependency_allow_prerelease and not allow_prerelease:
+                print("    [INFO] Pre-release version requested; including pre-release tags")
         else:
             print(f"Resolving latest version for {repo}...")
 
         try:
-            all_tags = _get_all_tags(repo_url, allow_prerelease)
+            all_tags = _get_all_tags(repo_url, dependency_allow_prerelease)
             if not all_tags:
                 print(f"  [FAIL] No tags found in repository {repo}")
                 return False
             else:
                 if specifier:
                     matched_tag = _filter_tags_by_specifier(
-                        all_tags, specifier, version, allow_prerelease
+                        all_tags, specifier, version, dependency_allow_prerelease
                     )
                 else:
                     # "latest" - get the latest tag
@@ -247,7 +263,7 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
                 else:
                     if specifier:
                         print(f"  [FAIL] No tag matches {specifier}{version} in repository {repo}")
-                        if not allow_prerelease:
+                        if not dependency_allow_prerelease:
                             print(f"         (Hint: Use --pre to include pre-release versions)")
                     else:
                         print(f"  [FAIL] No matching tag found in repository {repo}")
@@ -305,6 +321,10 @@ def install_dependencies(delete_allowed=False, allow_prerelease=False, use_lates
     """Install dependencies from a TOML file using PEP 440 version resolution.
 
     Follows pip install behavior for version matching and pre-release handling.
+
+    A dependency that explicitly requests a pre-release version (for example,
+    ~=26.2.0.dev0) is treated as opting in to pre-release resolution even when
+    the global --pre flag is not used.
 
     Args:
         delete_allowed: If True, automatically delete existing repos without prompting

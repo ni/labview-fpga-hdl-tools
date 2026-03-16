@@ -41,6 +41,7 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 - Most commands support --config to use an INI path other than ./projectsettings.ini.
 - --test validates inputs/settings and skips external tool execution.
 - install-deps and gen-guid do not read projectsettings.ini.
+- install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.
 - create-lvbitx is intended to run from VivadoProject/<project>.runs/impl_1 (it warns if run elsewhere).
 
 ## Per-Command INI Requirements
@@ -58,7 +59,7 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | compile-project | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.VivadoTclScriptsFolder | Requires CompileProjectTemplate.tcl in VivadoTclScriptsFolder. Non-test adds VivadoProjectSettings.VivadoToolsPath and existing VivadoProject/<VivadoProjectName>.xpr. |
 | launch-vivado | VivadoProjectSettings.VivadoToolsPath, VivadoProjectSettings.VivadoProjectName | Also requires existing VivadoProject/<VivadoProjectName>.xpr. |
 | create-lvbitx | GeneralSettings.LabVIEWPath | Uses VivadoProjectSettings.TopLevelEntity to derive input/output filenames. If UseGeneratedLVWindowFiles=True, VivadoProjectSettings.TheWindowFolder is used; otherwise VivadoProjectSettings.CodeGenerationResultsStub is used. |
-| install-deps | None | Command uses dependencies.toml and does not read projectsettings.ini. |
+| install-deps | None | Command uses dependencies.toml and does not read projectsettings.ini. A pre-release specifier such as ~=26.2.0.dev0 automatically enables pre-release matching for that dependency; --pre enables it globally. |
 | gen-guid | None | Command does not read projectsettings.ini. |
 
 ## projectsettings.ini Reference
