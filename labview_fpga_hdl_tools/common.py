@@ -350,7 +350,7 @@ def fix_file_slashes(path):
     return path.replace("\\", "/")
 
 
-def _normalize_fs_path(path):
+def _normalize_fs_path(path: str | None) -> str | None:
     """Normalize a filesystem path string for consistent path handling."""
     if path is None:
         return None
@@ -366,7 +366,7 @@ def _normalize_fs_path(path):
     return os.path.abspath(normalized)
 
 
-def get_vivado_executable(vivado_path):
+def get_vivado_executable(vivado_path: str | None) -> str | None:
     """Resolve a Vivado executable path from either directory or executable input.
 
     Args:
@@ -379,6 +379,8 @@ def get_vivado_executable(vivado_path):
         return None
 
     candidate = _normalize_fs_path(vivado_path)
+    if candidate is None:
+        return None
 
     # If user provided the executable directly, keep it.
     if os.path.isfile(candidate):
@@ -402,6 +404,8 @@ def validate_vivado_setting(vivado_path, setting_name):
         return f"{setting_name} - Path does not exist: {vivado_path}"
 
     candidate = _normalize_fs_path(vivado_path)
+    if candidate is None:
+        return f"{setting_name} - Path does not exist: {vivado_path}"
 
     if os.path.isfile(candidate):
         return validate_path(candidate, setting_name, "file")
@@ -412,6 +416,8 @@ def validate_vivado_setting(vivado_path, setting_name):
             return invalid_path
 
         vivado_executable = get_vivado_executable(candidate)
+        if vivado_executable is None:
+            return f"{setting_name} executable - Path does not exist: {candidate}"
         return validate_path(vivado_executable, f"{setting_name} executable", "file")
 
     return f"{setting_name} - Path does not exist: {candidate}"
