@@ -71,8 +71,39 @@ def _get_tcl_add_files_text(file_list, file_dir):
     return replacement_text
 
 
+def _get_tcl_set_vhdl2008_files_text(vhdl2008_file_list, file_dir):
+    """Generates TCL commands to mark files as VHDL 2008 in a Vivado project.
+
+    Creates properly formatted 'set_property file_type' TCL commands for each VHDL 2008
+    file, using the same relative path computation as _get_tcl_add_files_text.
+
+    Args:
+        vhdl2008_file_list (list): List of VHDL 2008 files
+        file_dir (str): Base directory for computing relative paths
+
+    Returns:
+        str: Multi-line TCL commands to mark all files as VHDL 2008, or empty string
+    """
+    if not vhdl2008_file_list:
+        return ""
+
+    def strip_long_path_prefix(path):
+        # Remove the \\?\ prefix if it exists (used for long paths on Windows)
+        if os.name == "nt" and path.startswith("\\\\?\\"):
+            return path[4:]
+        return path
+
+    stripped_file_list = [strip_long_path_prefix(file) for file in vhdl2008_file_list]
+    replacement_list = [os.path.relpath(file, file_dir) for file in stripped_file_list]
+    replacement_list = [f'"{file}"' if _has_spaces(file) else file for file in replacement_list]
+    return "\n".join(
+        [f"set_property file_type {{VHDL 2008}} [get_files {{{file}}}]" for file in replacement_list]
+    )
+
+
 def _replace_placeholders_in_file(
-    file_path, new_file_path, add_files, project_name, top_entity, fpga_part, tcl_folder
+    file_path, new_file_path, add_files, project_name, top_entity, fpga_part, tcl_folder,
+    set_vhdl2008_files
 ):
     """Replaces placeholders in a template file with actual values.
 
@@ -83,6 +114,7 @@ def _replace_placeholders_in_file(
     - PROJ_NAME: Name of the Vivado project
     - TOP_ENTITY: Top-level VHDL entity name
     - FPGA_PART: FPGA part for create_project -part
+    - SET_VHDL2008_FILES: set_property commands to mark VHDL 2008 files
 
     Args:
         file_path (str): Path to the template file
@@ -92,6 +124,7 @@ def _replace_placeholders_in_file(
         top_entity (str): Name of the top-level entity
         fpga_part (str): FPGA part to pass to the Vivado project template
         tcl_folder (str): Path to the TCL scripts folder
+        set_vhdl2008_files (str): TCL commands to mark files as VHDL 2008
     """
     with open(file_path, "r", encoding="utf-8") as file:
         file_contents = file.read()
@@ -100,6 +133,7 @@ def _replace_placeholders_in_file(
     modified_contents = modified_contents.replace("TOP_ENTITY", top_entity)
     modified_contents = modified_contents.replace("FPGA_PART", fpga_part)
     modified_contents = modified_contents.replace("TCL_FOLDER", tcl_folder)
+    modified_contents = modified_contents.replace("SET_VHDL2008_FILES", set_vhdl2008_files)
 
     # Create the directory for the new file if it doesn't exist
     os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
@@ -392,6 +426,16 @@ def _validate_ini(config, test):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
+    # Validate VHDL 2008 file lists (optional, but validate paths if provided)
+    for i, file_list_path in enumerate(config.vhdl2008_file_lists):
+        invalid_path = common.validate_path(
+            file_list_path,
+            f"VivadoProjectSettings.VivadoProjectVHDL2008FilesLists[{i}]",
+            "file",
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+
     # Check for LV Window folder if using generated window files
     if config.use_gen_lv_window_files and not config.the_window_folder_input:
         missing_settings.append("VivadoProjectSettings.TheWindowFolder")
@@ -484,22 +528,32 @@ def _create_project(mode: ProjectMode, config, test):
         common.fix_file_slashes(file) for file in config.vivado_project_constraints_files
     ]
 
+    # Get the lists of VHDL 2008 project files from the configuration
+    vhdl2008_file_list = common.get_vivado_project_files(config.vhdl2008_file_lists)
+
     # Validate that all files exist before proceeding
-    _validate_files(file_list)
+    _validate_files(file_list + vhdl2008_file_list)
 
     # Copy long path files to the gatheredfiles folder
     # Returns the file list with the files from old long path locations having
     # new locations in gatheredfiles
     file_list = _copy_long_path_files(file_list)
+    vhdl2008_file_list = _copy_long_path_files(vhdl2008_file_list)
 
     # Override default LV generated files
     if config.use_gen_lv_window_files:
         file_list = _override_lv_window_files(config, file_list)
 
-    # Check for duplicate file names and log them
-    _find_and_log_duplicates(file_list)
+    # Combine regular and VHDL 2008 files for duplicate checking and add_files
+    combined_file_list = file_list + vhdl2008_file_list
 
-    add_files = _get_tcl_add_files_text(file_list, os.path.join(current_dir, "TCL"))
+    # Check for duplicate file names and log them
+    _find_and_log_duplicates(combined_file_list)
+
+    add_files = _get_tcl_add_files_text(combined_file_list, os.path.join(current_dir, "TCL"))
+    set_vhdl2008_files = _get_tcl_set_vhdl2008_files_text(
+        vhdl2008_file_list, os.path.join(current_dir, "TCL")
+    )
 
     # Get settings from VivadoProjectSettings section
     project_name = config.vivado_project_name
@@ -515,6 +569,7 @@ def _create_project(mode: ProjectMode, config, test):
         top_entity,
         fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
+        set_vhdl2008_files,
     )
     _replace_placeholders_in_file(
         update_proj_template_path,
@@ -524,6 +579,7 @@ def _create_project(mode: ProjectMode, config, test):
         top_entity,
         fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
+        set_vhdl2008_files,
     )
 
     # Use the vivado_tools_path from the config instead of the XILINX environment variable

@@ -17,11 +17,13 @@ from . import (
     common,
     compile_project,
     create_lvbitx,
+    create_modelsim_project,
     create_vivado_project,
     gen_labview_target_plugin,
     get_window_netlist,
     install_dependencies,
     install_labview_target_plugin,
+    launch_modelsim,
     launch_vivado,
     migrate_clip,
     process_constraints,
@@ -194,6 +196,48 @@ def install_deps_cmd(ctx, delete, pre, latest):
     try:
         result = install_dependencies.install_dependencies(
             delete_allowed=delete, allow_prerelease=pre, use_latest=latest
+        )
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("create-modelsim", help="Create a ModelSim project for simulation")
+@click.option("--overwrite", "-o", is_flag=True, help="Overwrite existing ModelSim project")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't create project")
+@click.option("--modelsim", default=None, help="Override ModelSim install path")
+@click.option("--config", default=None, help="Path to INI settings file")
+@click.pass_context
+def create_modelsim_cmd(ctx, overwrite, test, modelsim, config):
+    """Create a ModelSim project for HDL simulation."""
+    try:
+        result = create_modelsim_project.create_modelsim_project(
+            overwrite=overwrite,
+            test=test,
+            config_path=config,
+            modelsim_path=modelsim,
+        )
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("launch-modelsim", help="Launch ModelSim with the current project")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't launch")
+@click.option("--batch", is_flag=True, help="Run simulation in batch mode (no GUI)")
+@click.option("--modelsim", default=None, help="Override ModelSim install path")
+@click.option("--config", default=None, help="Path to INI settings file")
+@click.pass_context
+def launch_modelsim_cmd(ctx, test, batch, modelsim, config):
+    """Launch ModelSim with the current project."""
+    try:
+        result = launch_modelsim.launch_modelsim(
+            test=test,
+            config_path=config,
+            modelsim_path=modelsim,
+            batch=batch,
         )
         return result
     except Exception as e:

@@ -32,6 +32,8 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | check-syntax | Run Vivado RTL elaboration syntax/hierarchy check. | --test, --config |
 | compile-project | Run Vivado compile flow to bitstream generation. | --test, --config |
 | launch-vivado | Launch the configured Vivado project. | --test, --config |
+| create-modelsim | Create a ModelSim project for HDL simulation. | --overwrite (-o), --test, --modelsim, --config |
+| launch-modelsim | Launch ModelSim with the current project. | --test, --batch, --modelsim, --config |
 | install-deps | Install GitHub dependencies from dependencies.toml. | --delete, --pre, --latest |
 | create-lvbitx | Build a .lvbitx from Vivado implementation output. | --test, --config |
 | gen-guid | Generate a new GUID for LVTargetGUID. | (none) |
@@ -43,6 +45,8 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 - install-deps and gen-guid do not read projectsettings.ini.
 - install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.
 - create-lvbitx is intended to run from VivadoProject/<project>.runs/impl_1 (it warns if run elsewhere).
+- create-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
+- launch-modelsim defaults to GUI mode; use --batch for headless simulation.
 
 ## Per-Command INI Requirements
 
@@ -58,6 +62,8 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | check-syntax | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.FPGAPart, VivadoProjectSettings.VivadoTclScriptsFolder | Requires CheckSyntaxTemplate.tcl in VivadoTclScriptsFolder. Non-test adds VivadoProjectSettings.VivadoToolsPath and existing VivadoProject/<VivadoProjectName>.xpr. |
 | compile-project | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.VivadoTclScriptsFolder | Requires CompileProjectTemplate.tcl in VivadoTclScriptsFolder. Non-test adds VivadoProjectSettings.VivadoToolsPath and existing VivadoProject/<VivadoProjectName>.xpr. |
 | launch-vivado | VivadoProjectSettings.VivadoToolsPath, VivadoProjectSettings.VivadoProjectName | Also requires existing VivadoProject/<VivadoProjectName>.xpr. |
+| create-modelsim | VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.VivadoProjectFilesLists, ModelSimSettings.ModelSimToolsPath | Uses ModelSimSettings.ModelSimFilesLists if set, otherwise VivadoProjectFilesLists. ModelSimSettings.XilinxSimLibPath is optional but recommended for Xilinx primitive support. |
+| launch-modelsim | VivadoProjectSettings.TopLevelEntity, ModelSimSettings.ModelSimToolsPath | Requires existing ModelSimProject/ directory (run create-modelsim first). |
 | create-lvbitx | GeneralSettings.LabVIEWPath | Uses VivadoProjectSettings.TopLevelEntity to derive input/output filenames. If UseGeneratedLVWindowFiles=True, VivadoProjectSettings.TheWindowFolder is used; otherwise VivadoProjectSettings.CodeGenerationResultsStub is used. |
 | install-deps | None | Command uses dependencies.toml and does not read projectsettings.ini. A pre-release specifier such as ~=26.2.0.dev0 automatically enables pre-release matching for that dependency; --pre enables it globally. |
 | gen-guid | None | Command does not read projectsettings.ini. |
@@ -86,7 +92,8 @@ Configuration is loaded by common.load_config with these rules:
 | FPGAPart | FPGA part string used by Vivado (for example, xcku15p-ffve1517-2-e). |
 | VivadoProjectName | Vivado project name without .xpr extension. |
 | VivadoToolsPath | Vivado installation root containing bin/vivado(.bat). |
-| VivadoProjectFilesLists | File-list text files used to assemble project sources. |
+| VivadoProjectFilesLists | File-list text files used to assemble project sources (space-separated). |
+| VivadoProjectVHDL2008FilesLists | File-list text files containing VHDL-2008 source files (space-separated). These files are compiled with -2008 flag in both Vivado and ModelSim. |
 | ConstraintsTemplates | XDC template files consumed by gen-xdc/create-project. |
 | CustomConstraintsFile | Optional custom XDC content inserted into templates. |
 | VivadoProjectConstraintsFiles | Final XDC files to add to the Vivado project. |
@@ -117,6 +124,14 @@ Configuration is loaded by common.load_config with these rules:
 | LVTargetPluginFolder | Output folder for generated target plugin package. |
 | BoardIOXML | Output boardio.xml path. |
 | ClockXML | Output clock XML path. |
+
+### [ModelSimSettings]
+
+| Setting | Description |
+| --- | --- |
+| ModelSimToolsPath | Path to ModelSim installation root directory (for example, C:/modeltech_pe_2020.4). |
+| XilinxSimLibPath | Path to pre-compiled Xilinx simulation libraries for ModelSim (for example, C:/dev/libraries/vivado/2021.1/modelsim_PE_2020). Optional but recommended. |
+| ModelSimFilesLists | Optional override file-list text files for ModelSim compilation. If not set, VivadoProjectFilesLists is reused. |
 
 ### [CLIPMigrationSettings]
 
@@ -152,4 +167,13 @@ nihdl check-syntax
 
 # Generate custom target support artifacts
 nihdl gen-target
+
+# Create ModelSim project and compile all VHDL
+nihdl create-modelsim
+
+# Launch ModelSim GUI
+nihdl launch-modelsim
+
+# Run ModelSim simulation headless
+nihdl launch-modelsim --batch
 ```

@@ -43,16 +43,21 @@ The workflows we are supporting today in the Tech Preview require the use of Lab
 
 The LabVIEW FPGA HDL Tools are a set of command line utilitites that move, generate and process files to aid in the creation of a customized FPGA design.  You can type nihdl --help to get a list of the commands:
 
-* create-lvbitx   Create LabVIEW FPGA bitfile from Vivado output
-* create-project  Create or update Vivado project
-* check-syntax    Check Vivado RTL syntax and hierarchy quickly
-* extract-deps    Extract dependency ZIP files (run from 'targets' folder)
-* gen-target      Generate LabVIEW FPGA target support files
-* get-window      Extract window netlist from Vivado project
-* install-target  Install LabVIEW FPGA target support files
-* compile-project Compile Vivado project using a script generated from CompileProjectTemplate.tcl
-* launch-vivado   Launch Vivado with the current project
-* migrate-clip    Migrate CLIP files for FlexRIO custom devices
+* create-lvbitx    Create LabVIEW FPGA bitfile from Vivado output
+* create-project   Create or update Vivado project
+* create-modelsim  Create a ModelSim project for HDL simulation
+* check-syntax     Check Vivado RTL syntax and hierarchy quickly
+* install-deps     Install GitHub dependencies from dependencies.toml
+* gen-target       Generate LabVIEW FPGA target support files
+* gen-hdl          Generate Window VHDL files only
+* gen-xdc          Generate XDC files from constraint templates
+* get-window       Extract window netlist from Vivado project
+* install-target   Install LabVIEW FPGA target support files
+* compile-project  Compile Vivado project using a script generated from CompileProjectTemplate.tcl
+* launch-vivado    Launch Vivado with the current project
+* launch-modelsim  Launch ModelSim with the current project
+* migrate-clip     Migrate CLIP files for FlexRIO custom devices
+* gen-guid         Generate a new GUID for LVTargetGUID
 
 These commands are configured in the projectesttings.ini file.
 
@@ -71,6 +76,9 @@ The projectsettings.ini file has multiple sections that map to the specific comm
     * migrate-clip
 * LVWindowNetlistSettings
     * get-window
+* ModelSimSettings
+    * create-modelsim
+    * launch-modelsim
 
 The sections of the configuration file enables the commands to operate independently.  You will find that TheWindowFolder is specified in both LVWindowNetlistSettings and VivadoProjectSettings.  This is because TheWindowFolder used as an output of the get-window command as well as an input to the create-project command.  Typically, you would set both instances of TheWindowFolder to the same thing.  But this design allows you to run the commands independently and manage the folders however you want.
 

@@ -104,7 +104,7 @@ def run_command(cmd, working_dir=None, expected_exit_code=0, timeout=60):
 
 def clean_target_directories(target_dir):
     """Remove objects and VivadoProject folders to ensure clean test environment."""
-    dirs_to_clean = ["objects", "VivadoProject"]
+    dirs_to_clean = ["objects", "VivadoProject", "ModelSimProject"]
 
     print(f"{BLUE}Cleaning target directories before tests:{RESET}")
     for dir_name in dirs_to_clean:
@@ -134,8 +134,22 @@ def get_standard_test_paths():
             "impl_1",
         ),
         "plugin_install_dir": os.path.join(TEST_DIR, "test-plugin-install-dir"),
+        "modelsim_dir": os.path.join(
+            TEST_DIR, "test-project", "targets", "pxie-7903", "ModelSimProject"
+        ),
     }
     return paths
+
+
+def _setup_launch_modelsim():
+    """Create mock ModelSim project files needed for launch-modelsim --test."""
+    paths = get_standard_test_paths()
+    modelsim_dir = paths["modelsim_dir"]
+    os.makedirs(modelsim_dir, exist_ok=True)
+    # Create mock .do file that launch-modelsim expects
+    do_file = os.path.join(modelsim_dir, "load_SasquatchTopTemplate.do")
+    with open(do_file, "w") as f:
+        f.write("# Mock .do file for testing\n")
 
 
 def get_test_set_no_errors():
@@ -202,6 +216,49 @@ def get_test_set_no_errors():
         {
             "name": "install-target",
             "command": f"{nihdl_cmd} install-target",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+        },
+        {
+            "name": "gen-hdl",
+            "command": f"{nihdl_cmd} gen-hdl",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+        },
+        {
+            "name": "gen-xdc",
+            "command": f"{nihdl_cmd} gen-xdc",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+        },
+        {
+            "name": "check-syntax",
+            "command": f"{nihdl_cmd} check-syntax --test",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+        },
+        {
+            "name": "compile-project",
+            "command": f"{nihdl_cmd} compile-project --test",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+        },
+        {
+            "name": "create-modelsim",
+            "command": f"{nihdl_cmd} create-modelsim --test",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+        },
+        {
+            "name": "launch-modelsim",
+            "command": f"{nihdl_cmd} launch-modelsim --test",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "setup": _setup_launch_modelsim,
+        },
+        {
+            "name": "gen-guid",
+            "command": f"{nihdl_cmd} gen-guid",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
@@ -284,6 +341,41 @@ def get_test_set_errors():
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
+        {
+            "name": "check-syntax with bad settings",
+            "command": f"{nihdl_cmd} check-syntax --test --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "compile-project with bad settings",
+            "command": f"{nihdl_cmd} compile-project --test --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "create-modelsim with bad settings",
+            "command": f"{nihdl_cmd} create-modelsim --test --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 0,  # In test mode, ModelSim path validation is skipped
+        },
+        {
+            "name": "launch-modelsim with bad settings",
+            "command": f"{nihdl_cmd} launch-modelsim --test --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
+        {
+            "name": "gen-hdl with bad settings",
+            "command": f"{nihdl_cmd} gen-hdl --config=badsettings.ini",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Expect error
+        },
     ]
 
 
@@ -338,6 +430,11 @@ def run_test_cases(tests, test_name="Unnamed Test Set"):
         print(f"\n{'-' * 80}")
         print(f"{BLUE}TEST:{RESET} {test['name']}")
         print(f"{'-' * 80}")
+
+        # Run optional setup callback before test command
+        setup_fn = test.get("setup")
+        if setup_fn:
+            setup_fn()
 
         expected_exit_code = test.get("expected_exit_code", 0)
         results[test["name"]] = run_command(
@@ -507,11 +604,13 @@ def run_output_validations():
     validation_results.append(success)
 
     # Second validation - project directory with non-exact matching
+    # Generated TCL files like CheckSyntax.tcl and CompileProject.tcl contain absolute
+    # paths that vary per machine, so we allow extra files.
     print(f"\n{BLUE}Comparing object directories:{RESET}")
     project_outputs_dir = os.path.join(TEST_DIR, "test-project/targets/pxie-7903/objects")
     project_expected_dir = os.path.join(TEST_DIR, "test-project-expected/targets/pxie-7903/objects")
     success, issues = check_output_folders(
-        project_outputs_dir, project_expected_dir, exact_match=True
+        project_outputs_dir, project_expected_dir, exact_match=False
     )
     validation_results.append(success)
 
