@@ -15,6 +15,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from mako.template import Template
+
 
 @dataclass
 class FileConfiguration:
@@ -749,3 +751,23 @@ def generate_guid():
         (e.g., '8943868e-fc0c-4e48-a2e9-1ebce7779d5c')
     """
     return str(uuid.uuid4())
+
+
+def render_mako_template(template_path, output_path, **kwargs):
+    """Render a Mako template file with the given keyword arguments and write the result.
+
+    Args:
+        template_path (str): Path to the .mako template file
+        output_path (str): Path where the rendered output will be written
+        **kwargs: Template variables to substitute
+    """
+    template = Template(filename=template_path, input_encoding="utf-8")
+    rendered = template.render(**kwargs)
+
+    # Mako preserves \r\n from template files on Windows. Normalize to \n
+    # so that text-mode write() doesn't double-convert \n into \r\r\n.
+    rendered = rendered.replace("\r\n", "\n")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as output_file:
+        output_file.write(rendered)

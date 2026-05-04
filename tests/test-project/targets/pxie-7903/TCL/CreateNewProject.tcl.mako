@@ -1,10 +1,10 @@
 # githubvisible=true
 
-set ProjName {PROJ_NAME}
+set ProjName {${project_name}}
 create_project -force $ProjName [pwd] -part xcvu11p-flgb2104-2-e
 set_property target_language VHDL [current_project]
 
-ADD_FILES
+${add_files}
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
@@ -22,7 +22,7 @@ set_property steps.write_bitstream.args.bin_file "true" [get_runs -filter !is_sy
 set_property steps.write_bitstream.tcl.pre {$PPRDIR/../TCL/PreGenerateBitfile.tcl} [get_runs -filter !is_synthesis]
 set_property steps.post_route_phys_opt_design.args.is_enabled "false" [get_runs -filter !is_synthesis]
 set_property steps.write_bitstream.tcl.post {$PPRDIR/../TCL/PostGenerateBitfile.tcl} [get_runs -filter !is_synthesis]
-set_property top TOP_ENTITY [current_fileset]
+set_property top ${top_entity} [current_fileset]
 
 # constraints.xdc is for use for both synthesis and implementation
 set_property used_in_synthesis true [get_files constraints.xdc]

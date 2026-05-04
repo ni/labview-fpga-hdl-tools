@@ -102,24 +102,15 @@ def _get_tcl_set_vhdl2008_files_text(vhdl2008_file_list, file_dir):
     )
 
 
-def _replace_placeholders_in_file(
-    file_path, new_file_path, add_files, project_name, top_entity, fpga_part, tcl_folder,
+def _render_project_template(
+    template_path, output_path, add_files, project_name, top_entity, fpga_part, tcl_folder,
     set_vhdl2008_files
 ):
-    """Replaces placeholders in a template file with actual values.
-
-    This function takes a TCL template file and substitutes key placeholders with
-    project-specific values to create a customized Vivado TCL script.
-    The main substitutions are:
-    - ADD_FILES: List of files to add to the project
-    - PROJ_NAME: Name of the Vivado project
-    - TOP_ENTITY: Top-level VHDL entity name
-    - FPGA_PART: FPGA part for create_project -part
-    - SET_VHDL2008_FILES: set_property commands to mark VHDL 2008 files
+    """Renders a Mako template file with project-specific values.
 
     Args:
-        file_path (str): Path to the template file
-        new_file_path (str): Path where the generated file will be saved
+        template_path (str): Path to the .mako template file
+        output_path (str): Path where the rendered file will be saved
         add_files (str): TCL commands to add files to the project
         project_name (str): Name of the Vivado project
         top_entity (str): Name of the top-level entity
@@ -127,20 +118,16 @@ def _replace_placeholders_in_file(
         tcl_folder (str): Path to the TCL scripts folder
         set_vhdl2008_files (str): TCL commands to mark files as VHDL 2008
     """
-    with open(file_path, "r", encoding="utf-8") as file:
-        file_contents = file.read()
-    modified_contents = file_contents.replace("ADD_FILES", add_files)
-    modified_contents = modified_contents.replace("PROJ_NAME", project_name)
-    modified_contents = modified_contents.replace("TOP_ENTITY", top_entity)
-    modified_contents = modified_contents.replace("FPGA_PART", fpga_part)
-    modified_contents = modified_contents.replace("TCL_FOLDER", tcl_folder)
-    modified_contents = modified_contents.replace("SET_VHDL2008_FILES", set_vhdl2008_files)
-
-    # Create the directory for the new file if it doesn't exist
-    os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
-
-    with open(new_file_path, "w", encoding="utf-8") as file:
-        file.write(modified_contents)
+    common.render_mako_template(
+        template_path,
+        output_path,
+        add_files=add_files,
+        project_name=project_name,
+        top_entity=top_entity,
+        fpga_part=fpga_part,
+        tcl_folder=tcl_folder,
+        set_vhdl2008_files=set_vhdl2008_files,
+    )
 
 
 def _find_and_log_duplicates(file_list):
@@ -549,11 +536,11 @@ def _create_project(mode: ProjectMode, config, test):
     """
     current_dir = os.getcwd()
     new_proj_template_path = os.path.join(
-        config.vivado_tcl_scripts_folder, "CreateNewProjectTemplate.tcl"
+        config.vivado_tcl_scripts_folder, "CreateNewProject.tcl.mako"
     )
     new_proj_path = os.path.join(current_dir, "objects/TCL/CreateNewProject.tcl")
     update_proj_template_path = os.path.join(
-        config.vivado_tcl_scripts_folder, "UpdateProjectFilesTemplate.tcl"
+        config.vivado_tcl_scripts_folder, "UpdateProjectFiles.tcl.mako"
     )
     update_proj_path = os.path.join(current_dir, "objects/TCL/UpdateProjectFiles.tcl")
 
@@ -597,8 +584,8 @@ def _create_project(mode: ProjectMode, config, test):
     top_entity = config.top_level_entity
     fpga_part = config.fpga_part
 
-    # Replace placeholders in the template Vivado project scripts
-    _replace_placeholders_in_file(
+    # Render Mako templates for Vivado project scripts
+    _render_project_template(
         new_proj_template_path,
         new_proj_path,
         add_files,
@@ -608,7 +595,7 @@ def _create_project(mode: ProjectMode, config, test):
         config.vivado_tcl_scripts_folder_relpath,
         set_vhdl2008_files,
     )
-    _replace_placeholders_in_file(
+    _render_project_template(
         update_proj_template_path,
         update_proj_path,
         add_files,

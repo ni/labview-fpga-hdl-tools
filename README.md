@@ -59,8 +59,8 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | gen-hdl | LVFPGATargetSettings.WindowVhdlTemplates, LVFPGATargetSettings.WindowVhdlOutputFolder | LVFPGATargetSettings.LVTargetBoardIO is required when IncludeLVTargetBoardIO=True. |
 | gen-xdc | None enforced by a dedicated validator | For useful output, set VivadoProjectSettings.ConstraintsTemplates. VivadoProjectSettings.TheWindowFolder is used when extracting LV constraints/macros; VivadoProjectSettings.CustomConstraintsFile is optional. |
 | create-project | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.FPGAPart, VivadoProjectSettings.VivadoProjectFilesLists | Non-test adds VivadoProjectSettings.VivadoToolsPath. If UseGeneratedLVWindowFiles=True, VivadoProjectSettings.TheWindowFolder is required. VivadoProjectSettings.VivadoTclScriptsFolder and template TCL files are also required at runtime. |
-| check-syntax | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.FPGAPart, VivadoProjectSettings.VivadoTclScriptsFolder | Requires CheckSyntaxTemplate.tcl in VivadoTclScriptsFolder. Non-test adds VivadoProjectSettings.VivadoToolsPath and existing VivadoProject/<VivadoProjectName>.xpr. |
-| compile-project | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.VivadoTclScriptsFolder | Requires CompileProjectTemplate.tcl in VivadoTclScriptsFolder. Non-test adds VivadoProjectSettings.VivadoToolsPath and existing VivadoProject/<VivadoProjectName>.xpr. |
+| check-syntax | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.FPGAPart, VivadoProjectSettings.VivadoTclScriptsFolder | Requires CheckSyntax.tcl.mako in VivadoTclScriptsFolder. Non-test adds VivadoProjectSettings.VivadoToolsPath and existing VivadoProject/<VivadoProjectName>.xpr. |
+| compile-project | VivadoProjectSettings.VivadoProjectName, VivadoProjectSettings.VivadoTclScriptsFolder | Requires CompileProject.tcl.mako in VivadoTclScriptsFolder. Non-test adds VivadoProjectSettings.VivadoToolsPath and existing VivadoProject/<VivadoProjectName>.xpr. |
 | launch-vivado | VivadoProjectSettings.VivadoToolsPath, VivadoProjectSettings.VivadoProjectName | Also requires existing VivadoProject/<VivadoProjectName>.xpr. |
 | create-modelsim | VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.VivadoProjectFilesLists, ModelSimSettings.ModelSimToolsPath | Uses ModelSimSettings.ModelSimFilesLists if set, otherwise VivadoProjectFilesLists. ModelSimSettings.XilinxSimLibPath is optional but recommended for Xilinx primitive support. |
 | launch-modelsim | VivadoProjectSettings.TopLevelEntity, ModelSimSettings.ModelSimToolsPath | Requires existing ModelSimProject/ directory (run create-modelsim first). |
@@ -97,7 +97,7 @@ Configuration is loaded by common.load_config with these rules:
 | ConstraintsTemplates | XDC template files consumed by gen-xdc/create-project. |
 | CustomConstraintsFile | Optional custom XDC content inserted into templates. |
 | VivadoProjectConstraintsFiles | Final XDC files to add to the Vivado project. |
-| VivadoTclScriptsFolder | Folder containing Vivado TCL templates/scripts (for example, CreateProjectTemplate.tcl, CheckSyntaxTemplate.tcl, CompileProjectTemplate.tcl). |
+| VivadoTclScriptsFolder | Folder containing Vivado TCL Mako templates/scripts (for example, CreateNewProject.tcl.mako, CheckSyntax.tcl.mako, CompileProject.tcl.mako). |
 | UseGeneratedLVWindowFiles | True/False: use extracted/generated TheWindow content instead of stubs. |
 | TheWindowFolder | Folder containing TheWindow files used by project generation/checks. |
 | CodeGenerationResultsStub | Stub CodeGenerationResults file used when UseGeneratedLVWindowFiles is False. |

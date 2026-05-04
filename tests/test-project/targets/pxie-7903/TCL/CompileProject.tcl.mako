@@ -1,6 +1,6 @@
 # githubvisible=true
 
-open_project PROJ_NAME
+open_project ${project_file_name}
 
 reset_run synth_1
 launch_runs synth_1 -jobs 11
