@@ -15,6 +15,7 @@ The tool supports:
 #
 # SPDX-License-Identifier: MIT
 #
+import glob
 import os
 import shutil
 from collections import defaultdict
@@ -313,6 +314,42 @@ def _override_lv_window_files(config, file_list):
                 updated_list.append(file_path)
 
     return updated_list
+
+
+def _check_project_file_not_locked(project_file_path):
+    """Checks if the Vivado project directory is in use by another Vivado process.
+
+    When Vivado GUI has a project open, it creates vivado_pid*.str files in the
+    project directory and holds a sharing lock that prevents renaming. Python's
+    open() succeeds because Vivado allows shared read/write, but os.rename()
+    fails because Vivado does not allow delete/rename. This function uses a
+    rename round-trip to detect the lock.
+
+    Args:
+        project_file_path (str): Path to the .xpr project file
+
+    Raises:
+        PermissionError: If the project appears to be open in Vivado
+    """
+    project_dir = os.path.dirname(project_file_path)
+    if not os.path.isdir(project_dir):
+        return
+
+    # Check vivado_pid*.str files — Vivado GUI holds a sharing lock that
+    # prevents renaming while the process is running
+    str_files = glob.glob(os.path.join(project_dir, "vivado_pid*.str"))
+    for str_file in str_files:
+        temp_path = str_file + ".lock_check"
+        try:
+            os.rename(str_file, temp_path)
+        except (PermissionError, OSError):
+            raise PermissionError(
+                f"The Vivado project appears to be open in another Vivado process.\n"
+                f"Close the project in Vivado and try again.\n"
+                f"  Locked file: {str_file}"
+            )
+        else:
+            os.rename(temp_path, str_file)
 
 
 class ProjectMode(Enum):
@@ -690,8 +727,10 @@ def _create_project_handler(config, overwrite=False, update=False):
                 f"The project file '{project_file_path}' does not exist. Run without the --update flag to create a new project."
             )
         else:
+            _check_project_file_not_locked(project_file_path)
             project_mode = ProjectMode.UPDATE
     elif overwrite and not update:
+        _check_project_file_not_locked(project_file_path)
         # Overwrite the project by creating a new one
         project_mode = ProjectMode.NEW
     else:

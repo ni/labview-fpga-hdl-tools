@@ -363,6 +363,22 @@ def create_modelsim_project(overwrite=False, test=False, config_path=None, model
     # Check for existing project
     if os.path.exists(project_dir):
         if overwrite:
+            # Check if ModelSim has the project open by trying to rename the
+            # transcript file. ModelSim locks this file while running.
+            transcript_path = os.path.join(project_dir, "transcript")
+            if os.path.exists(transcript_path):
+                temp_path = transcript_path + ".lock_check"
+                try:
+                    os.rename(transcript_path, temp_path)
+                except (PermissionError, OSError):
+                    print(
+                        f"Error: The ModelSim project appears to be open in another process.\n"
+                        f"Close ModelSim and try again.\n"
+                        f"  Locked file: {transcript_path}"
+                    )
+                    return 1
+                else:
+                    os.rename(temp_path, transcript_path)
             print(f"Removing existing ModelSim project: {project_dir}")
             shutil.rmtree(project_dir)
         else:
