@@ -27,6 +27,7 @@ from . import (
     launch_vivado,
     migrate_clip,
     process_constraints,
+    sim_modelsim,
 )
 
 
@@ -238,6 +239,25 @@ def launch_modelsim_cmd(ctx, test, batch, modelsim, config):
             config_path=config,
             modelsim_path=modelsim,
             batch=batch,
+        )
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
+@cli.command("sim-modelsim", help="Run ModelSim simulation in batch mode")
+@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run")
+@click.option("--do-file", default=None, help="Custom .do file to run instead of default")
+@click.option("--config", default=None, help="Path to INI settings file")
+@click.pass_context
+def sim_modelsim_cmd(ctx, test, do_file, config):
+    """Run ModelSim simulation in batch mode and report results."""
+    try:
+        result = sim_modelsim.sim_modelsim(
+            test=test,
+            config_path=config,
+            do_file=do_file,
         )
         return result
     except Exception as e:
