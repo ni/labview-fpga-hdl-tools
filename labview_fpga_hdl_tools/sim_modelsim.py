@@ -119,9 +119,10 @@ def sim_modelsim(test=False, config_path=None, do_file=None):
         stderr=subprocess.STDOUT,
         text=True,
     )
-    for line in process.stdout:
-        sys.stdout.write(line)
-        output_lines.append(line)
+    if process.stdout:
+        for line in process.stdout:
+            sys.stdout.write(line)
+            output_lines.append(line)
     process.wait()
 
     elapsed = time.time() - start_time
