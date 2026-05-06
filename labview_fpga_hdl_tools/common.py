@@ -762,7 +762,7 @@ def render_mako_template(template_path, output_path, **kwargs):
         **kwargs: Template variables to substitute
     """
     template = Template(filename=template_path, input_encoding="utf-8")
-    rendered: str = template.render(**kwargs)
+    rendered = str(template.render(**kwargs))
 
     # Mako preserves \r\n from template files on Windows. Normalize to \n
     # so that text-mode write() doesn't double-convert \n into \r\r\n.
