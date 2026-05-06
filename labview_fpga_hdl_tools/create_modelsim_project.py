@@ -70,7 +70,11 @@ def _get_vsim_executable(modelsim_path):
         return modelsim_path
     # Try common subdirectories
     for subdir in ["win32pe", "win64", "win32", ""]:
-        candidate = os.path.join(modelsim_path, subdir, "vsim.exe") if subdir else os.path.join(modelsim_path, "vsim.exe")
+        candidate = (
+            os.path.join(modelsim_path, subdir, "vsim.exe")
+            if subdir
+            else os.path.join(modelsim_path, "vsim.exe")
+        )
         if os.path.exists(candidate):
             return candidate
     return os.path.join(modelsim_path, "vsim.exe")
@@ -84,7 +88,11 @@ def _get_modelsim_tool(modelsim_path, tool_name):
     exe_name = f"{tool_name}.exe" if os.name == "nt" else tool_name
     # Try common subdirectories
     for subdir in ["win32pe", "win64", "win32", ""]:
-        candidate = os.path.join(modelsim_path, subdir, exe_name) if subdir else os.path.join(modelsim_path, exe_name)
+        candidate = (
+            os.path.join(modelsim_path, subdir, exe_name)
+            if subdir
+            else os.path.join(modelsim_path, exe_name)
+        )
         if os.path.exists(candidate):
             return candidate
     return os.path.join(modelsim_path, exe_name)
@@ -115,8 +123,7 @@ def _create_modelsim_ini(modelsim_install_path, project_dir):
 
     if not os.path.exists(src_ini):
         raise FileNotFoundError(
-            f"modelsim.ini not found at {src_ini}\n"
-            f"Check your ModelSimToolsPath setting."
+            f"modelsim.ini not found at {src_ini}\n" f"Check your ModelSimToolsPath setting."
         )
 
     shutil.copy2(src_ini, dst_ini)
@@ -189,7 +196,7 @@ def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_path):
         raise RuntimeError("Could not find [Library] section in modelsim.ini")
 
     # Find the next section header or end of file
-    next_section = re.search(r"^\[(?!Library)", content[lib_section_match.end():], re.MULTILINE)
+    next_section = re.search(r"^\[(?!Library)", content[lib_section_match.end() :], re.MULTILINE)
     if next_section:
         insert_pos = lib_section_match.end() + next_section.start()
     else:
@@ -221,9 +228,7 @@ def _get_vhdl_files_from_lists(file_lists):
                 if line and not line.startswith("#"):
                     # Resolve relative to the directory containing the file list
                     if not os.path.isabs(line):
-                        line = os.path.normpath(
-                            os.path.join(os.path.dirname(file_list_path), line)
-                        )
+                        line = os.path.normpath(os.path.join(os.path.dirname(file_list_path), line))
                     if os.path.isdir(line):
                         for root, _, filenames in os.walk(line):
                             for fn in sorted(filenames):
@@ -414,7 +419,6 @@ def create_modelsim_project(overwrite=False, test=False, config_path=None, model
 
     # Step 3: Create work library
     print("\nStep 3: Creating work library...")
-    work_dir = os.path.join(project_dir, "work")
     _run_modelsim_tool(vlib_path, ["work"], cwd=project_dir)
     print("  Created work library")
 

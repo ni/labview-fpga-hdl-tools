@@ -98,13 +98,22 @@ def _get_tcl_set_vhdl2008_files_text(vhdl2008_file_list, file_dir):
     replacement_list = [os.path.relpath(file, file_dir) for file in stripped_file_list]
     replacement_list = [f'"{file}"' if _has_spaces(file) else file for file in replacement_list]
     return "\n".join(
-        [f"set_property file_type {{VHDL 2008}} [get_files {{{file}}}]" for file in replacement_list]
+        [
+            f"set_property file_type {{VHDL 2008}} [get_files {{{file}}}]"
+            for file in replacement_list
+        ]
     )
 
 
 def _render_project_template(
-    template_path, output_path, add_files, project_name, top_entity, fpga_part, tcl_folder,
-    set_vhdl2008_files
+    template_path,
+    output_path,
+    add_files,
+    project_name,
+    top_entity,
+    fpga_part,
+    tcl_folder,
+    set_vhdl2008_files,
 ):
     """Renders a Mako template file with project-specific values.
 

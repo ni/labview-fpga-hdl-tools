@@ -107,9 +107,6 @@ def sim_modelsim(test=False, config_path=None, do_file=None):
     # Build command: vsim in batch/command-line mode
     cmd = [vsim_exe, "-c", "-do", do_file]
 
-    # Transcript log path
-    transcript_path = os.path.join(project_dir, "transcript")
-
     print(f"\nRunning simulation...")
     start_time = time.time()
 
