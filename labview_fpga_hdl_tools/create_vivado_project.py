@@ -137,27 +137,44 @@ def _find_and_log_duplicates(file_list):
     pick the wrong file version. This function identifies files with the same name but
     different paths, which typically indicates a potential conflict.
 
+    If the same fully-qualified file path appears multiple times, it is silently
+    deduplicated (collapsed to one entry). Only same-named files from different
+    paths are treated as errors.
+
     The function:
-    1. Groups files by base name (without path)
-    2. Identifies duplicates (same name, different paths)
-    3. Logs details to a file for analysis
-    4. Raises an error to prevent proceeding with duplicates
+    1. Deduplicates identical full paths
+    2. Groups files by base name (without path)
+    3. Identifies duplicates (same name, different paths)
+    4. Logs details to a file for analysis
+    5. Raises an error to prevent proceeding with duplicates
 
     Args:
         file_list (list): List of file paths to check
 
+    Returns:
+        list: Deduplicated file list with identical paths collapsed
+
     Raises:
-        ValueError: If any duplicate filenames are found
+        ValueError: If any duplicate filenames from different paths are found
     """
+    # Deduplicate identical full paths while preserving order
+    seen_paths = set()
+    unique_file_list = []
+    for file in file_list:
+        normalized = os.path.normpath(file)
+        if normalized not in seen_paths:
+            seen_paths.add(normalized)
+            unique_file_list.append(file)
+
     file_dict = defaultdict(list)
     duplicates_found = False
 
     # Group files by their base name
-    for file in file_list:
+    for file in unique_file_list:
         file_name = os.path.basename(file)
         file_dict[file_name].append(file)
 
-    # Check for duplicates
+    # Check for duplicates (same filename, different paths)
     for file_name, paths in file_dict.items():
         if len(paths) > 1:
             duplicates_found = True
@@ -179,6 +196,8 @@ def _find_and_log_duplicates(file_list):
                         output_file.write(f"  {path}\n")
                     output_file.write("\n")
         raise ValueError("Duplicate files found. Check the log file for details.")
+
+    return unique_file_list
 
 
 def _copy_long_path_files(file_list):
@@ -571,8 +590,8 @@ def _create_project(mode: ProjectMode, config, test):
     # Combine regular and VHDL 2008 files for duplicate checking and add_files
     combined_file_list = file_list + vhdl2008_file_list
 
-    # Check for duplicate file names and log them
-    _find_and_log_duplicates(combined_file_list)
+    # Check for duplicate file names and log them; collapse identical paths
+    combined_file_list = _find_and_log_duplicates(combined_file_list)
 
     add_files = _get_tcl_add_files_text(combined_file_list, os.path.join(current_dir, "TCL"))
     set_vhdl2008_files = _get_tcl_set_vhdl2008_files_text(
