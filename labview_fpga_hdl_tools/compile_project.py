@@ -11,29 +11,15 @@ import subprocess
 from . import common
 
 
-def _replace_placeholders_in_file(template_path, output_path, replacements):
-    """Read a template TCL file, replace placeholders, and write output TCL."""
-    with open(template_path, "r", encoding="utf-8") as tcl_file:
-        tcl_contents = tcl_file.read()
-
-    for placeholder, value in replacements.items():
-        tcl_contents = tcl_contents.replace(placeholder, value)
-
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as output_file:
-        output_file.write(tcl_contents)
-
-
 def _generate_compile_project_tcl(config, output_path):
     """Generate the TCL script used for compile-project."""
-    template_tcl_path = os.path.join(config.vivado_tcl_scripts_folder, "CompileProjectTemplate.tcl")
+    template_tcl_path = os.path.join(config.vivado_tcl_scripts_folder, "CompileProject.tcl.mako")
 
-    replacements = {
-        "PROJECT_FILE_NAME": f"{config.vivado_project_name}.xpr",
-        "PROJ_NAME": f"{config.vivado_project_name}.xpr",
-    }
-
-    _replace_placeholders_in_file(template_tcl_path, output_path, replacements)
+    common.render_mako_template(
+        template_tcl_path,
+        output_path,
+        project_file_name=f"{config.vivado_project_name}.xpr",
+    )
 
 
 def _validate_ini(config, test):
@@ -56,11 +42,11 @@ def _validate_ini(config, test):
             invalid_paths.append(invalid_path)
 
         compile_template_path = os.path.join(
-            config.vivado_tcl_scripts_folder, "CompileProjectTemplate.tcl"
+            config.vivado_tcl_scripts_folder, "CompileProject.tcl.mako"
         )
         invalid_path = common.validate_path(
             compile_template_path,
-            "VivadoProjectSettings.VivadoTclScriptsFolder/CompileProjectTemplate.tcl",
+            "VivadoProjectSettings.VivadoTclScriptsFolder/CompileProject.tcl.mako",
             "file",
         )
         if invalid_path:
@@ -186,7 +172,7 @@ def _compile_project(config, test=False):
 
 
 def compile_project(test=False, config_path=None, vivado_path=None):
-    """Compile Vivado project by running a TCL script generated from CompileProjectTemplate.tcl.
+    """Compile Vivado project by running a TCL script generated from CompileProject.tcl.mako.
 
     Args:
         test (bool): Test mode - validate settings but don't run Vivado

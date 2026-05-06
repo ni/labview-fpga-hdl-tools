@@ -15,6 +15,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from mako.template import Template
+
 
 @dataclass
 class FileConfiguration:
@@ -36,6 +38,9 @@ class FileConfiguration:
     hdl_file_lists: List[str] = field(
         default_factory=list
     )  # List of HDL file list paths for Vivado project generation
+    vhdl2008_file_lists: List[str] = field(
+        default_factory=list
+    )  # List of VHDL 2008 file list paths for Vivado project generation
     constraints_templates: List[str] = field(
         default_factory=list
     )  # List of constraint template file paths
@@ -98,6 +103,12 @@ class FileConfiguration:
     clip_to_window_signal_definitions: Optional[str] = (
         None  # Path for CLIP-to-Window signal definitions file
     )
+    # ----- MODELSIM SETTINGS -----
+    modelsim_tools_path: Optional[str] = None  # Path to ModelSim installation directory
+    xilinx_sim_lib_path: Optional[str] = None  # Path to compiled Xilinx simulation libraries
+    modelsim_file_lists: List[str] = field(
+        default_factory=list
+    )  # Ordered file lists for ModelSim compilation (deps before sources)
 
 
 def _parse_bool(value, default=False):
@@ -172,6 +183,16 @@ def load_config(config_path=None, vivado_path=None):
                 abs_file_list = resolve_path(file_list)
                 if abs_file_list is not None:  # Add this check
                     files.hdl_file_lists.append(abs_file_list)
+
+    # Load VHDL 2008 file lists
+    vhdl2008_file_lists = settings.get("VivadoProjectVHDL2008FilesLists")
+    if vhdl2008_file_lists:
+        for file_list in vhdl2008_file_lists.strip().split():
+            file_list = file_list.strip()
+            if file_list:
+                abs_file_list = resolve_path(file_list)
+                if abs_file_list is not None:
+                    files.vhdl2008_file_lists.append(abs_file_list)
 
     # Load constraints templates
     constraints_templates = settings.get("ConstraintsTemplates")
@@ -262,6 +283,23 @@ def load_config(config_path=None, vivado_path=None):
     files.max_hdl_reg_offset = (
         int(max_hdl_reg_offset_str.strip(), 0) if max_hdl_reg_offset_str else None
     )
+
+    # -----------------------------------------------------------------------
+    # Load ModelSim settings
+    # -----------------------------------------------------------------------
+    if config.has_section("ModelSimSettings"):
+        settings = config["ModelSimSettings"]
+        files.modelsim_tools_path = resolve_path(settings.get("ModelSimToolsPath"))
+        files.xilinx_sim_lib_path = resolve_path(settings.get("XilinxSimLibPath"))
+
+        modelsim_file_lists = settings.get("ModelSimFilesLists")
+        if modelsim_file_lists:
+            for file_list in modelsim_file_lists.strip().split():
+                file_list = file_list.strip()
+                if file_list:
+                    abs_file_list = resolve_path(file_list)
+                    if abs_file_list is not None:
+                        files.modelsim_file_lists.append(abs_file_list)
 
     # -----------------------------------------------------------------------
     # Load CLIP migration settings
@@ -595,7 +633,8 @@ def get_vivado_project_files(lists_of_files):
     file_list = []
     for file_list_path in lists_of_files:
         if os.path.exists(file_list_path):
-            with open(file_list_path, "r", encoding="utf-8") as f:
+            # Use UTF-8-sig encoding to handle potential BOM in files created on Windows
+            with open(file_list_path, "r", encoding="utf-8-sig") as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#"):  # Skip empty lines and comments
@@ -712,3 +751,23 @@ def generate_guid():
         (e.g., '8943868e-fc0c-4e48-a2e9-1ebce7779d5c')
     """
     return str(uuid.uuid4())
+
+
+def render_mako_template(template_path, output_path, **kwargs):
+    """Render a Mako template file with the given keyword arguments and write the result.
+
+    Args:
+        template_path (str): Path to the .mako template file
+        output_path (str): Path where the rendered output will be written
+        **kwargs: Template variables to substitute
+    """
+    template = Template(filename=template_path, input_encoding="utf-8")
+    rendered = str(template.render(**kwargs))
+
+    # Mako preserves \r\n from template files on Windows. Normalize to \n
+    # so that text-mode write() doesn't double-convert \n into \r\r\n.
+    rendered = rendered.replace("\r\n", "\n")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as output_file:
+        output_file.write(rendered)

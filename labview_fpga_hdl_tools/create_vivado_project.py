@@ -15,6 +15,7 @@ The tool supports:
 #
 # SPDX-License-Identifier: MIT
 #
+import glob
 import os
 import shutil
 from collections import defaultdict
@@ -71,41 +72,71 @@ def _get_tcl_add_files_text(file_list, file_dir):
     return replacement_text
 
 
-def _replace_placeholders_in_file(
-    file_path, new_file_path, add_files, project_name, top_entity, fpga_part, tcl_folder
-):
-    """Replaces placeholders in a template file with actual values.
+def _get_tcl_set_vhdl2008_files_text(vhdl2008_file_list, file_dir):
+    """Generates TCL commands to mark files as VHDL 2008 in a Vivado project.
 
-    This function takes a TCL template file and substitutes key placeholders with
-    project-specific values to create a customized Vivado TCL script.
-    The main substitutions are:
-    - ADD_FILES: List of files to add to the project
-    - PROJ_NAME: Name of the Vivado project
-    - TOP_ENTITY: Top-level VHDL entity name
-    - FPGA_PART: FPGA part for create_project -part
+    Creates properly formatted 'set_property file_type' TCL commands for each VHDL 2008
+    file, using the same relative path computation as _get_tcl_add_files_text.
 
     Args:
-        file_path (str): Path to the template file
-        new_file_path (str): Path where the generated file will be saved
+        vhdl2008_file_list (list): List of VHDL 2008 files
+        file_dir (str): Base directory for computing relative paths
+
+    Returns:
+        str: Multi-line TCL commands to mark all files as VHDL 2008, or empty string
+    """
+    if not vhdl2008_file_list:
+        return ""
+
+    def strip_long_path_prefix(path):
+        # Remove the \\?\ prefix if it exists (used for long paths on Windows)
+        if os.name == "nt" and path.startswith("\\\\?\\"):
+            return path[4:]
+        return path
+
+    stripped_file_list = [strip_long_path_prefix(file) for file in vhdl2008_file_list]
+    replacement_list = [os.path.relpath(file, file_dir) for file in stripped_file_list]
+    replacement_list = [f'"{file}"' if _has_spaces(file) else file for file in replacement_list]
+    return "\n".join(
+        [
+            f"set_property file_type {{VHDL 2008}} [get_files {{{file}}}]"
+            for file in replacement_list
+        ]
+    )
+
+
+def _render_project_template(
+    template_path,
+    output_path,
+    add_files,
+    project_name,
+    top_entity,
+    fpga_part,
+    tcl_folder,
+    set_vhdl2008_files,
+):
+    """Renders a Mako template file with project-specific values.
+
+    Args:
+        template_path (str): Path to the .mako template file
+        output_path (str): Path where the rendered file will be saved
         add_files (str): TCL commands to add files to the project
         project_name (str): Name of the Vivado project
         top_entity (str): Name of the top-level entity
         fpga_part (str): FPGA part to pass to the Vivado project template
         tcl_folder (str): Path to the TCL scripts folder
+        set_vhdl2008_files (str): TCL commands to mark files as VHDL 2008
     """
-    with open(file_path, "r", encoding="utf-8") as file:
-        file_contents = file.read()
-    modified_contents = file_contents.replace("ADD_FILES", add_files)
-    modified_contents = modified_contents.replace("PROJ_NAME", project_name)
-    modified_contents = modified_contents.replace("TOP_ENTITY", top_entity)
-    modified_contents = modified_contents.replace("FPGA_PART", fpga_part)
-    modified_contents = modified_contents.replace("TCL_FOLDER", tcl_folder)
-
-    # Create the directory for the new file if it doesn't exist
-    os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
-
-    with open(new_file_path, "w", encoding="utf-8") as file:
-        file.write(modified_contents)
+    common.render_mako_template(
+        template_path,
+        output_path,
+        add_files=add_files,
+        project_name=project_name,
+        top_entity=top_entity,
+        fpga_part=fpga_part,
+        tcl_folder=tcl_folder,
+        set_vhdl2008_files=set_vhdl2008_files,
+    )
 
 
 def _find_and_log_duplicates(file_list):
@@ -115,27 +146,44 @@ def _find_and_log_duplicates(file_list):
     pick the wrong file version. This function identifies files with the same name but
     different paths, which typically indicates a potential conflict.
 
+    If the same fully-qualified file path appears multiple times, it is silently
+    deduplicated (collapsed to one entry). Only same-named files from different
+    paths are treated as errors.
+
     The function:
-    1. Groups files by base name (without path)
-    2. Identifies duplicates (same name, different paths)
-    3. Logs details to a file for analysis
-    4. Raises an error to prevent proceeding with duplicates
+    1. Deduplicates identical full paths
+    2. Groups files by base name (without path)
+    3. Identifies duplicates (same name, different paths)
+    4. Logs details to a file for analysis
+    5. Raises an error to prevent proceeding with duplicates
 
     Args:
         file_list (list): List of file paths to check
 
+    Returns:
+        list: Deduplicated file list with identical paths collapsed
+
     Raises:
-        ValueError: If any duplicate filenames are found
+        ValueError: If any duplicate filenames from different paths are found
     """
+    # Deduplicate identical full paths while preserving order
+    seen_paths = set()
+    unique_file_list = []
+    for file in file_list:
+        normalized = os.path.normpath(file)
+        if normalized not in seen_paths:
+            seen_paths.add(normalized)
+            unique_file_list.append(file)
+
     file_dict = defaultdict(list)
     duplicates_found = False
 
     # Group files by their base name
-    for file in file_list:
+    for file in unique_file_list:
         file_name = os.path.basename(file)
         file_dict[file_name].append(file)
 
-    # Check for duplicates
+    # Check for duplicates (same filename, different paths)
     for file_name, paths in file_dict.items():
         if len(paths) > 1:
             duplicates_found = True
@@ -157,6 +205,8 @@ def _find_and_log_duplicates(file_list):
                         output_file.write(f"  {path}\n")
                     output_file.write("\n")
         raise ValueError("Duplicate files found. Check the log file for details.")
+
+    return unique_file_list
 
 
 def _copy_long_path_files(file_list):
@@ -281,6 +331,42 @@ def _override_lv_window_files(config, file_list):
     return updated_list
 
 
+def _check_project_file_not_locked(project_file_path):
+    """Checks if the Vivado project directory is in use by another Vivado process.
+
+    When Vivado GUI has a project open, it creates vivado_pid*.str files in the
+    project directory and holds a sharing lock that prevents renaming. Python's
+    open() succeeds because Vivado allows shared read/write, but os.rename()
+    fails because Vivado does not allow delete/rename. This function uses a
+    rename round-trip to detect the lock.
+
+    Args:
+        project_file_path (str): Path to the .xpr project file
+
+    Raises:
+        PermissionError: If the project appears to be open in Vivado
+    """
+    project_dir = os.path.dirname(project_file_path)
+    if not os.path.isdir(project_dir):
+        return
+
+    # Check vivado_pid*.str files — Vivado GUI holds a sharing lock that
+    # prevents renaming while the process is running
+    str_files = glob.glob(os.path.join(project_dir, "vivado_pid*.str"))
+    for str_file in str_files:
+        temp_path = str_file + ".lock_check"
+        try:
+            os.rename(str_file, temp_path)
+        except (PermissionError, OSError):
+            raise PermissionError(
+                f"The Vivado project appears to be open in another Vivado process.\n"
+                f"Close the project in Vivado and try again.\n"
+                f"  Locked file: {str_file}"
+            )
+        else:
+            os.rename(temp_path, str_file)
+
+
 class ProjectMode(Enum):
     """Enum defining the possible modes for project operations.
 
@@ -392,6 +478,16 @@ def _validate_ini(config, test):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
+    # Validate VHDL 2008 file lists (optional, but validate paths if provided)
+    for i, file_list_path in enumerate(config.vhdl2008_file_lists):
+        invalid_path = common.validate_path(
+            file_list_path,
+            f"VivadoProjectSettings.VivadoProjectVHDL2008FilesLists[{i}]",
+            "file",
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
+
     # Check for LV Window folder if using generated window files
     if config.use_gen_lv_window_files and not config.the_window_folder_input:
         missing_settings.append("VivadoProjectSettings.TheWindowFolder")
@@ -468,11 +564,11 @@ def _create_project(mode: ProjectMode, config, test):
     """
     current_dir = os.getcwd()
     new_proj_template_path = os.path.join(
-        config.vivado_tcl_scripts_folder, "CreateNewProjectTemplate.tcl"
+        config.vivado_tcl_scripts_folder, "CreateNewProject.tcl.mako"
     )
     new_proj_path = os.path.join(current_dir, "objects/TCL/CreateNewProject.tcl")
     update_proj_template_path = os.path.join(
-        config.vivado_tcl_scripts_folder, "UpdateProjectFilesTemplate.tcl"
+        config.vivado_tcl_scripts_folder, "UpdateProjectFiles.tcl.mako"
     )
     update_proj_path = os.path.join(current_dir, "objects/TCL/UpdateProjectFiles.tcl")
 
@@ -484,30 +580,40 @@ def _create_project(mode: ProjectMode, config, test):
         common.fix_file_slashes(file) for file in config.vivado_project_constraints_files
     ]
 
+    # Get the lists of VHDL 2008 project files from the configuration
+    vhdl2008_file_list = common.get_vivado_project_files(config.vhdl2008_file_lists)
+
     # Validate that all files exist before proceeding
-    _validate_files(file_list)
+    _validate_files(file_list + vhdl2008_file_list)
 
     # Copy long path files to the gatheredfiles folder
     # Returns the file list with the files from old long path locations having
     # new locations in gatheredfiles
     file_list = _copy_long_path_files(file_list)
+    vhdl2008_file_list = _copy_long_path_files(vhdl2008_file_list)
 
     # Override default LV generated files
     if config.use_gen_lv_window_files:
         file_list = _override_lv_window_files(config, file_list)
 
-    # Check for duplicate file names and log them
-    _find_and_log_duplicates(file_list)
+    # Combine regular and VHDL 2008 files for duplicate checking and add_files
+    combined_file_list = file_list + vhdl2008_file_list
 
-    add_files = _get_tcl_add_files_text(file_list, os.path.join(current_dir, "TCL"))
+    # Check for duplicate file names and log them; collapse identical paths
+    combined_file_list = _find_and_log_duplicates(combined_file_list)
+
+    add_files = _get_tcl_add_files_text(combined_file_list, os.path.join(current_dir, "TCL"))
+    set_vhdl2008_files = _get_tcl_set_vhdl2008_files_text(
+        vhdl2008_file_list, os.path.join(current_dir, "TCL")
+    )
 
     # Get settings from VivadoProjectSettings section
     project_name = config.vivado_project_name
     top_entity = config.top_level_entity
     fpga_part = config.fpga_part
 
-    # Replace placeholders in the template Vivado project scripts
-    _replace_placeholders_in_file(
+    # Render Mako templates for Vivado project scripts
+    _render_project_template(
         new_proj_template_path,
         new_proj_path,
         add_files,
@@ -515,8 +621,9 @@ def _create_project(mode: ProjectMode, config, test):
         top_entity,
         fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
+        set_vhdl2008_files,
     )
-    _replace_placeholders_in_file(
+    _render_project_template(
         update_proj_template_path,
         update_proj_path,
         add_files,
@@ -524,6 +631,7 @@ def _create_project(mode: ProjectMode, config, test):
         top_entity,
         fpga_part,
         config.vivado_tcl_scripts_folder_relpath,
+        set_vhdl2008_files,
     )
 
     # Use the vivado_tools_path from the config instead of the XILINX environment variable
@@ -634,8 +742,10 @@ def _create_project_handler(config, overwrite=False, update=False):
                 f"The project file '{project_file_path}' does not exist. Run without the --update flag to create a new project."
             )
         else:
+            _check_project_file_not_locked(project_file_path)
             project_mode = ProjectMode.UPDATE
     elif overwrite and not update:
+        _check_project_file_not_locked(project_file_path)
         # Overwrite the project by creating a new one
         project_mode = ProjectMode.NEW
     else:

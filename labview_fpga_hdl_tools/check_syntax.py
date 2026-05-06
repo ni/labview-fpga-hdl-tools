@@ -11,35 +11,22 @@ import subprocess
 from . import common
 
 
-def _replace_placeholders_in_file(template_path, output_path, replacements):
-    """Read a template TCL file, replace placeholders, and write output TCL."""
-    with open(template_path, "r", encoding="utf-8") as tcl_file:
-        tcl_contents = tcl_file.read()
-
-    for placeholder, value in replacements.items():
-        tcl_contents = tcl_contents.replace(placeholder, value)
-
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as tcl_file:
-        tcl_file.write(tcl_contents)
-
-
 def _generate_check_syntax_tcl(config, output_path):
     """Generate the TCL script used for syntax checking."""
-    template_tcl_path = os.path.join(config.vivado_tcl_scripts_folder, "CheckSyntaxTemplate.tcl")
+    template_tcl_path = os.path.join(config.vivado_tcl_scripts_folder, "CheckSyntax.tcl.mako")
 
     pre_synth_tcl = ""
     if config.vivado_tcl_scripts_folder:
         pre_synth_tcl = os.path.join(config.vivado_tcl_scripts_folder, "PreSynthesize.tcl")
 
-    replacements = {
-        "PRE_SYNTH_TCL_PATH": common.fix_file_slashes(pre_synth_tcl),
-        "PROJECT_FILE_NAME": f"{config.vivado_project_name}.xpr",
-        "TOP_ENTITY_NAME": config.top_level_entity,
-        "FPGA_PART_NAME": config.fpga_part,
-    }
-
-    _replace_placeholders_in_file(template_tcl_path, output_path, replacements)
+    common.render_mako_template(
+        template_tcl_path,
+        output_path,
+        pre_synth_tcl_path=common.fix_file_slashes(pre_synth_tcl),
+        project_file_name=f"{config.vivado_project_name}.xpr",
+        top_entity_name=config.top_level_entity,
+        fpga_part_name=config.fpga_part,
+    )
 
 
 def _validate_ini(config, test):
@@ -68,11 +55,11 @@ def _validate_ini(config, test):
             invalid_paths.append(invalid_path)
 
         check_syntax_template_path = os.path.join(
-            config.vivado_tcl_scripts_folder, "CheckSyntaxTemplate.tcl"
+            config.vivado_tcl_scripts_folder, "CheckSyntax.tcl.mako"
         )
         invalid_path = common.validate_path(
             check_syntax_template_path,
-            "VivadoProjectSettings.VivadoTclScriptsFolder/CheckSyntaxTemplate.tcl",
+            "VivadoProjectSettings.VivadoTclScriptsFolder/CheckSyntax.tcl.mako",
             "file",
         )
         if invalid_path:

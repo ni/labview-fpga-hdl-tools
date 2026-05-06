@@ -2,7 +2,7 @@
 
 remove_files [get_files]
 
-ADD_FILES
+${add_files}
 
 # constraints.xdc is for use for both synthesis and implementation
 set_property used_in_synthesis true [get_files constraints.xdc]
