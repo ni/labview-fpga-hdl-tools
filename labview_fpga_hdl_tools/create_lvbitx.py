@@ -31,7 +31,7 @@ def _create_lv_bitfile(config=None):
 
     # Load configuration
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     # Check if LV path is set
     if config.lv_path is None:

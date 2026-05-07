@@ -5,11 +5,9 @@
 # SPDX-License-Identifier: MIT
 #
 
-import configparser
 import os
 import re
 import subprocess
-import sys
 import traceback
 import uuid
 from dataclasses import dataclass, field
@@ -173,8 +171,8 @@ class FileConfiguration:
         return os.path.dirname(self.vivado_project_path) or "."
 
     def set_vivado_tools_path(self, value):
-        """Set the Vivado tools path (directory or executable)."""
-        self.vivado_tools_path = value
+        """Set the Vivado tools path (resolved to absolute)."""
+        self.vivado_tools_path = resolve_path(value)
 
     def add_hdl_file_list(self, value):
         """Append an HDL file list path (resolved to absolute)."""
@@ -301,8 +299,8 @@ class FileConfiguration:
         self.lv_target_guid = value
 
     def set_lv_target_install_folder(self, value):
-        """Set the target plugin installation folder (not path-resolved)."""
-        self.lv_target_install_folder = value
+        """Set the target plugin installation folder (resolved to absolute)."""
+        self.lv_target_install_folder = resolve_path(value)
 
     def set_lv_target_menus_folder(self, value):
         """Set the target plugin menus folder (resolved to absolute)."""
@@ -412,265 +410,6 @@ def _parse_bool(value, default=False):
     if value is None:
         return default
     return value.lower() in ("true", "yes", "1")
-
-
-def _read_ini(ini_path):
-    """Read and parse an INI file, stripping comments.
-
-    Args:
-        ini_path (str): Path to the INI file.
-
-    Returns:
-        configparser.ConfigParser: Parsed configuration object.
-    """
-    if not os.path.exists(ini_path):
-        print(f"Error: Configuration file {ini_path} not found.")
-        sys.exit(1)
-
-    with open(ini_path, "r") as file:
-        lines = []
-        for line in file:
-            line = line.split("#", 1)[0].split(";", 1)[0]
-            lines.append(line)
-
-    config_string = "\n".join(lines)
-    config = configparser.ConfigParser()
-    config.read_string(config_string)
-    return config
-
-
-def _load_format_version(ini, config):
-    """Load [FormatVersion] from parsed INI into FileConfiguration."""
-    if not ini.has_section("FormatVersion"):
-        return
-    settings = ini["FormatVersion"]
-    config.format_version = settings.get("Version")
-
-
-def _load_tools_settings(ini, config):
-    """Load [Tools] from parsed INI into FileConfiguration."""
-    if not ini.has_section("Tools"):
-        return
-    settings = ini["Tools"]
-    config.lv_path = resolve_path(settings.get("LabVIEWPath"))
-    config.vivado_tools_path = settings.get("VivadoToolsPath")
-    config.vivado_tcl_scripts_folder = resolve_path(settings.get("VivadoTclScriptsFolder"))
-    config.vivado_tcl_scripts_folder_relpath = settings.get("VivadoTclScriptsFolder")
-    config.modelsim_tools_path = resolve_path(settings.get("ModelSimToolsPath"))
-    config.xilinx_sim_lib_path = resolve_path(settings.get("XilinxSimLibPath"))
-
-
-def _load_general_settings(ini, config):
-    """Load [GeneralSettings] from parsed INI into FileConfiguration."""
-    settings = ini["GeneralSettings"]
-    config.target_family = settings.get("TargetFamily")
-    config.base_target = settings.get("BaseTarget")
-    config.dependencies = resolve_path(settings.get("Dependencies"))
-
-
-def _load_vivado_project_settings(ini, config):
-    """Load [VivadoProjectSettings] from parsed INI into FileConfiguration."""
-    settings = ini["VivadoProjectSettings"]
-    config.top_level_entity = settings.get("TopLevelEntity")
-    config.fpga_part = settings.get("FPGAPart")
-    config.vivado_project_path = settings.get("VivadoProjectPath")
-
-    # Load file lists
-    hdl_file_lists = settings.get("VivadoProjectFilesLists")
-    if hdl_file_lists:
-        for file_list in hdl_file_lists.strip().split():
-            file_list = file_list.strip()
-            if file_list:
-                abs_file_list = resolve_path(file_list)
-                if abs_file_list is not None:
-                    config.hdl_file_lists.append(abs_file_list)
-
-    # Load VHDL 2008 file lists
-    vhdl2008_file_lists = settings.get("VivadoProjectVHDL2008FilesLists")
-    if vhdl2008_file_lists:
-        for file_list in vhdl2008_file_lists.strip().split():
-            file_list = file_list.strip()
-            if file_list:
-                abs_file_list = resolve_path(file_list)
-                if abs_file_list is not None:
-                    config.vhdl2008_file_lists.append(abs_file_list)
-
-    # Load constraints templates
-    constraints_templates = settings.get("ConstraintsTemplates")
-    if constraints_templates:
-        for template in constraints_templates.strip().split("\n"):
-            template = template.strip()
-            if template:
-                abs_template = resolve_path(template)
-                if abs_template is not None:
-                    config.constraints_templates.append(abs_template)
-
-    # Load project constraint files
-    constraint_files = settings.get("VivadoProjectConstraintsFiles")
-    if constraint_files:
-        for file in constraint_files.strip().split("\n"):
-            file = file.strip()
-            if file:
-                abs_file = resolve_path(file)
-                if abs_file is not None:
-                    config.vivado_project_constraints_files.append(abs_file)
-
-    config.custom_constraints_file = resolve_path(settings.get("CustomConstraintsFile"))
-    config.use_gen_lv_window_files = _parse_bool(settings.get("UseGeneratedLVWindowFiles"), False)
-    config.the_window_folder_input = resolve_path(settings.get("TheWindowFolder"))
-    config.code_generation_results_stub = resolve_path(settings.get("CodeGenerationResultsStub"))
-
-
-def _load_lv_window_netlist_settings(ini, config):
-    """Load [LVWindowNetlistSettings] from parsed INI into FileConfiguration."""
-    settings = ini["LVWindowNetlistSettings"]
-    config.vivado_project_export_xpr = resolve_path(settings.get("VivadoProjectExportXPR"))
-    config.the_window_folder_output = resolve_path(settings.get("TheWindowFolder"))
-
-
-def _load_lvfpga_target_settings(ini, config):
-    """Load [LVFPGATargetSettings] from parsed INI into FileConfiguration."""
-    settings = ini["LVFPGATargetSettings"]
-    config.custom_signals_csv = resolve_path(settings.get("LVTargetBoardIO"))
-    config.boardio_output = resolve_path(settings.get("BoardIOXML"))
-    config.clock_output = resolve_path(settings.get("ClockXML"))
-    config.window_vhdl_output_folder = resolve_path(settings.get("WindowVhdlOutputFolder"))
-    config.board_io_signal_assignments_example = resolve_path(
-        settings.get("BoardIOSignalAssignmentsExample")
-    )
-    config.lv_target_name = settings.get("LVTargetName")
-    config.lv_target_guid = settings.get("LVTargetGUID")
-    config.lv_target_plugin_folder = resolve_path(settings.get("LVTargetPluginFolder"))
-    config.lv_target_install_folder = settings.get("LVTargetInstallFolder")
-    config.include_target_io_ports = _parse_bool(settings.get("IncludeCLIPSocket"), True)
-    config.include_custom_io = _parse_bool(settings.get("IncludeLVTargetBoardIO"), True)
-
-    # Load Window VHDL templates
-    vhdl_template_files = settings.get("WindowVhdlTemplates")
-    if vhdl_template_files:
-        for template_file in vhdl_template_files.strip().split("\n"):
-            template_file = template_file.strip()
-            if template_file:
-                abs_template_file = resolve_path(template_file)
-                if abs_template_file is not None:
-                    config.window_vhdl_templates.append(abs_template_file)
-
-    # Load XML templates
-    xml_template_files = settings.get("TargetXMLTemplates")
-    if xml_template_files:
-        for template_file in xml_template_files.strip().split("\n"):
-            template_file = template_file.strip()
-            if template_file:
-                abs_template_file = resolve_path(template_file)
-                if abs_template_file is not None:
-                    config.target_xml_templates.append(abs_template_file)
-
-    # Load LV target constraints files
-    lv_constraints = settings.get("LVTargetConstraintsFiles")
-    if lv_constraints:
-        for file in lv_constraints.strip().split("\n"):
-            file = file.strip()
-            if file:
-                abs_file = resolve_path(file)
-                if abs_file is not None:
-                    config.lv_target_constraints_files.append(abs_file)
-
-    config.lv_target_menus_folder = resolve_path(settings.get("LVTargetMenusFolder"))
-    config.lv_target_info_ini = resolve_path(settings.get("LVTargetInfoIni"))
-    config.lv_target_exclude_files = resolve_path(settings.get("LVTargetExcludeFiles"))
-    max_hdl_reg_offset_str = settings.get("MaxHdlRegOffset")
-    config.max_hdl_reg_offset = (
-        int(max_hdl_reg_offset_str.strip(), 0) if max_hdl_reg_offset_str else None
-    )
-
-
-def _load_modelsim_project_settings(ini, config):
-    """Load [ModelSimProjectSettings] from parsed INI into FileConfiguration."""
-    if not ini.has_section("ModelSimProjectSettings"):
-        return
-
-    settings = ini["ModelSimProjectSettings"]
-    config.modelsim_project_path = settings.get("ModelSimProjectPath")
-
-    modelsim_file_lists = settings.get("ModelSimFilesLists")
-    if modelsim_file_lists:
-        for file_list in modelsim_file_lists.strip().split():
-            file_list = file_list.strip()
-            if file_list:
-                abs_file_list = resolve_path(file_list)
-                if abs_file_list is not None:
-                    config.modelsim_file_lists.append(abs_file_list)
-
-
-def _load_clip_migration_settings(ini, config):
-    """Load [CLIPMigrationSettings] from parsed INI into FileConfiguration."""
-    settings = ini["CLIPMigrationSettings"]
-    config.input_xml_path = resolve_path(settings["CLIPXML"])
-    config.output_csv_path = resolve_path(settings["LVTargetBoardIO"])
-    config.clip_hdl_path = resolve_path(settings["CLIPHDLTop"])
-    config.clip_inst_example_path = resolve_path(settings["CLIPInstantiationExample"])
-    config.clip_instance_path = settings[
-        "CLIPInstancePath"
-    ]  # This is a HDL hierarchy path, not a file path
-    config.clip_to_window_signal_definitions = resolve_path(
-        settings.get("CLIPtoWindowSignalDefinitions")
-    )
-    config.updated_xdc_folder = resolve_path(settings["CLIPXDCOutFolder"])
-
-    # Handle multiple XDC files - split by lines and strip whitespace
-    clip_xdc = settings["CLIPXDCIn"]
-    for xdc_file in clip_xdc.strip().split("\n"):
-        xdc_file = xdc_file.strip()
-        if xdc_file:
-            abs_xdc_path = resolve_path(xdc_file)
-            if abs_xdc_path is not None:
-                config.clip_xdc_paths.append(abs_xdc_path)
-
-
-def load_config(ini_path=None, config=None):
-    """Load configuration from INI file.
-
-    Reads the INI file and populates a FileConfiguration object.
-    Use set_* methods in per-command hooks to override individual settings.
-
-    Args:
-        ini_path (str | None): Path to projectsettings.ini file.
-            Defaults to projectsettings.ini in cwd.
-        config (FileConfiguration | None): Configuration object to populate.
-            Created if None.
-
-    Returns:
-        FileConfiguration: Populated configuration object.
-    """
-    if ini_path is None:
-        ini_path = os.path.join(os.getcwd(), "projectsettings.ini")
-    else:
-        print(f"Using config file: {ini_path}")
-
-    if config is None:
-        config = FileConfiguration()
-
-    ini = _read_ini(ini_path)
-
-    # Resolve relative paths in the INI file relative to the INI file's directory,
-    # not the current working directory.  This is important when commands run from
-    # a subdirectory (e.g. create-lvbitx runs from impl_1).
-    ini_dir = os.path.dirname(os.path.abspath(ini_path))
-    original_dir = os.getcwd()
-    os.chdir(ini_dir)
-    try:
-        _load_format_version(ini, config)
-        _load_tools_settings(ini, config)
-        _load_general_settings(ini, config)
-        _load_vivado_project_settings(ini, config)
-        _load_lv_window_netlist_settings(ini, config)
-        _load_lvfpga_target_settings(ini, config)
-        _load_modelsim_project_settings(ini, config)
-        _load_clip_migration_settings(ini, config)
-    finally:
-        os.chdir(original_dir)
-
-    return config
 
 
 def handle_long_path(path):
@@ -1071,7 +810,7 @@ def get_missing_settings_error(missing_settings):
     """Generate error message for missing settings."""
     error_msg = ""
     if missing_settings:
-        error_msg += "The following required settings are missing from projectsettings.ini:\n"
+        error_msg += "The following required settings are missing from nihdlsettings.py:\n"
         for setting in missing_settings:
             error_msg += f"  - {setting}\n"
     return error_msg

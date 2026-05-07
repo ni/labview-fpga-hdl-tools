@@ -6,7 +6,7 @@ Read the architecture/workflow background in [Theory of Operation](docs/Theory%2
 
 ### Prerequisites
 
-From a target folder that contains `projectsettings.ini` and `nihdlcommandconfig.py` (for example, `c:/dev/github8/flexrio-custom/targets/pxie-7986custom`), install dependencies:
+From a target folder that contains `nihdlsettings.py` (for example, `c:/dev/github8/flexrio-custom/targets/pxie-7986custom`), install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -14,12 +14,11 @@ pip install -r requirements.txt
 
 ### Required Files
 
-Every target folder must contain two files:
+Every target folder must contain:
 
-1. **`projectsettings.ini`** — declares all paths, tool locations, and project settings.
-2. **`nihdlcommandconfig.py`** — loads the INI and defines hook functions that run before/after each command.
+- **`nihdlsettings.py`** — configures all paths, tool locations, and project settings via setter calls, and defines hook functions that run before/after each command.
 
-Both files are required. The CLI will exit with an error if `nihdlcommandconfig.py` is not found.
+The CLI will exit with an error if `nihdlsettings.py` is not found.
 
 All nihdl commands are run from the target folder unless noted otherwise.
 
@@ -27,11 +26,14 @@ All nihdl commands are run from the target folder unless noted otherwise.
 nihdl --help
 ```
 
-## nihdlcommandconfig.py
+## nihdlsettings.py
 
-Every target folder requires a `nihdlcommandconfig.py` file. This file is responsible for loading `projectsettings.ini` into the shared configuration and can define hook functions to customize behavior before or after any command.
+Every target folder requires a `nihdlsettings.py` file. This file configures all settings via setter calls in `pre_all()` and can define hook functions to customize behavior before or after any command.
 
-The CLI looks for `nihdlcommandconfig.py` in the current working directory by default. Use `--config path/to/nihdlcommandconfig.py` to point to a different location.
+The CLI looks for `nihdlsettings.py` in the current working directory by default. Use `--config path/to/nihdlsettings.py` to point to a different location.
+
+Relative paths passed to setters are automatically resolved from the `nihdlsettings.py` file's directory.
+Always use forward slashes (`/`) in paths — they work on both Windows and Linux and avoid Python backslash escape issues.
 
 ### Hook Execution Order
 
@@ -41,13 +43,15 @@ For every command invocation, hooks run in this order:
 pre_all(context)  →  pre_{command}(context)  →  command  →  post_{command}(context)  →  post_all(context)
 ```
 
+Pre hooks (`pre_all`, `pre_{command}`) run with the working directory set to the `nihdlsettings.py` file's directory, so relative paths in setter calls resolve correctly. The command itself and post hooks run from the original working directory.
+
 ### Context Object
 
 Every hook receives a `CommandContext` with these attributes:
 
 | Attribute | Description |
 | --- | --- |
-| `context.config` | `FileConfiguration` object — set it in `pre_all` via `load_config()`. |
+| `context.config` | `FileConfiguration` object — configure it in `pre_all` via setters. |
 | `context.command_name` | Underscore-separated command name (for example, `"create_project"`). |
 | `context.command_kwargs` | Dict of CLI arguments forwarded to the command function. |
 | `context.result` | Return value of the command (available in post hooks only). |
@@ -55,27 +59,39 @@ Every hook receives a `CommandContext` with these attributes:
 ### Minimal Example
 
 ```python
-import os
-from labview_fpga_hdl_tools.common import load_config
-
 def pre_all(context):
-    """Called before every command. Load projectsettings.ini here."""
-    ini_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "projectsettings.ini")
-    load_config(ini_path=ini_path, config=context.config)
+    """Called before every command. Configure all settings here."""
+    config = context.config
+
+    # Tools
+    config.set_lv_path("C:/Program Files/National Instruments/LabVIEW 2024")
+    config.set_vivado_tools_path("C:/NIFPGA/programs/Vivado2021_1")
+    config.set_vivado_tcl_scripts_folder("../common/TCL")
+
+    # General Settings
+    config.set_target_family("FlexRIO")
+    config.set_base_target("PXIe-7903")
+    config.set_dependencies("../../dependencies.toml")
+
+    # Vivado Project Settings
+    config.set_top_level_entity("SasquatchTopTemplate")
+    config.set_fpga_part("xcvu11p-flgb2104-2-e")
+    config.set_vivado_project_path("VivadoProject/MyProj.xpr")
+
+    config.add_hdl_file_list("../../deps/flexrio/targets/pxie-7903/vivadoprojectdeps.txt")
+    config.add_hdl_file_list("vivadoprojectsources.txt")
+    # ... more settings ...
 ```
 
-### Overriding Settings
+### Per-Command Overrides
 
-Use setters on `context.config` in any hook to override values loaded from the INI:
+Use per-command hooks to override settings for specific commands:
 
 ```python
 def pre_all(context):
-    ini_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "projectsettings.ini")
-    load_config(ini_path=ini_path, config=context.config)
-
-    # Override tool paths for this target
-    context.config.set_vivado_tools_path("C:/Xilinx/Vivado/2023.1")
-    context.config.set_modelsim_tools_path("C:/intelFPGA/20.1/modelsim_ase")
+    config = context.config
+    config.set_fpga_part("xcvu11p-flgb2104-2-e")
+    # ... other settings ...
 
 def pre_create_project(context):
     # Override just for create-project
@@ -87,82 +103,90 @@ def pre_create_project(context):
 
 **General / Behavior**
 
-| Setter | INI Setting |
+| Setter | Description |
 | --- | --- |
-| `set_target_family(value)` | GeneralSettings.TargetFamily |
-| `set_base_target(value)` | GeneralSettings.BaseTarget |
-| `set_dependencies(value)` | GeneralSettings.Dependencies |
-| `set_skip_vivado(flag)` | *No INI equivalent* — skip Vivado execution (validate only). |
-| `set_skip_modelsim(flag)` | *No INI equivalent* — skip ModelSim execution (validate only). |
+| `set_target_family(value)` | Device family (for example, "FlexRIO"). |
+| `set_base_target(value)` | Base target model (for example, "PXIe-7903"). |
+| `set_dependencies(value)` | Path to dependencies.toml file. |
+| `set_skip_vivado(flag)` | Skip Vivado execution (validate only). |
+| `set_skip_modelsim(flag)` | Skip ModelSim execution (validate only). |
 
 **Tools**
 
-| Setter | INI Setting |
+| Setter | Description |
 | --- | --- |
-| `set_lv_path(value)` | Tools.LabVIEWPath |
-| `set_vivado_tools_path(value)` | Tools.VivadoToolsPath |
-| `set_vivado_tcl_scripts_folder(value)` | Tools.VivadoTclScriptsFolder |
-| `set_modelsim_tools_path(value)` | Tools.ModelSimToolsPath |
-| `set_xilinx_sim_lib_path(value)` | Tools.XilinxSimLibPath |
+| `set_lv_path(value)` | LabVIEW installation root path. |
+| `set_vivado_tools_path(value)` | Vivado installation root containing bin/vivado(.bat). |
+| `set_vivado_tcl_scripts_folder(value)` | Folder with Vivado TCL Mako templates/scripts. |
+| `set_modelsim_tools_path(value)` | ModelSim installation root directory. |
+| `set_xilinx_sim_lib_path(value)` | Pre-compiled Xilinx simulation libraries path. |
 
 **Vivado Project**
 
-| Setter | INI Setting |
+| Setter | Description |
 | --- | --- |
-| `set_top_level_entity(value)` | VivadoProjectSettings.TopLevelEntity |
-| `set_fpga_part(value)` | VivadoProjectSettings.FPGAPart |
-| `set_vivado_project_path(value)` | VivadoProjectSettings.VivadoProjectPath |
-| `set_custom_constraints_file(value)` | VivadoProjectSettings.CustomConstraintsFile |
-| `set_use_gen_lv_window_files(flag)` | VivadoProjectSettings.UseGeneratedLVWindowFiles |
-| `set_the_window_folder_input(value)` | VivadoProjectSettings.TheWindowFolder |
-| `set_code_generation_results_stub(value)` | VivadoProjectSettings.CodeGenerationResultsStub |
-| `add_hdl_file_list(path)` | Appends to VivadoProjectSettings.VivadoProjectFilesLists |
+| `set_top_level_entity(value)` | HDL top-level entity/module name. |
+| `set_fpga_part(value)` | FPGA part string (for example, "xcku040-ffva1156-2-e"). |
+| `set_vivado_project_path(value)` | Relative path to Vivado .xpr file. |
+| `set_custom_constraints_file(value)` | Optional custom XDC file path. |
+| `set_use_gen_lv_window_files(flag)` | Use extracted/generated TheWindow content. |
+| `set_the_window_folder_input(value)` | TheWindow input folder path. |
+| `set_code_generation_results_stub(value)` | Stub CodeGenerationResults file path. |
+| `add_hdl_file_list(path)` | Append an HDL file list for Vivado project sources. |
+| `add_vhdl2008_file_list(path)` | Append a VHDL-2008 file list (compiled with -2008 flag). |
+| `add_constraints_template(path)` | Append a constraints template path. |
+| `add_vivado_project_constraints_file(path)` | Append a Vivado project constraints file. |
 
 **ModelSim Project**
 
-| Setter | INI Setting |
+| Setter | Description |
 | --- | --- |
-| `set_modelsim_project_path(value)` | ModelSimProjectSettings.ModelSimProjectPath |
+| `set_modelsim_project_path(value)` | Relative path to ModelSim .mpf file. |
+| `add_modelsim_file_list(path)` | Append a ModelSim file list (overrides Vivado lists). |
 
 **LV Window Netlist**
 
-| Setter | INI Setting |
+| Setter | Description |
 | --- | --- |
-| `set_vivado_project_export_xpr(value)` | LVWindowNetlistSettings.VivadoProjectExportXPR |
-| `set_the_window_folder_output(value)` | LVWindowNetlistSettings.TheWindowFolder |
+| `set_vivado_project_export_xpr(value)` | Path to LabVIEW Vivado Project Export .xpr. |
+| `set_the_window_folder_output(value)` | Output folder for extracted TheWindow files. |
 
 **LV FPGA Target**
 
-| Setter | INI Setting |
+| Setter | Description |
 | --- | --- |
-| `set_custom_signals_csv(value)` | LVFPGATargetSettings.LVTargetBoardIO |
-| `set_boardio_output(value)` | LVFPGATargetSettings.BoardIOXML |
-| `set_clock_output(value)` | LVFPGATargetSettings.ClockXML |
-| `set_window_vhdl_output_folder(value)` | LVFPGATargetSettings.WindowVhdlOutputFolder |
-| `set_board_io_signal_assignments_example(value)` | LVFPGATargetSettings.BoardIOSignalAssignmentsExample |
-| `set_include_target_io_ports(flag)` | LVFPGATargetSettings.IncludeCLIPSocket |
-| `set_include_custom_io(flag)` | LVFPGATargetSettings.IncludeLVTargetBoardIO |
-| `set_lv_target_plugin_folder(value)` | LVFPGATargetSettings.LVTargetPluginFolder |
-| `set_lv_target_name(value)` | LVFPGATargetSettings.LVTargetName |
-| `set_lv_target_guid(value)` | LVFPGATargetSettings.LVTargetGUID |
-| `set_lv_target_install_folder(value)` | LVFPGATargetSettings.LVTargetInstallFolder |
-| `set_lv_target_menus_folder(value)` | LVFPGATargetSettings.LVTargetMenusFolder |
-| `set_lv_target_info_ini(value)` | LVFPGATargetSettings.LVTargetInfoIni |
-| `set_lv_target_exclude_files(value)` | LVFPGATargetSettings.LVTargetExcludeFiles |
-| `set_num_hdl_registers(value)` | *Derived* — number of HDL registers. |
-| `set_max_hdl_reg_offset(value)` | LVFPGATargetSettings.MaxHdlRegOffset |
+| `set_custom_signals_csv(value)` | Board-I/O CSV definition path. |
+| `set_boardio_output(value)` | Output boardio.xml path. |
+| `set_clock_output(value)` | Output clock XML path. |
+| `set_window_vhdl_output_folder(value)` | Output folder for generated Window HDL files. |
+| `set_board_io_signal_assignments_example(value)` | Output example signal assignments file. |
+| `set_include_target_io_ports(flag)` | Include CLIP socket interfaces in generated artifacts. |
+| `set_include_custom_io(flag)` | Include custom board I/O interfaces. |
+| `set_lv_target_plugin_folder(value)` | Output folder for generated target plugin. |
+| `set_lv_target_name(value)` | Display name for custom target. |
+| `set_lv_target_guid(value)` | GUID for custom LabVIEW FPGA target plugin. |
+| `set_lv_target_install_folder(value)` | Destination path for install-target. |
+| `set_lv_target_menus_folder(value)` | Source folder for target plugin menu assets. |
+| `set_lv_target_info_ini(value)` | Path to TargetInfo.ini source. |
+| `set_lv_target_exclude_files(value)` | Exclusion list for plugin content copying. |
+| `set_num_hdl_registers(value)` | Number of HDL registers. |
+| `set_max_hdl_reg_offset(value)` | Maximum HDL register byte offset. |
+| `add_window_vhdl_template(path)` | Append a Window VHDL Mako template. |
+| `add_target_xml_template(path)` | Append a target resource XML Mako template. |
+| `add_lv_target_constraints_file(path)` | Append a LV target constraints file. |
 
 **CLIP Migration**
 
-| Setter | INI Setting |
+| Setter | Description |
 | --- | --- |
-| `set_input_xml_path(value)` | CLIPMigrationSettings.CLIPXML |
-| `set_output_csv_path(value)` | CLIPMigrationSettings.LVTargetBoardIO |
-| `set_clip_hdl_path(value)` | CLIPMigrationSettings.CLIPHDLTop |
-| `set_clip_inst_example_path(value)` | CLIPMigrationSettings.CLIPInstantiationExample |
-| `set_clip_instance_path(value)` | CLIPMigrationSettings.CLIPInstancePath |
-| `set_updated_xdc_folder(value)` | CLIPMigrationSettings.CLIPXDCOutFolder |
-| `set_clip_to_window_signal_definitions(value)` | CLIPMigrationSettings.CLIPtoWindowSignalDefinitions |
+| `set_input_xml_path(value)` | Input CLIP XML path. |
+| `set_output_csv_path(value)` | Output CSV path for CLIP signals. |
+| `set_clip_hdl_path(value)` | Input CLIP top-level HDL path. |
+| `set_clip_inst_example_path(value)` | Output HDL instantiation example file. |
+| `set_clip_instance_path(value)` | HDL hierarchy instance path for constraint rewriting. |
+| `set_updated_xdc_folder(value)` | Output folder for migrated CLIP XDC files. |
+| `set_clip_to_window_signal_definitions(value)` | Output signal-definition helper file. |
+| `add_clip_xdc_path(path)` | Append a CLIP XDC constraint file. |
 
 ### Per-Command Hooks
 
@@ -180,7 +204,7 @@ def post_compile_project(context):
 
 ### Scaffold
 
-A default template is provided at `labview_fpga_hdl_tools/nihdlcommandconfig_default.py`. Copy it to your target folder and customize as needed.
+A default template is provided at `labview_fpga_hdl_tools/nihdlsettings_default.py`. Copy it to your target folder as `nihdlsettings.py` and customize as needed.
 
 ## Command Reference
 
@@ -191,10 +215,11 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | migrate-clip | Migrate CLIP assets into top-level HDL workflow artifacts. | --config |
 | install-target | Install generated LabVIEW FPGA target plugin files. | --config |
 | get-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
+| get-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
 | gen-target | Generate full LabVIEW FPGA target support outputs (XML, VHDL stubs, plugin content). | --config |
 | gen-hdl | Generate Window VHDL outputs only. | --config |
 | gen-xdc | Generate XDC files from constraint templates/macros. | --config |
-| create-project | Create or update the Vivado project from INI + file lists. | --overwrite (-o), --update (-u), --config |
+| create-project | Create or update the Vivado project from settings + file lists. | --overwrite (-o), --update (-u), --config |
 | check-syntax | Run Vivado RTL elaboration syntax/hierarchy check. | --config |
 | compile-project | Run Vivado compile flow to bitstream generation. | --config |
 | launch-vivado | Launch the configured Vivado project. | --config |
@@ -207,135 +232,38 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 
 ### Common Command Notes
 
-- All commands require `nihdlcommandconfig.py` in the current directory (or specified via `--config`).
-- Use `set_skip_vivado(True)` / `set_skip_modelsim(True)` in `nihdlcommandconfig.py` to validate settings without launching external tools.
-- install-deps and gen-guid do not read projectsettings.ini (but still require nihdlcommandconfig.py).
+- All commands require `nihdlsettings.py` in the current directory (or specified via `--config`).
+- Use `set_skip_vivado(True)` / `set_skip_modelsim(True)` in `nihdlsettings.py` to validate settings without launching external tools.
+- install-deps and gen-guid do not need most settings (but still require `nihdlsettings.py`).
 - install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.
 - create-lvbitx is intended to run from VivadoProject/<project>.runs/impl_1 (it warns if run elsewhere).
 - create-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
 - launch-modelsim defaults to GUI mode; use --batch for headless simulation.
 
-## Per-Command INI Requirements
+## Per-Command Setting Requirements
 
-| Command | Required INI keys (normal run) | Notes |
+| Command | Required Settings (normal run) | Notes |
 | --- | --- | --- |
-| migrate-clip | CLIPMigrationSettings.CLIPXML, CLIPMigrationSettings.LVTargetBoardIO, CLIPMigrationSettings.CLIPHDLTop, CLIPMigrationSettings.CLIPInstantiationExample, CLIPMigrationSettings.CLIPtoWindowSignalDefinitions | If CLIPMigrationSettings.CLIPXDCIn is provided, CLIPMigrationSettings.CLIPInstancePath and CLIPMigrationSettings.CLIPXDCOutFolder are also required. |
-| install-target | LVFPGATargetSettings.LVTargetInstallFolder, LVFPGATargetSettings.LVTargetName, LVFPGATargetSettings.LVTargetPluginFolder | LVTargetInstallFolder and LVTargetPluginFolder must exist. |
-| get-window | LVWindowNetlistSettings.VivadoProjectExportXPR, LVWindowNetlistSettings.TheWindowFolder, Tools.VivadoToolsPath | When skip_vivado is set, Vivado is not launched; path-length enforcement for VivadoProjectExportXPR parent folder is skipped. |
-| gen-target | GeneralSettings.TargetFamily, GeneralSettings.BaseTarget, LVFPGATargetSettings.WindowVhdlTemplates, LVFPGATargetSettings.WindowVhdlOutputFolder, LVFPGATargetSettings.LVTargetPluginFolder, LVFPGATargetSettings.LVTargetName, LVFPGATargetSettings.LVTargetGUID, LVFPGATargetSettings.BoardIOXML, LVFPGATargetSettings.ClockXML, LVFPGATargetSettings.BoardIOSignalAssignmentsExample, LVFPGATargetSettings.TargetXMLTemplates, VivadoProjectSettings.VivadoProjectFilesLists | LVFPGATargetSettings.LVTargetBoardIO is required when IncludeLVTargetBoardIO=True. |
-| gen-hdl | LVFPGATargetSettings.WindowVhdlTemplates, LVFPGATargetSettings.WindowVhdlOutputFolder | LVFPGATargetSettings.LVTargetBoardIO is required when IncludeLVTargetBoardIO=True. |
-| gen-xdc | None enforced by a dedicated validator | For useful output, set VivadoProjectSettings.ConstraintsTemplates. VivadoProjectSettings.TheWindowFolder is used when extracting LV constraints/macros; VivadoProjectSettings.CustomConstraintsFile is optional. |
-| create-project | VivadoProjectSettings.VivadoProjectPath, VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.FPGAPart, VivadoProjectSettings.VivadoProjectFilesLists | Non-skip adds Tools.VivadoToolsPath. If UseGeneratedLVWindowFiles=True, VivadoProjectSettings.TheWindowFolder is required. Tools.VivadoTclScriptsFolder and template TCL files are also required at runtime. |
-| check-syntax | VivadoProjectSettings.VivadoProjectPath, VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.FPGAPart, Tools.VivadoTclScriptsFolder | Requires CheckSyntax.tcl.mako in VivadoTclScriptsFolder. Non-skip adds Tools.VivadoToolsPath and existing project .xpr file. |
-| compile-project | VivadoProjectSettings.VivadoProjectPath, Tools.VivadoTclScriptsFolder | Requires CompileProject.tcl.mako in VivadoTclScriptsFolder. Non-skip adds Tools.VivadoToolsPath and existing project .xpr file. |
-| launch-vivado | Tools.VivadoToolsPath, VivadoProjectSettings.VivadoProjectPath | Also requires existing project .xpr file. |
-| create-modelsim | VivadoProjectSettings.TopLevelEntity, VivadoProjectSettings.VivadoProjectFilesLists, Tools.ModelSimToolsPath | Uses ModelSimProjectSettings.ModelSimFilesLists if set, otherwise VivadoProjectFilesLists. Tools.XilinxSimLibPath is optional but recommended for Xilinx primitive support. |
-| launch-modelsim | VivadoProjectSettings.TopLevelEntity, Tools.ModelSimToolsPath | Requires existing ModelSim project directory (run create-modelsim first). |
-| create-lvbitx | Tools.LabVIEWPath | Uses VivadoProjectSettings.TopLevelEntity to derive input/output filenames. If UseGeneratedLVWindowFiles=True, VivadoProjectSettings.TheWindowFolder is used; otherwise VivadoProjectSettings.CodeGenerationResultsStub is used. |
-| install-deps | None | Command uses Dependencies from [GeneralSettings] and does not read other INI sections. A pre-release specifier such as ~=26.2.0.dev0 automatically enables pre-release matching for that dependency; --pre enables it globally. |
-| gen-guid | None | Command does not read projectsettings.ini. |
-
-## projectsettings.ini Reference
-
-Configuration is loaded by `load_config()` with these rules:
-
-- Default INI path: `./projectsettings.ini` (relative to the `nihdlcommandconfig.py` location).
-- Inline comments are stripped after `#` and `;` before parsing.
-- Relative paths are resolved from the INI file's directory.
-
-### [FormatVersion]
-
-| Setting | Description |
-| --- | --- |
-| Version | INI format version string (for example, 2.0). Used for future backward compatibility when setting names or behaviors change. |
-
-### [Tools]
-
-| Setting | Description |
-| --- | --- |
-| LabVIEWPath | Path to LabVIEW installation root. |
-| VivadoToolsPath | Vivado installation root containing bin/vivado(.bat). |
-| VivadoTclScriptsFolder | Folder containing Vivado TCL Mako templates/scripts (for example, CreateNewProject.tcl.mako, CheckSyntax.tcl.mako, CompileProject.tcl.mako). |
-| ModelSimToolsPath | Path to ModelSim installation root directory (for example, C:/modeltech_pe_2020.4). |
-| XilinxSimLibPath | Path to pre-compiled Xilinx simulation libraries for ModelSim (for example, C:/dev/libraries/vivado/2021.1/modelsim_PE_2020). Optional but recommended. |
-
-### [GeneralSettings]
-
-| Setting | Description |
-| --- | --- |
-| TargetFamily | Device family name (for example, FlexRIO). |
-| BaseTarget | Base target model (for example, PXIe-7903). |
-| Dependencies | Path to dependencies.toml file used by install-deps. |
-
-### [VivadoProjectSettings]
-
-| Setting | Description |
-| --- | --- |
-| TopLevelEntity | HDL top-level entity/module name. |
-| FPGAPart | FPGA part string used by Vivado (for example, xcku15p-ffve1517-2-e). |
-| VivadoProjectPath | Relative path to the Vivado project file (for example, VivadoProject/MyProj.xpr). The directory portion is used for project creation and chdir; the stem is used as the project name. |
-| VivadoProjectFilesLists | File-list text files used to assemble project sources (newline-separated). |
-| VivadoProjectVHDL2008FilesLists | File-list text files containing VHDL-2008 source files (newline-separated). These files are compiled with -2008 flag in both Vivado and ModelSim. |
-| ConstraintsTemplates | XDC template files consumed by gen-xdc/create-project. |
-| CustomConstraintsFile | Optional custom XDC content inserted into templates. |
-| VivadoProjectConstraintsFiles | Final XDC files to add to the Vivado project. |
-| UseGeneratedLVWindowFiles | True/False: use extracted/generated TheWindow content instead of stubs. |
-| TheWindowFolder | Folder containing TheWindow files used by project generation/checks. |
-| CodeGenerationResultsStub | Stub CodeGenerationResults file used when UseGeneratedLVWindowFiles is False. |
-
-### [ModelSimProjectSettings]
-
-| Setting | Description |
-| --- | --- |
-| ModelSimProjectPath | Relative path to the ModelSim project file (for example, ModelSimProject/MyProj.mpf). The directory portion is used for project creation and chdir. |
-| ModelSimFilesLists | Optional override file-list text files for ModelSim compilation. If not set, VivadoProjectFilesLists is reused. |
-
-### [LVFPGATargetSettings]
-
-| Setting | Description |
-| --- | --- |
-| LVTargetBoardIO | Path to board-I/O CSV definition. |
-| IncludeCLIPSocket | True/False: include CLIP socket interfaces in generated target artifacts. |
-| IncludeLVTargetBoardIO | True/False: include custom board I/O interfaces. |
-| LVTargetName | Display name for generated custom target/plugin folder naming. |
-| LVTargetGUID | GUID for custom LabVIEW FPGA target plugin identity. |
-| LVTargetInstallFolder | Destination path used by install-target. |
-| LVTargetConstraintsFiles | Constraint files copied into generated target content. |
-| LVTargetMenusFolder | Source folder for target plugin menu assets. |
-| LVTargetInfoIni | Path to TargetInfo.ini source used in plugin output. |
-| LVTargetExcludeFiles | Exclusion list used while copying plugin content. |
-| MaxHdlRegOffset | Maximum HDL register byte offset (parsed as integer, supports 0x... format). |
-| WindowVhdlTemplates | Mako templates for Window-related generated HDL files. |
-| TargetXMLTemplates | Mako templates for target resource XML generation. |
-| WindowVhdlOutputFolder | Output folder for generated Window HDL files. |
-| BoardIOSignalAssignmentsExample | Output file for generated board-I/O signal assignment example. |
-| LVTargetPluginFolder | Output folder for generated target plugin package. |
-| BoardIOXML | Output boardio.xml path. |
-| ClockXML | Output clock XML path. |
-
-### [CLIPMigrationSettings]
-
-| Setting | Description |
-| --- | --- |
-| CLIPXML | Input CLIP XML path. |
-| CLIPHDLTop | Input CLIP top-level HDL path. |
-| CLIPXDCIn | One or more input CLIP XDC files. |
-| CLIPInstancePath | HDL hierarchy instance path used to rewrite CLIP constraints. |
-| LVTargetBoardIO | Output CSV path generated from CLIP LabVIEW interface definitions. |
-| CLIPInstantiationExample | Output HDL instantiation example file. |
-| CLIPtoWindowSignalDefinitions | Output signal-definition helper file. |
-| CLIPXDCOutFolder | Output folder for migrated CLIP XDC files. |
-
-### [LVWindowNetlistSettings]
-
-| Setting | Description |
-| --- | --- |
-| VivadoProjectExportXPR | Path to LabVIEW Vivado Project Export .xpr input. |
-| TheWindowFolder | Output folder for extracted TheWindow files. |
+| migrate-clip | `input_xml_path`, `output_csv_path`, `clip_hdl_path`, `clip_inst_example_path`, `clip_to_window_signal_definitions` | If `clip_xdc_paths` is set, `clip_instance_path` and `updated_xdc_folder` are also required. |
+| install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_folder` | Install folder and plugin folder must exist. |
+| get-window | `vivado_project_export_xpr`, `the_window_folder_output`, `vivado_tools_path` | When skip_vivado is set, Vivado is not launched. |
+| gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `board_io_signal_assignments_example`, `target_xml_templates`, `hdl_file_lists` | `custom_signals_csv` required when include_custom_io=True. |
+| gen-hdl | `window_vhdl_templates`, `window_vhdl_output_folder` | `custom_signals_csv` required when include_custom_io=True. |
+| gen-xdc | None enforced by a dedicated validator | For useful output, set `constraints_templates`. |
+| create-project | `vivado_project_path`, `top_level_entity`, `fpga_part`, `hdl_file_lists` | Non-skip adds `vivado_tools_path`. If use_gen_lv_window_files=True, `the_window_folder_input` is required. |
+| check-syntax | `vivado_project_path`, `top_level_entity`, `fpga_part`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
+| compile-project | `vivado_project_path`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
+| launch-vivado | `vivado_tools_path`, `vivado_project_path` | Also requires existing project .xpr file. |
+| create-modelsim | `top_level_entity`, `hdl_file_lists`, `modelsim_tools_path` | Uses `modelsim_file_lists` if set, otherwise `hdl_file_lists`. |
+| launch-modelsim | `top_level_entity`, `modelsim_tools_path` | Requires existing ModelSim project directory (run create-modelsim first). |
+| create-lvbitx | `lv_path` | Uses `top_level_entity` to derive filenames. |
+| install-deps | `dependencies` | Does not use other settings. |
+| gen-guid | None | Does not use any settings. |
 
 ## Example Usage
 
 ```bash
+# Create or refresh Vivado project
 # Create or refresh Vivado project
 nihdl create-project --overwrite
 
@@ -358,12 +286,12 @@ nihdl launch-modelsim --batch
 nihdl install-deps
 ```
 
-To validate settings without launching external tools, add this to your `nihdlcommandconfig.py`:
+To validate settings without launching external tools, add this to your `nihdlsettings.py`:
 
 ```python
 def pre_all(context):
-    ini_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "projectsettings.ini")
-    load_config(ini_path=ini_path, config=context.config)
-    context.config.set_skip_vivado(True)
-    context.config.set_skip_modelsim(True)
+    config = context.config
+    # ... configure settings ...
+    config.set_skip_vivado(True)
+    config.set_skip_modelsim(True)
 ```

@@ -123,7 +123,7 @@ def install_lv_target_support(config=None):
     """
     # Load configuration
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     # Validate that all required settings are present
     try:

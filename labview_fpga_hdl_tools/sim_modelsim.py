@@ -50,7 +50,7 @@ def sim_modelsim(do_file=None, config=None):
         int: 0 on success, non-zero on failure.
     """
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     try:
         _validate_ini(config)

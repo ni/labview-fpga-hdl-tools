@@ -87,7 +87,7 @@ def _run_compile_project(config, generated_tcl_path):
     if not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your --vivado argument or VivadoToolsPath setting in projectsettings.ini"
+            f"Please check your --vivado argument or VivadoToolsPath setting in nihdlsettings.py"
         )
 
     current_dir = os.getcwd()
@@ -179,7 +179,7 @@ def compile_project(config=None):
         int: 0 for success, 1 for error
     """
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     try:
         _validate_ini(config)

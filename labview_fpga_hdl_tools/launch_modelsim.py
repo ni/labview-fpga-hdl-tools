@@ -35,7 +35,7 @@ def _validate_ini(config):
         error_msg = "Missing required configuration settings:\n"
         for setting in missing_settings:
             error_msg += f"  - {setting}\n"
-        error_msg += "\nCheck your projectsettings.ini file and try again."
+        error_msg += "\nCheck your nihdlsettings.py file and try again."
         raise ValueError(error_msg)
 
     if invalid_paths:
@@ -47,9 +47,9 @@ def _validate_ini(config):
 
 
 def launch_modelsim(batch=False, config=None):
-    """Launch ModelSim using settings from projectsettings.ini."""
+    """Launch ModelSim using settings from nihdlsettings.py."""
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     try:
         _validate_ini(config)
