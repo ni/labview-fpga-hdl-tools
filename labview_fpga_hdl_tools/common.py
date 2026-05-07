@@ -119,9 +119,6 @@ class FileConfiguration:
     skip_vivado: bool = False  # Skip launching Vivado (validation only)
     skip_modelsim: bool = False  # Skip launching ModelSim (validation only)
 
-    # ----- TOOL PATH SETTINGS (loaded from [Tools] section) -----
-    lv_path: Optional[str] = None  # Path to LabVIEW installation
-
     # --- General Settings setters ---
 
     def set_target_family(self, value):
@@ -137,10 +134,6 @@ class FileConfiguration:
         self.dependencies = resolve_path(value)
 
     # --- Tool Settings setters ---
-
-    def set_lv_path(self, value):
-        """Set the LabVIEW installation path (resolved to absolute)."""
-        self.lv_path = resolve_path(value)
 
     # --- Vivado Project Settings setters ---
 
