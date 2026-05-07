@@ -215,6 +215,7 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | migrate-clip | Migrate CLIP assets into top-level HDL workflow artifacts. | --config |
 | install-target | Install generated LabVIEW FPGA target plugin files. | --config |
 | get-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
+| get-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
 | gen-target | Generate full LabVIEW FPGA target support outputs (XML, VHDL stubs, plugin content). | --config |
 | gen-hdl | Generate Window VHDL outputs only. | --config |
 | gen-xdc | Generate XDC files from constraint templates/macros. | --config |
@@ -262,6 +263,7 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 ## Example Usage
 
 ```bash
+# Create or refresh Vivado project
 # Create or refresh Vivado project
 nihdl create-project --overwrite
 
