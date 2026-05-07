@@ -274,6 +274,6 @@ def process_constraints(config=None):
         int: 0 on success.
     """
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
     process_constraints_template(config)
     return 0

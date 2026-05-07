@@ -40,7 +40,7 @@ def _get_window_netlist(config):
         os.chdir(current_dir)
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your --vivado argument or VivadoToolsPath setting in projectsettings.ini"
+            f"Please check your --vivado argument or VivadoToolsPath setting in nihdlsettings.py"
         )
 
     source_file = os.path.join(vivado_project_path, "TheLvWindowFlatWrapper.v")
@@ -267,7 +267,7 @@ def get_window(config=None):
     """Main entry point for the script."""
     # Load configuration
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     # Validate that all required settings are present
     try:

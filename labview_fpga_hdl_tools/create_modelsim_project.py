@@ -343,7 +343,7 @@ quit -f
 
 
 def create_modelsim_project(overwrite=False, config=None):
-    """Create a ModelSim project from projectsettings.ini configuration.
+    """Create a ModelSim project from nihdlsettings.py configuration.
 
     This creates a ModelSim project directory with:
     - A patched modelsim.ini with Xilinx library mappings
@@ -351,7 +351,7 @@ def create_modelsim_project(overwrite=False, config=None):
     - .do files for GUI and batch simulation
     """
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     try:
         _validate_ini(config)

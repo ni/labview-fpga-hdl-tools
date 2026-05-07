@@ -870,7 +870,7 @@ def gen_window_vhdl(config=None):
     """
     # Load configuration
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     # Validate that required settings for Window VHDL generation are present
     try:
@@ -896,7 +896,7 @@ def gen_lv_target_support(config=None):
     """Generate target support files."""
     # Load configuration
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
     has_validation_errors = False
     validation_errors = []
     register_space_warnings = []

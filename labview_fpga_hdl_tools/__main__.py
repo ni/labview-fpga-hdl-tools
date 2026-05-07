@@ -41,7 +41,7 @@ def cli(ctx):
 
 
 @cli.command("migrate-clip", help="Migrate CLIP files for FlexRIO custom devices")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def migrate_clip_cmd(ctx, config):
     """Migrate CLIP files for FlexRIO custom devices."""
@@ -58,7 +58,7 @@ def migrate_clip_cmd(ctx, config):
 
 
 @cli.command("install-target", help="Install LabVIEW FPGA target support files")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def install_target_cmd(ctx, config):
     """Install LabVIEW FPGA target support files."""
@@ -75,7 +75,7 @@ def install_target_cmd(ctx, config):
 
 
 @cli.command("get-window", help="Extract window netlist from Vivado project")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def get_window_cmd(ctx, config):
     """Extract window netlist from Vivado project."""
@@ -92,7 +92,7 @@ def get_window_cmd(ctx, config):
 
 
 @cli.command("gen-target", help="Generate LabVIEW FPGA target support files")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def gen_target_cmd(ctx, config):
     """Generate LabVIEW FPGA target support files."""
@@ -109,7 +109,7 @@ def gen_target_cmd(ctx, config):
 
 
 @cli.command("gen-hdl", help="Generate Window VHDL files from CSV/templates")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def gen_hdl_cmd(ctx, config):
     """Generate Window VHDL files only."""
@@ -126,7 +126,7 @@ def gen_hdl_cmd(ctx, config):
 
 
 @cli.command("gen-xdc", help="Generate XDC constraint files from templates")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def gen_xdc_cmd(ctx, config):
     """Generate XDC constraint files from templates."""
@@ -145,7 +145,7 @@ def gen_xdc_cmd(ctx, config):
 @cli.command("create-project", help="Create or update Vivado project")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def create_project_cmd(ctx, overwrite, update, config):
     """Create or update Vivado project."""
@@ -164,7 +164,7 @@ def create_project_cmd(ctx, overwrite, update, config):
 
 
 @cli.command("check-syntax", help="Check Vivado RTL syntax and hierarchy quickly")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def check_syntax_cmd(ctx, config):
     """Check Vivado RTL syntax and hierarchy using RTL elaboration."""
@@ -181,7 +181,7 @@ def check_syntax_cmd(ctx, config):
 
 
 @cli.command("compile-project", help="Compile Vivado project and generate a LabVIEW FPGA bitfile")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def compile_project_cmd(ctx, config):
     """Compile Vivado project and generate a LabVIEW FPGA bitfile."""
@@ -198,7 +198,7 @@ def compile_project_cmd(ctx, config):
 
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def launch_vivado_cmd(ctx, config):
     """Launch Vivado with the current project."""
@@ -218,7 +218,7 @@ def launch_vivado_cmd(ctx, config):
 @click.option("--delete", is_flag=True, help="Automatically delete and re-clone without prompting")
 @click.option("--pre", is_flag=True, help="Include pre-release versions when resolving versions")
 @click.option("--latest", is_flag=True, help="Use latest version for all dependencies")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def install_deps_cmd(ctx, delete, pre, latest, config):
     """Install GitHub dependencies from dependencies.toml."""
@@ -239,7 +239,7 @@ def install_deps_cmd(ctx, delete, pre, latest, config):
 
 @cli.command("create-modelsim", help="Create a ModelSim project for simulation")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite existing ModelSim project")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def create_modelsim_cmd(ctx, overwrite, config):
     """Create a ModelSim project for HDL simulation."""
@@ -258,7 +258,7 @@ def create_modelsim_cmd(ctx, overwrite, config):
 
 @cli.command("launch-modelsim", help="Launch ModelSim with the current project")
 @click.option("--batch", is_flag=True, help="Run simulation in batch mode (no GUI)")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def launch_modelsim_cmd(ctx, batch, config):
     """Launch ModelSim with the current project."""
@@ -277,7 +277,7 @@ def launch_modelsim_cmd(ctx, batch, config):
 
 @cli.command("sim-modelsim", help="Run ModelSim simulation in batch mode")
 @click.option("--do-file", default=None, help="Custom .do file to run instead of default")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def sim_modelsim_cmd(ctx, do_file, config):
     """Run ModelSim simulation in batch mode and report results."""
@@ -295,7 +295,7 @@ def sim_modelsim_cmd(ctx, do_file, config):
 
 
 @cli.command("create-lvbitx", help="Create LabVIEW FPGA bitfile from Vivado output")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def create_lvbitx_cmd(ctx, config):
     """Create LabVIEW FPGA bitfile from Vivado output."""
@@ -312,7 +312,7 @@ def create_lvbitx_cmd(ctx, config):
 
 
 @cli.command("gen-guid", help="Generate a new GUID for LabVIEW FPGA target plugins")
-@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
+@click.option("--config", default=None, help="Path to nihdlsettings.py")
 @click.pass_context
 def gen_guid_cmd(ctx, config):
     """Generate a new GUID for LabVIEW FPGA target plugins."""
@@ -320,7 +320,7 @@ def gen_guid_cmd(ctx, config):
     def _gen_guid(**kwargs):
         guid = common.generate_guid()
         print("Generated GUID:", guid)
-        print("Copy and paste this GUID into LVTargetGUID in the projectsettings.ini file.")
+        print("Copy and paste this GUID into your nihdlsettings.py file.")
         return 0
 
     try:

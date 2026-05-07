@@ -209,7 +209,7 @@ def get_test_set_no_errors():
         },
         {
             "name": "create-lvbitx",
-            "command": f"{nihdl_cmd} create-lvbitx --config=../../../nihdlcommandconfig.py",
+            "command": f"{nihdl_cmd} create-lvbitx --config=../../../nihdlsettings.py",
             "working_dir": paths["impl_dir"],
             "disable_test": False,
         },
@@ -273,7 +273,7 @@ def get_test_set_errors():
     return [
         {
             "name": "create-project with bad settings",
-            "command": f"{nihdl_cmd} create-project --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} create-project --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
@@ -301,77 +301,77 @@ def get_test_set_errors():
         },
         {
             "name": "migrate-clip with bad settings",
-            "command": f"{nihdl_cmd} migrate-clip --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} migrate-clip --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "gen-target with bad settings",
-            "command": f"{nihdl_cmd} gen-target --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} gen-target --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "install-target with bad settings",
-            "command": f"{nihdl_cmd} install-target --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} install-target --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "get-window with bad settings",
-            "command": f"{nihdl_cmd} get-window --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} get-window --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "launch-vivado with bad settings",
-            "command": f"{nihdl_cmd} launch-vivado --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} launch-vivado --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "create-lvbitx with bad settings",
-            "command": f"{nihdl_cmd} create-lvbitx --config=../../../badcommandconfig.py",
+            "command": f"{nihdl_cmd} create-lvbitx --config=../../../badsettings.py",
             "working_dir": paths["impl_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "check-syntax with bad settings",
-            "command": f"{nihdl_cmd} check-syntax --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} check-syntax --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "compile-project with bad settings",
-            "command": f"{nihdl_cmd} compile-project --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} compile-project --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "create-modelsim with bad settings",
-            "command": f"{nihdl_cmd} create-modelsim --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} create-modelsim --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 0,  # skip_modelsim is set, ModelSim path validation is skipped
         },
         {
             "name": "launch-modelsim with bad settings",
-            "command": f"{nihdl_cmd} launch-modelsim --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} launch-modelsim --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
             "name": "gen-hdl with bad settings",
-            "command": f"{nihdl_cmd} gen-hdl --config=badcommandconfig.py",
+            "command": f"{nihdl_cmd} gen-hdl --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
@@ -393,7 +393,7 @@ def test_set_errors():
     assert isinstance(tests, list)
     assert len(tests) > 0
     assert any(test.get("expected_exit_code") == 1 for test in tests)
-    assert any("--config=badcommandconfig.py" in test["command"] for test in tests)
+    assert any("--config=badsettings.py" in test["command"] for test in tests)
 
 
 def run_test_cases(tests, test_name="Unnamed Test Set"):

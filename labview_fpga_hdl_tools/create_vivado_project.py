@@ -660,7 +660,7 @@ def _create_project(mode: ProjectMode, config):
     if not config.skip_vivado and not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your --vivado argument or VivadoToolsPath setting in projectsettings.ini"
+            f"Please check your --vivado argument or VivadoToolsPath setting in nihdlsettings.py"
         )
 
     if mode == ProjectMode.NEW:
@@ -763,7 +763,7 @@ def create_project(overwrite=False, update=False, config=None):
     """
     # Load configuration with optional custom config path
     if config is None:
-        config = common.load_config()
+        config = common.FileConfiguration()
 
     # Validate that all required settings are present
     try:

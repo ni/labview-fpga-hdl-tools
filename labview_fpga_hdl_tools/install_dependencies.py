@@ -339,7 +339,7 @@ def install_dependencies(
     """
     # Get dependencies file path from config
     if config is None or not config.dependencies:
-        print("Error: Dependencies not set in [GeneralSettings] of projectsettings.ini")
+        print("Error: Dependencies not set. Call config.set_dependencies() in nihdlsettings.py")
         return 1
 
     dependencies_file = config.dependencies
