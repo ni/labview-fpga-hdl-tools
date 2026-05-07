@@ -226,9 +226,9 @@ def _get_vhdl_files_from_lists(file_lists):
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#"):
-                    # Resolve relative to the directory containing the file list
+                    # Resolve relative to CWD (matching get_vivado_project_files behavior)
                     if not os.path.isabs(line):
-                        line = os.path.normpath(os.path.join(os.path.dirname(file_list_path), line))
+                        line = os.path.normpath(os.path.abspath(line))
                     if os.path.isdir(line):
                         for root, _, filenames in os.walk(line):
                             for fn in sorted(filenames):
