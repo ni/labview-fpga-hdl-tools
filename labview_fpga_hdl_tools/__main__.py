@@ -316,11 +316,13 @@ def create_lvbitx_cmd(ctx, config):
 @click.pass_context
 def gen_guid_cmd(ctx, config):
     """Generate a new GUID for LabVIEW FPGA target plugins."""
+
     def _gen_guid(**kwargs):
         guid = common.generate_guid()
         print("Generated GUID:", guid)
         print("Copy and paste this GUID into LVTargetGUID in the projectsettings.ini file.")
         return 0
+
     try:
         result = command_hooks.run_with_hooks(
             "gen_guid",

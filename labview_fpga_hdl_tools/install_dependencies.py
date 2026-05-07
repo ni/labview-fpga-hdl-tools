@@ -317,7 +317,9 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
         return False
 
 
-def install_dependencies(delete_allowed=False, allow_prerelease=False, use_latest=False, config=None):
+def install_dependencies(
+    delete_allowed=False, allow_prerelease=False, use_latest=False, config=None
+):
     """Install dependencies from a TOML file using PEP 440 version resolution.
 
     Follows pip install behavior for version matching and pre-release handling.

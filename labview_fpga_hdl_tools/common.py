@@ -35,7 +35,9 @@ class FileConfiguration:
     # ----- VIVADO PROJECT SETTINGS -----
     top_level_entity: Optional[str] = None  # Top-level entity name for Vivado project
     fpga_part: Optional[str] = None  # FPGA part used when creating the Vivado project
-    vivado_project_path: Optional[str] = None  # Relative path to Vivado project file (e.g., VivadoProject/MyProj.xpr)
+    vivado_project_path: Optional[str] = (
+        None  # Relative path to Vivado project file (e.g., VivadoProject/MyProj.xpr)
+    )
     vivado_tools_path: Optional[str] = None  # Path to Vivado tools
     hdl_file_lists: List[str] = field(
         default_factory=list
@@ -108,7 +110,9 @@ class FileConfiguration:
     # ----- MODELSIM SETTINGS -----
     modelsim_tools_path: Optional[str] = None  # Path to ModelSim installation directory
     xilinx_sim_lib_path: Optional[str] = None  # Path to compiled Xilinx simulation libraries
-    modelsim_project_path: Optional[str] = None  # Relative path to ModelSim project file (e.g., ModelSimProject/MyProj.mpf)
+    modelsim_project_path: Optional[str] = (
+        None  # Relative path to ModelSim project file (e.g., ModelSimProject/MyProj.mpf)
+    )
     modelsim_file_lists: List[str] = field(
         default_factory=list
     )  # Ordered file lists for ModelSim compilation (deps before sources)
@@ -174,19 +178,27 @@ class FileConfiguration:
 
     def add_hdl_file_list(self, value):
         """Append an HDL file list path (resolved to absolute)."""
-        self.hdl_file_lists.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.hdl_file_lists.append(resolved)
 
     def add_vhdl2008_file_list(self, value):
         """Append a VHDL 2008 file list path (resolved to absolute)."""
-        self.vhdl2008_file_lists.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.vhdl2008_file_lists.append(resolved)
 
     def add_constraints_template(self, value):
         """Append a constraints template path (resolved to absolute)."""
-        self.constraints_templates.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.constraints_templates.append(resolved)
 
     def add_vivado_project_constraints_file(self, value):
         """Append a Vivado project constraints file path (resolved to absolute)."""
-        self.vivado_project_constraints_files.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.vivado_project_constraints_files.append(resolved)
 
     def set_vivado_tcl_scripts_folder(self, value):
         """Set the Vivado TCL scripts folder (resolved to absolute)."""
@@ -246,15 +258,21 @@ class FileConfiguration:
 
     def add_window_vhdl_template(self, value):
         """Append a Window VHDL template path (resolved to absolute)."""
-        self.window_vhdl_templates.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.window_vhdl_templates.append(resolved)
 
     def add_target_xml_template(self, value):
         """Append a target XML template path (resolved to absolute)."""
-        self.target_xml_templates.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.target_xml_templates.append(resolved)
 
     def add_lv_target_constraints_file(self, value):
         """Append a LV target constraints file path (resolved to absolute)."""
-        self.lv_target_constraints_files.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.lv_target_constraints_files.append(resolved)
 
     def set_include_target_io_ports(self, value):
         """Set whether to include CLIP socket ports (bool or string)."""
@@ -333,7 +351,9 @@ class FileConfiguration:
 
     def add_clip_xdc_path(self, value):
         """Append a CLIP XDC constraint file path (resolved to absolute)."""
-        self.clip_xdc_paths.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.clip_xdc_paths.append(resolved)
 
     def set_updated_xdc_folder(self, value):
         """Set the updated XDC output folder (resolved to absolute)."""
@@ -355,7 +375,9 @@ class FileConfiguration:
 
     def add_modelsim_file_list(self, value):
         """Append a ModelSim file list path (resolved to absolute)."""
-        self.modelsim_file_lists.append(resolve_path(value))
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.modelsim_file_lists.append(resolved)
 
     def set_modelsim_project_path(self, value):
         """Set the ModelSim project path (e.g., 'ModelSimProject/MyProj.mpf')."""

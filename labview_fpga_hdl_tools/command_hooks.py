@@ -4,7 +4,7 @@ Loads a user-provided nihdlcommandconfig.py file that can define pre/post hooks
 for each CLI command, enabling customization and extension of the tool behavior.
 
 The hook execution order for each command is:
-    pre_all(context) → pre_{command}(context) → command → post_{command}(context) → post_all(context)
+    pre_all → pre_{command} → command → post_{command} → post_all
 """
 
 # Copyright (c) 2025 National Instruments Corporation
@@ -30,6 +30,7 @@ class CommandContext:
     """
 
     def __init__(self, command_name, command_kwargs):
+        """Initialize CommandContext with command name and kwargs."""
         self.config = FileConfiguration()
         self.command_name = command_name
         self.command_kwargs = dict(command_kwargs)
@@ -50,6 +51,9 @@ def _load_config_module(command_config_path):
         sys.exit(1)
 
     spec = importlib.util.spec_from_file_location("nihdlcommandconfig", command_config_path)
+    if spec is None or spec.loader is None:
+        print(f"Error: Could not load module spec from: {command_config_path}", file=sys.stderr)
+        sys.exit(1)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

@@ -58,7 +58,7 @@ def sim_modelsim(do_file=None, config=None):
         print(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir)
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir or "")
 
     if not os.path.isdir(project_dir):
         print(

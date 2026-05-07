@@ -31,10 +31,10 @@ import os
 
 from labview_fpga_hdl_tools.common import load_config
 
-
 # ---------------------------------------------------------------------------
 # Global hooks – called for every command
 # ---------------------------------------------------------------------------
+
 
 def pre_all(context):
     """Called before every command. Load projectsettings.ini here."""

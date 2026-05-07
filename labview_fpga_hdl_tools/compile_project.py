@@ -64,9 +64,7 @@ def _validate_ini(config):
                 invalid_paths.append(invalid_path)
 
         if config.vivado_project_path:
-            project_file_path = os.path.join(
-                os.getcwd(), config.vivado_project_path
-            )
+            project_file_path = os.path.join(os.getcwd(), config.vivado_project_path)
             invalid_path = common.validate_path(project_file_path, "Vivado project file", "file")
             if invalid_path:
                 invalid_paths.append(invalid_path)

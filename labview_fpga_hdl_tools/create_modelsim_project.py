@@ -359,7 +359,7 @@ def create_modelsim_project(overwrite=False, config=None):
         print(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir)
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir or "")
     entity_name = config.top_level_entity
 
     # Check for existing project

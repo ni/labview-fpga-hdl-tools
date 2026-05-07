@@ -720,9 +720,7 @@ def _create_project_handler(config, overwrite=False, update=False):
         FileNotFoundError: If update was requested but the project doesn't exist
         ValueError: If both overwrite and update flags were provided
     """
-    # Get project name from VivadoProjectSettings section
-    project_name = config.vivado_project_name
-
+    # Get project file path from VivadoProjectSettings section
     project_file_path = os.path.join(os.getcwd(), config.vivado_project_path)
     print(f"Project file path: {project_file_path}")
 
@@ -761,6 +759,7 @@ def create_project(overwrite=False, update=False, config=None):
     Args:
         overwrite (bool): Force creation of a new project, overwriting existing
         update (bool): Update files in an existing project
+        config (FileConfiguration): Configuration object
     """
     # Load configuration with optional custom config path
     if config is None:

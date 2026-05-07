@@ -72,7 +72,7 @@ def launch_vivado(config=None):
         return 1
 
     # Change to the VivadoProject directory
-    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_dir)
+    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_dir or "")
 
     # Check vivado_tools_path before using
     if not config.vivado_tools_path:
