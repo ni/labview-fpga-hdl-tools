@@ -64,7 +64,6 @@ def pre_all(context):
     config = context.config
 
     # Tools
-    config.set_lv_path("C:/Program Files/National Instruments/LabVIEW 2024")
     config.set_vivado_tools_path("C:/NIFPGA/programs/Vivado2021_1")
     config.set_vivado_tcl_scripts_folder("../common/TCL")
 
@@ -115,7 +114,6 @@ def pre_create_project(context):
 
 | Setter | Description |
 | --- | --- |
-| `set_lv_path(value)` | LabVIEW installation root path. |
 | `set_vivado_tools_path(value)` | Vivado installation root containing bin/vivado(.bat). |
 | `set_vivado_tcl_scripts_folder(value)` | Folder with Vivado TCL Mako templates/scripts. |
 | `set_modelsim_tools_path(value)` | ModelSim installation root directory. |
@@ -256,7 +254,7 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | launch-vivado | `vivado_tools_path`, `vivado_project_path` | Also requires existing project .xpr file. |
 | create-modelsim | `top_level_entity`, `hdl_file_lists`, `modelsim_tools_path` | Uses `modelsim_file_lists` if set, otherwise `hdl_file_lists`. |
 | launch-modelsim | `top_level_entity`, `modelsim_tools_path` | Requires existing ModelSim project directory (run create-modelsim first). |
-| create-lvbitx | `lv_path` | Uses `top_level_entity` to derive filenames. |
+| create-lvbitx | `top_level_entity` | Auto-discovers LabVIEW via nisyscfg. Uses `top_level_entity` to derive filenames. |
 | install-deps | `dependencies` | Does not use other settings. |
 | gen-guid | None | Does not use any settings. |
 
