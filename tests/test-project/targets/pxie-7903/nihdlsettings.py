@@ -6,11 +6,14 @@ def pre_all(context):
     config = context.config
 
     # --- Tools ---
-    config.set_lv_path("../../../test-LabVIEW")
     config.set_vivado_tools_path("../../../test-vivado")
     config.set_vivado_tcl_scripts_folder("TCL")
     config.set_modelsim_tools_path("../../../test-modelsim")
     # config.set_xilinx_sim_lib_path("")
+
+    # --- Runtime ---
+    config.set_skip_vivado(True)
+    config.set_skip_modelsim(True)
 
     # --- General Settings ---
     config.set_target_family("FlexRIO")

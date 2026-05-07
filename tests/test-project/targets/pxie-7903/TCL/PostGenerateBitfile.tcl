@@ -4,11 +4,7 @@
 set env(PYTHONPATH) ""
 set env(PYTHONHOME) ""
 
-pwd
-
-cd ../../../
-
-pwd
-
 # Execute the Python script
-exec nihdl create-lvbitx
+# This TCL script runs from inside the Vivado impl_1 directory, so we point
+# --config back up to the target folder's nihdlsettings.py.
+exec nihdl create-lvbitx --config=../../../nihdlsettings.py

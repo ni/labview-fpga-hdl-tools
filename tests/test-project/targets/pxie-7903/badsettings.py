@@ -6,7 +6,6 @@ def pre_all(context):
     config = context.config
 
     # --- Tools ---
-    config.set_lv_path("../../../bad_labview_path")
     config.set_vivado_tools_path("../../../bad_vivado_path")
     # config.set_vivado_tcl_scripts_folder("")
     config.set_modelsim_tools_path("../../../bad_modelsim_path")
