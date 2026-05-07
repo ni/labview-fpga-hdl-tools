@@ -12,7 +12,7 @@ import shutil
 from . import common
 
 
-def _get_window_netlist(config, test=False):
+def _get_window_netlist(config):
     """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
     get_netlist_tcl_path = os.path.join(
         os.getcwd(), config.vivado_tcl_scripts_folder, "GetWindowNetlist.tcl"
@@ -36,7 +36,7 @@ def _get_window_netlist(config, test=False):
         raise ValueError("Unable to resolve Vivado executable from configuration")
 
     vivado_abs = os.path.abspath(vivado_executable)
-    if not test and not os.path.exists(vivado_abs):
+    if not config.skip_vivado and not os.path.exists(vivado_abs):
         os.chdir(current_dir)
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
@@ -49,11 +49,11 @@ def _get_window_netlist(config, test=False):
     # Create destination directory if it doesn't exist
     os.makedirs(destination_folder, exist_ok=True)
 
-    # In test mode, skip running Vivado
-    if test:
-        print("TEST MODE: Skipping Vivado execution")
+    # In skip_vivado mode, skip running Vivado
+    if config.skip_vivado:
+        print("SKIP VIVADO: Skipping Vivado execution")
 
-        # In test mode, create a mock Verilog netlist file if it doesn't exist
+        # Create a mock Verilog netlist file if it doesn't exist
         if not os.path.exists(source_file):
             with open(source_file, "w") as f:
                 f.write("// Mock Verilog netlist file created for testing\n")
@@ -200,7 +200,7 @@ def _extract_lv_window_constraints(config):
         print(f"Error extracting constraints: {str(e)}")
 
 
-def _validate_ini(config, test):
+def _validate_ini(config):
     """Validate that all required configuration settings are present.
 
     This function checks that all settings required for getting window netlist
@@ -227,9 +227,9 @@ def _validate_ini(config, test):
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
-        if not test:
+        if not config.skip_vivado:
             # Check that the project folder path length does not exceed 80 characters
-            # OK to skip this check in test mode because we are not running Vivado
+            # OK to skip this check in skip_vivado mode because we are not running Vivado
             vivado_project_path = os.path.dirname(config.vivado_project_export_xpr)
             if len(vivado_project_path) > 80:
                 raise ValueError(
@@ -263,25 +263,20 @@ def _validate_ini(config, test):
         raise ValueError(error_msg)
 
 
-def get_window(test=False, config_path=None, vivado_path=None):
-    """Main entry point for the script.
-
-    Args:
-        test (bool): If True, validate settings but don't run Vivado
-        config_path (str | None): Optional path to INI settings file
-        vivado_path (str | None): Optional Vivado path override
-    """
+def get_window(config=None):
+    """Main entry point for the script."""
     # Load configuration
-    config = common.load_config(config_path, vivado_path=vivado_path)
+    if config is None:
+        config = common.load_config()
 
     # Validate that all required settings are present
     try:
-        _validate_ini(config, test)
+        _validate_ini(config)
     except Exception as e:
         print(f"Error: {e}")
         return 1
 
-    _get_window_netlist(config, test=test)
+    _get_window_netlist(config)
     _copy_lv_generated_files(config)
     _extract_lv_window_constraints(config)
 

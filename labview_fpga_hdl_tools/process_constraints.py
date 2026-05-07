@@ -264,7 +264,7 @@ def process_constraints_template(config):
         print(f"Successfully processed and saved: {output_path}")
 
 
-def process_constraints(config_path=None):
+def process_constraints(config=None):
     """Load config and process XDC constraint templates.
 
     Args:
@@ -273,6 +273,7 @@ def process_constraints(config_path=None):
     Returns:
         int: 0 on success.
     """
-    config = common.load_config(config_path)
+    if config is None:
+        config = common.load_config()
     process_constraints_template(config)
     return 0

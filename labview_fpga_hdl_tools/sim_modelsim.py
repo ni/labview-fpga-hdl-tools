@@ -38,19 +38,19 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def sim_modelsim(test=False, config_path=None, do_file=None):
+def sim_modelsim(do_file=None, config=None):
     """Run a ModelSim simulation in batch mode and report results.
 
     Args:
-        test (bool): If True, validate settings but don't run simulation.
-        config_path (str | None): Optional path to INI settings file.
         do_file (str | None): Optional custom .do file to run instead of the
             default sim_<entity>.do script.
+        config (FileConfiguration | None): Configuration object.
 
     Returns:
         int: 0 on success, non-zero on failure.
     """
-    config = common.load_config(config_path)
+    if config is None:
+        config = common.load_config()
 
     try:
         _validate_ini(config)
@@ -58,7 +58,7 @@ def sim_modelsim(test=False, config_path=None, do_file=None):
         print(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), "ModelSimProject")
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir or "")
 
     if not os.path.isdir(project_dir):
         print(
@@ -100,8 +100,8 @@ def sim_modelsim(test=False, config_path=None, do_file=None):
     print(f"  Working dir:  {project_dir}")
     print(f"  Top entity:   {entity_name}")
 
-    if test:
-        print("\nTEST MODE: Validation successful, skipping simulation")
+    if config.skip_modelsim:
+        print("\nSKIP MODELSIM: Validation successful, skipping simulation")
         return 0
 
     # Build command: vsim in batch/command-line mode

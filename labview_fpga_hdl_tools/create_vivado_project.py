@@ -425,7 +425,7 @@ def _validate_files(file_list):
         raise FileNotFoundError(error_msg)
 
 
-def _validate_ini(config, test):
+def _validate_ini(config):
     """Validates that all required configuration settings for project creation are present.
 
     This function ensures that the configuration has all necessary settings before
@@ -442,8 +442,8 @@ def _validate_ini(config, test):
     invalid_paths = []
 
     # Check VivadoProjectSettings
-    if not config.vivado_project_name:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectName")
+    if not config.vivado_project_path:
+        missing_settings.append("VivadoProjectSettings.VivadoProjectPath")
 
     if not config.top_level_entity:
         missing_settings.append("VivadoProjectSettings.TopLevelEntity")
@@ -451,8 +451,8 @@ def _validate_ini(config, test):
     if not config.fpga_part:
         missing_settings.append("VivadoProjectSettings.FPGAPart")
 
-    # Don't validate Vivado path if test arguement is set
-    if not test:
+    # Don't validate Vivado path if skip_vivado is set
+    if not config.skip_vivado:
         if not config.vivado_tools_path:
             missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
         else:
@@ -542,7 +542,7 @@ def _validate_constraints_files(config):
         raise ValueError(error_msg)
 
 
-def _create_project(mode: ProjectMode, config, test):
+def _create_project(mode: ProjectMode, config):
     """Creates or updates a Vivado project based on the specified mode.
 
     This function:
@@ -644,12 +644,12 @@ def _create_project(mode: ProjectMode, config, test):
 
     vivado_abs = os.path.abspath(vivado_executable)
 
-    vivado_project_path = os.path.join(os.getcwd(), "VivadoProject")
+    vivado_project_path = os.path.join(os.getcwd(), config.vivado_project_dir)
     if not os.path.exists(vivado_project_path):
         os.makedirs(vivado_project_path)
 
     # Vivado expects to be run from within the project directory
-    os.chdir("VivadoProject")
+    os.chdir(config.vivado_project_dir)
 
     # Check if the project file exists
     project_file_path = os.path.join(os.getcwd(), project_name + ".xpr")
@@ -657,7 +657,7 @@ def _create_project(mode: ProjectMode, config, test):
 
     print(f"Vivado executable absolute path: {vivado_abs}")
     # Check if the Vivado executable exists
-    if not test and not os.path.exists(vivado_abs):
+    if not config.skip_vivado and not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
             f"Please check your --vivado argument or VivadoToolsPath setting in projectsettings.ini"
@@ -674,9 +674,9 @@ def _create_project(mode: ProjectMode, config, test):
 
     print(f"Running command: {command}")
 
-    # In test mode, create a mock project file and skip Vivado execution
-    if test:
-        print("TEST MODE: Validation successful, skipping Vivado launch")
+    # In skip_vivado mode, create a mock project file and skip Vivado execution
+    if config.skip_vivado:
+        print("SKIP VIVADO: Validation successful, skipping Vivado launch")
         # Create an empty project file for testing
         mock_project_path = os.path.join(vivado_project_path, f"{project_name}.xpr")
         with open(mock_project_path, "w") as f:
@@ -720,10 +720,8 @@ def _create_project_handler(config, overwrite=False, update=False):
         FileNotFoundError: If update was requested but the project doesn't exist
         ValueError: If both overwrite and update flags were provided
     """
-    # Get project name from VivadoProjectSettings section
-    project_name = config.vivado_project_name
-
-    project_file_path = os.path.join(os.getcwd(), "VivadoProject", project_name + ".xpr")
+    # Get project file path from VivadoProjectSettings section
+    project_file_path = os.path.join(os.getcwd(), config.vivado_project_path)
     print(f"Project file path: {project_file_path}")
 
     if not overwrite and not update:
@@ -755,22 +753,21 @@ def _create_project_handler(config, overwrite=False, update=False):
     return project_mode
 
 
-def create_project(overwrite=False, update=False, test=False, config_path=None, vivado_path=None):
+def create_project(overwrite=False, update=False, config=None):
     """Main entry point for the script.
 
     Args:
         overwrite (bool): Force creation of a new project, overwriting existing
         update (bool): Update files in an existing project
-        test (bool): Test mode - validate settings but don't run Vivado
-        config_path (str | None): Optional path to INI settings file
-        vivado_path (str | None): Optional Vivado path override
+        config (FileConfiguration): Configuration object
     """
     # Load configuration with optional custom config path
-    config = common.load_config(config_path, vivado_path=vivado_path)
+    if config is None:
+        config = common.load_config()
 
     # Validate that all required settings are present
     try:
-        _validate_ini(config, test)
+        _validate_ini(config)
     except Exception as e:
         print(f"Error: {e}")
         return 1
@@ -796,14 +793,14 @@ def create_project(overwrite=False, update=False, test=False, config_path=None, 
         # Run (or rerun) generate LV Window VHDL - this is needed to generate TheWindow.vhd that
         # goes into the objects directory and which gets used in the Vivado project
         try:
-            gen_labview_target_plugin.gen_window_vhdl(config_path=config_path)
+            gen_labview_target_plugin.gen_window_vhdl(config=config)
         except Exception as e:
             print(f"Error: {e}")
             return 1
 
     # Create or update the Vivado project based on the determined mode
     try:
-        _create_project(project_mode, config, test)
+        _create_project(project_mode, config)
     except Exception as e:
         print(f"Error: {e}")
         return 1

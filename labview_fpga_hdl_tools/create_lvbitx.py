@@ -10,7 +10,7 @@ import subprocess  # For executing external programs
 from . import common  # For shared utilities across tools
 
 
-def _create_lv_bitfile(test, config_path=None):
+def _create_lv_bitfile(config=None):
     """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool."""
     if os.name != "nt":
         print("Creating .lvbitx files is only supported on Windows")
@@ -30,7 +30,8 @@ def _create_lv_bitfile(test, config_path=None):
     os.chdir("../../..")
 
     # Load configuration
-    config = common.load_config(config_path)
+    if config is None:
+        config = common.load_config()
 
     # Check if LV path is set
     if config.lv_path is None:
@@ -85,9 +86,9 @@ def _create_lv_bitfile(test, config_path=None):
 
     print(f"Executing: {' '.join(cmd)}")
 
-    # In test mode, stop here after validation
-    if test:
-        print("TEST MODE: Validation successful, skipping createBitfile.exe launch")
+    # In skip_vivado mode, stop here after validation
+    if config.skip_vivado:
+        print("SKIP VIVADO: Validation successful, skipping createBitfile.exe launch")
 
         # Create a mock LVBITX file for testing
         os.makedirs(os.path.dirname(lvbitx_output_path), exist_ok=True)
@@ -110,18 +111,17 @@ def _create_lv_bitfile(test, config_path=None):
     return 0
 
 
-def create_lv_bitx(test=False, config_path=None):
+def create_lv_bitx(config=None):
     """Main function to run the script.
 
     Args:
-        test (bool): If True, validate settings but don't run createBitfile.exe
-        config_path (str | None): Optional path to INI settings file
+        config (FileConfiguration | None): Configuration object.
 
     Returns:
         int: 0 for success, 1 for error
     """
     try:
-        result = _create_lv_bitfile(test, config_path=config_path)
+        result = _create_lv_bitfile(config=config)
         return result  # Return the result code
     except Exception as e:
         print(f"Unhandled exception: {str(e)}")

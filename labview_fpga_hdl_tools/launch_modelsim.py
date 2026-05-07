@@ -46,13 +46,10 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def launch_modelsim(test=False, config_path=None, modelsim_path=None, batch=False):
+def launch_modelsim(batch=False, config=None):
     """Launch ModelSim using settings from projectsettings.ini."""
-    config = common.load_config(config_path)
-
-    # Allow CLI override of ModelSim path
-    if modelsim_path and modelsim_path.strip():
-        config.modelsim_tools_path = modelsim_path.strip()
+    if config is None:
+        config = common.load_config()
 
     try:
         _validate_ini(config)
@@ -60,7 +57,7 @@ def launch_modelsim(test=False, config_path=None, modelsim_path=None, batch=Fals
         print(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), "ModelSimProject")
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir or "")
 
     if not os.path.isdir(project_dir):
         print(
@@ -93,8 +90,8 @@ def launch_modelsim(test=False, config_path=None, modelsim_path=None, batch=Fals
     print(f"Do file: {do_file}")
     print(f"Working directory: {project_dir}")
 
-    if test:
-        print("TEST MODE: Validation successful, skipping ModelSim launch")
+    if config.skip_modelsim:
+        print("SKIP MODELSIM: Validation successful, skipping ModelSim launch")
         return 0
 
     if batch:

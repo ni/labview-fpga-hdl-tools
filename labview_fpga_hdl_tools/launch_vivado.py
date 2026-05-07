@@ -40,7 +40,7 @@ def _validate_ini(config):
             invalid_paths.append(invalid_path)
 
     if not config.vivado_project_name:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectName")
+        missing_settings.append("VivadoProjectSettings.VivadoProjectPath")
 
     # If any required settings are missing, raise an error
     if missing_settings:
@@ -58,16 +58,11 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def launch_vivado(test=False, config_path=None, vivado_path=None):
-    """Launch Vivado using settings from projectsettings.ini.
-
-    Args:
-        test (bool): If True, validate settings but don't launch Vivado
-        config_path (str | None): Optional path to INI settings file
-        vivado_path (str | None): Optional Vivado path override
-    """
+def launch_vivado(config=None):
+    """Launch Vivado using settings from projectsettings.ini."""
     # Load configuration from projectsettings.ini
-    config = common.load_config(config_path, vivado_path=vivado_path)
+    if config is None:
+        config = common.load_config()
 
     # Validate that all required settings are present and paths exist
     try:
@@ -77,7 +72,7 @@ def launch_vivado(test=False, config_path=None, vivado_path=None):
         return 1
 
     # Change to the VivadoProject directory
-    vivado_project_dir = os.path.join(os.getcwd(), "VivadoProject")
+    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_dir or "")
 
     # Check vivado_tools_path before using
     if not config.vivado_tools_path:
@@ -114,9 +109,9 @@ def launch_vivado(test=False, config_path=None, vivado_path=None):
     if not os.path.exists(vivado_abs):
         raise FileNotFoundError(f"Error: Vivado executable not found: {vivado_abs}")
 
-    # In test mode, stop here after validation
-    if test:
-        print("TEST MODE: Validation successful, skipping Vivado launch")
+    # In skip_vivado mode, stop here after validation
+    if config.skip_vivado:
+        print("SKIP VIVADO: Validation successful, skipping Vivado launch")
         return 0
 
     # Launch Vivado
