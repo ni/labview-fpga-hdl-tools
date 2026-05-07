@@ -317,7 +317,7 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
         return False
 
 
-def install_dependencies(delete_allowed=False, allow_prerelease=False, use_latest=False):
+def install_dependencies(delete_allowed=False, allow_prerelease=False, use_latest=False, config=None):
     """Install dependencies from a TOML file using PEP 440 version resolution.
 
     Follows pip install behavior for version matching and pre-release handling.
@@ -330,26 +330,19 @@ def install_dependencies(delete_allowed=False, allow_prerelease=False, use_lates
         delete_allowed: If True, automatically delete existing repos without prompting
         allow_prerelease: If True, include pre-release versions (like pip install --pre)
         use_latest: If True, ignore versions in dependencies.toml and use latest for all
+        config: FileConfiguration object with dependencies path
 
     Returns:
         0 if successful, 1 if errors occurred
     """
-    # Find dependencies file
-    # Search current directory and up to 2 parent directories
-    search_path = Path(os.getcwd())
-    dependencies_file = None
+    # Get dependencies file path from config
+    if config is None or not config.dependencies:
+        print("Error: Dependencies not set in [GeneralSettings] of projectsettings.ini")
+        return 1
 
-    for level in range(3):  # 0, 1, 2 levels up
-        candidate = search_path / "dependencies.toml"
-        if candidate.exists():
-            dependencies_file = str(candidate)
-            break
-        search_path = search_path.parent
-
-    if dependencies_file is None:
-        print(
-            "Error: Dependencies file not found in current directory or up to 2 parent directories"
-        )
+    dependencies_file = config.dependencies
+    if not Path(dependencies_file).exists():
+        print(f"Error: Dependencies file not found: {dependencies_file}")
         return 1
 
     # Get the directory containing dependencies.toml

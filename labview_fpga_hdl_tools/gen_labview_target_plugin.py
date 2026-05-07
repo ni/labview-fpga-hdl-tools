@@ -858,7 +858,7 @@ def _validate_ini(config, gen_window_only=False):
         raise ValueError(error_msg)
 
 
-def gen_window_vhdl(config_path=None):
+def gen_window_vhdl(config=None):
     """Generate Window VHDL files only.
 
     Standalone entry point for generating Window VHDL files from CSV and templates.
@@ -869,7 +869,8 @@ def gen_window_vhdl(config_path=None):
         int: 0 if successful, 1 if errors occurred
     """
     # Load configuration
-    config = common.load_config(config_path)
+    if config is None:
+        config = common.load_config()
 
     # Validate that required settings for Window VHDL generation are present
     try:
@@ -891,10 +892,11 @@ def gen_window_vhdl(config_path=None):
     return 0
 
 
-def gen_lv_target_support(config_path=None):
+def gen_lv_target_support(config=None):
     """Generate target support files."""
     # Load configuration
-    config = common.load_config(config_path)
+    if config is None:
+        config = common.load_config()
     has_validation_errors = False
     validation_errors = []
     register_space_warnings = []

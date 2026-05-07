@@ -633,10 +633,11 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
-def migrate_clip(config_path=None):
+def migrate_clip(config=None):
     """Main program entry point."""
     # Load configuration
-    config = common.load_config(config_path)
+    if config is None:
+        config = common.load_config()
     validation_errors = []
 
     # Validate that all required settings are present

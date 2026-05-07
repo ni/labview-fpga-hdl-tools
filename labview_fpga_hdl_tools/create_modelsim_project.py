@@ -13,7 +13,7 @@ import subprocess
 from . import common
 
 
-def _validate_ini(config, test):
+def _validate_ini(config):
     """Validate required configuration settings for ModelSim project creation."""
     missing_settings = []
     invalid_paths = []
@@ -42,7 +42,7 @@ def _validate_ini(config, test):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not test:
+    if not config.skip_modelsim:
         if not config.modelsim_tools_path:
             missing_settings.append("ModelSimSettings.ModelSimToolsPath")
         else:
@@ -342,7 +342,7 @@ quit -f
     return do_filename
 
 
-def create_modelsim_project(overwrite=False, test=False, config_path=None, modelsim_path=None):
+def create_modelsim_project(overwrite=False, config=None):
     """Create a ModelSim project from projectsettings.ini configuration.
 
     This creates a ModelSim project directory with:
@@ -350,19 +350,16 @@ def create_modelsim_project(overwrite=False, test=False, config_path=None, model
     - Compiled VHDL source files (work library)
     - .do files for GUI and batch simulation
     """
-    config = common.load_config(config_path)
-
-    # Allow CLI override of ModelSim path
-    if modelsim_path and modelsim_path.strip():
-        config.modelsim_tools_path = modelsim_path.strip()
+    if config is None:
+        config = common.load_config()
 
     try:
-        _validate_ini(config, test)
+        _validate_ini(config)
     except Exception as e:
         print(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), "ModelSimProject")
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir)
     entity_name = config.top_level_entity
 
     # Check for existing project
@@ -397,8 +394,8 @@ def create_modelsim_project(overwrite=False, test=False, config_path=None, model
     print(f"Project directory: {project_dir}")
     os.makedirs(project_dir, exist_ok=True)
 
-    if test:
-        print("\nTEST MODE: Validation successful, skipping ModelSim project creation")
+    if config.skip_modelsim:
+        print("\nSKIP MODELSIM: Validation successful, skipping ModelSim project creation")
         return 0
 
     modelsim_install = config.modelsim_tools_path

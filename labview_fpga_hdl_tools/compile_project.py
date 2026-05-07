@@ -22,13 +22,13 @@ def _generate_compile_project_tcl(config, output_path):
     )
 
 
-def _validate_ini(config, test):
+def _validate_ini(config):
     """Validate required settings and paths for compile-project."""
     missing_settings = []
     invalid_paths = []
 
-    if not config.vivado_project_name:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectName")
+    if not config.vivado_project_path:
+        missing_settings.append("VivadoProjectSettings.VivadoProjectPath")
 
     if not config.vivado_tcl_scripts_folder:
         missing_settings.append("VivadoProjectSettings.VivadoTclScriptsFolder")
@@ -52,7 +52,7 @@ def _validate_ini(config, test):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not test:
+    if not config.skip_vivado:
         if not config.vivado_tools_path:
             missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
         else:
@@ -63,9 +63,9 @@ def _validate_ini(config, test):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
-        if config.vivado_project_name:
+        if config.vivado_project_path:
             project_file_path = os.path.join(
-                os.getcwd(), "VivadoProject", f"{config.vivado_project_name}.xpr"
+                os.getcwd(), config.vivado_project_path
             )
             invalid_path = common.validate_path(project_file_path, "Vivado project file", "file")
             if invalid_path:
@@ -153,7 +153,7 @@ def _run_compile_project(config, generated_tcl_path):
     )
 
 
-def _compile_project(config, test=False):
+def _compile_project(config):
     """Generate CompileProject TCL script and run Vivado in batch mode."""
     current_dir = os.getcwd()
     generated_tcl_path = os.path.join(current_dir, "objects", "TCL", "CompileProject.tcl")
@@ -162,8 +162,8 @@ def _compile_project(config, test=False):
 
     print(f"Generated TCL script: {generated_tcl_path}")
 
-    if test:
-        print("TEST MODE: Validation successful, skipping Vivado launch")
+    if config.skip_vivado:
+        print("SKIP VIVADO: Validation successful, skipping Vivado launch")
         return 0
 
     _run_compile_project(config, generated_tcl_path)
@@ -171,27 +171,26 @@ def _compile_project(config, test=False):
     return 0
 
 
-def compile_project(test=False, config_path=None, vivado_path=None):
+def compile_project(config=None):
     """Compile Vivado project by running a TCL script generated from CompileProject.tcl.mako.
 
     Args:
-        test (bool): Test mode - validate settings but don't run Vivado
-        config_path (str | None): Optional path to INI settings file
-        vivado_path (str | None): Optional Vivado path override
+        config (FileConfiguration | None): Configuration object.
 
     Returns:
         int: 0 for success, 1 for error
     """
-    config = common.load_config(config_path, vivado_path=vivado_path)
+    if config is None:
+        config = common.load_config()
 
     try:
-        _validate_ini(config, test)
+        _validate_ini(config)
     except Exception as e:
         print(f"Error: {e}")
         return 1
 
     try:
-        _compile_project(config, test=test)
+        _compile_project(config)
     except Exception as e:
         print(f"Error: {e}")
         return 1

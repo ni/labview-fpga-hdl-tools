@@ -14,6 +14,7 @@ import click
 from . import (
     __version__,
     check_syntax,
+    command_hooks,
     common,
     compile_project,
     create_lvbitx,
@@ -40,12 +41,16 @@ def cli(ctx):
 
 
 @cli.command("migrate-clip", help="Migrate CLIP files for FlexRIO custom devices")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
 def migrate_clip_cmd(ctx, config):
     """Migrate CLIP files for FlexRIO custom devices."""
     try:
-        result = migrate_clip.migrate_clip(config_path=config)
+        result = command_hooks.run_with_hooks(
+            "migrate_clip",
+            migrate_clip.migrate_clip,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -53,12 +58,16 @@ def migrate_clip_cmd(ctx, config):
 
 
 @cli.command("install-target", help="Install LabVIEW FPGA target support files")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
 def install_target_cmd(ctx, config):
     """Install LabVIEW FPGA target support files."""
     try:
-        result = install_labview_target_plugin.install_lv_target_support(config_path=config)
+        result = command_hooks.run_with_hooks(
+            "install_target",
+            install_labview_target_plugin.install_lv_target_support,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -66,14 +75,16 @@ def install_target_cmd(ctx, config):
 
 
 @cli.command("get-window", help="Extract window netlist from Vivado project")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
-@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def get_window_cmd(ctx, test, vivado, config):
+def get_window_cmd(ctx, config):
     """Extract window netlist from Vivado project."""
     try:
-        result = get_window_netlist.get_window(test=test, config_path=config, vivado_path=vivado)
+        result = command_hooks.run_with_hooks(
+            "get_window",
+            get_window_netlist.get_window,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -81,12 +92,16 @@ def get_window_cmd(ctx, test, vivado, config):
 
 
 @cli.command("gen-target", help="Generate LabVIEW FPGA target support files")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
 def gen_target_cmd(ctx, config):
     """Generate LabVIEW FPGA target support files."""
     try:
-        result = gen_labview_target_plugin.gen_lv_target_support(config_path=config)
+        result = command_hooks.run_with_hooks(
+            "gen_target",
+            gen_labview_target_plugin.gen_lv_target_support,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -94,12 +109,16 @@ def gen_target_cmd(ctx, config):
 
 
 @cli.command("gen-hdl", help="Generate Window VHDL files from CSV/templates")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
 def gen_hdl_cmd(ctx, config):
     """Generate Window VHDL files only."""
     try:
-        result = gen_labview_target_plugin.gen_window_vhdl(config_path=config)
+        result = command_hooks.run_with_hooks(
+            "gen_hdl",
+            gen_labview_target_plugin.gen_window_vhdl,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -107,12 +126,16 @@ def gen_hdl_cmd(ctx, config):
 
 
 @cli.command("gen-xdc", help="Generate XDC constraint files from templates")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
 def gen_xdc_cmd(ctx, config):
     """Generate XDC constraint files from templates."""
     try:
-        result = process_constraints.process_constraints(config_path=config)
+        result = command_hooks.run_with_hooks(
+            "gen_xdc",
+            process_constraints.process_constraints,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -122,19 +145,17 @@ def gen_xdc_cmd(ctx, config):
 @cli.command("create-project", help="Create or update Vivado project")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
-@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def create_project_cmd(ctx, overwrite, update, test, vivado, config):
+def create_project_cmd(ctx, overwrite, update, config):
     """Create or update Vivado project."""
     try:
-        result = create_vivado_project.create_project(
+        result = command_hooks.run_with_hooks(
+            "create_project",
+            create_vivado_project.create_project,
+            command_config_path=config,
             overwrite=overwrite,
             update=update,
-            test=test,
-            config_path=config,
-            vivado_path=vivado,
         )
         return result
     except Exception as e:
@@ -143,14 +164,16 @@ def create_project_cmd(ctx, overwrite, update, test, vivado, config):
 
 
 @cli.command("check-syntax", help="Check Vivado RTL syntax and hierarchy quickly")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
-@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def check_syntax_cmd(ctx, test, vivado, config):
+def check_syntax_cmd(ctx, config):
     """Check Vivado RTL syntax and hierarchy using RTL elaboration."""
     try:
-        result = check_syntax.check_syntax(test=test, config_path=config, vivado_path=vivado)
+        result = command_hooks.run_with_hooks(
+            "check_syntax",
+            check_syntax.check_syntax,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -158,14 +181,16 @@ def check_syntax_cmd(ctx, test, vivado, config):
 
 
 @cli.command("compile-project", help="Compile Vivado project and generate a LabVIEW FPGA bitfile")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run Vivado")
-@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def compile_project_cmd(ctx, test, vivado, config):
+def compile_project_cmd(ctx, config):
     """Compile Vivado project and generate a LabVIEW FPGA bitfile."""
     try:
-        result = compile_project.compile_project(test=test, config_path=config, vivado_path=vivado)
+        result = command_hooks.run_with_hooks(
+            "compile_project",
+            compile_project.compile_project,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -173,14 +198,16 @@ def compile_project_cmd(ctx, test, vivado, config):
 
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't launch Vivado")
-@click.option("--vivado", "--Vivado", "vivado", default=None, help="Override Vivado path")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def launch_vivado_cmd(ctx, test, vivado, config):
+def launch_vivado_cmd(ctx, config):
     """Launch Vivado with the current project."""
     try:
-        result = launch_vivado.launch_vivado(test=test, config_path=config, vivado_path=vivado)
+        result = command_hooks.run_with_hooks(
+            "launch_vivado",
+            launch_vivado.launch_vivado,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -191,12 +218,18 @@ def launch_vivado_cmd(ctx, test, vivado, config):
 @click.option("--delete", is_flag=True, help="Automatically delete and re-clone without prompting")
 @click.option("--pre", is_flag=True, help="Include pre-release versions when resolving versions")
 @click.option("--latest", is_flag=True, help="Use latest version for all dependencies")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def install_deps_cmd(ctx, delete, pre, latest):
+def install_deps_cmd(ctx, delete, pre, latest, config):
     """Install GitHub dependencies from dependencies.toml."""
     try:
-        result = install_dependencies.install_dependencies(
-            delete_allowed=delete, allow_prerelease=pre, use_latest=latest
+        result = command_hooks.run_with_hooks(
+            "install_deps",
+            install_dependencies.install_dependencies,
+            command_config_path=config,
+            delete_allowed=delete,
+            allow_prerelease=pre,
+            use_latest=latest,
         )
         return result
     except Exception as e:
@@ -206,18 +239,16 @@ def install_deps_cmd(ctx, delete, pre, latest):
 
 @cli.command("create-modelsim", help="Create a ModelSim project for simulation")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite existing ModelSim project")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't create project")
-@click.option("--modelsim", default=None, help="Override ModelSim install path")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def create_modelsim_cmd(ctx, overwrite, test, modelsim, config):
+def create_modelsim_cmd(ctx, overwrite, config):
     """Create a ModelSim project for HDL simulation."""
     try:
-        result = create_modelsim_project.create_modelsim_project(
+        result = command_hooks.run_with_hooks(
+            "create_modelsim",
+            create_modelsim_project.create_modelsim_project,
+            command_config_path=config,
             overwrite=overwrite,
-            test=test,
-            config_path=config,
-            modelsim_path=modelsim,
         )
         return result
     except Exception as e:
@@ -226,18 +257,16 @@ def create_modelsim_cmd(ctx, overwrite, test, modelsim, config):
 
 
 @cli.command("launch-modelsim", help="Launch ModelSim with the current project")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't launch")
 @click.option("--batch", is_flag=True, help="Run simulation in batch mode (no GUI)")
-@click.option("--modelsim", default=None, help="Override ModelSim install path")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def launch_modelsim_cmd(ctx, test, batch, modelsim, config):
+def launch_modelsim_cmd(ctx, batch, config):
     """Launch ModelSim with the current project."""
     try:
-        result = launch_modelsim.launch_modelsim(
-            test=test,
-            config_path=config,
-            modelsim_path=modelsim,
+        result = command_hooks.run_with_hooks(
+            "launch_modelsim",
+            launch_modelsim.launch_modelsim,
+            command_config_path=config,
             batch=batch,
         )
         return result
@@ -247,16 +276,16 @@ def launch_modelsim_cmd(ctx, test, batch, modelsim, config):
 
 
 @cli.command("sim-modelsim", help="Run ModelSim simulation in batch mode")
-@click.option("--test", is_flag=True, help="Test mode - validate settings but don't run")
 @click.option("--do-file", default=None, help="Custom .do file to run instead of default")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def sim_modelsim_cmd(ctx, test, do_file, config):
+def sim_modelsim_cmd(ctx, do_file, config):
     """Run ModelSim simulation in batch mode and report results."""
     try:
-        result = sim_modelsim.sim_modelsim(
-            test=test,
-            config_path=config,
+        result = command_hooks.run_with_hooks(
+            "sim_modelsim",
+            sim_modelsim.sim_modelsim,
+            command_config_path=config,
             do_file=do_file,
         )
         return result
@@ -266,13 +295,16 @@ def sim_modelsim_cmd(ctx, test, do_file, config):
 
 
 @cli.command("create-lvbitx", help="Create LabVIEW FPGA bitfile from Vivado output")
-@click.option("--test", is_flag=True, help="Test mode - validate settings only")
-@click.option("--config", default=None, help="Path to INI settings file")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def create_lvbitx_cmd(ctx, test, config):
+def create_lvbitx_cmd(ctx, config):
     """Create LabVIEW FPGA bitfile from Vivado output."""
     try:
-        result = create_lvbitx.create_lv_bitx(test=test, config_path=config)
+        result = command_hooks.run_with_hooks(
+            "create_lvbitx",
+            create_lvbitx.create_lv_bitx,
+            command_config_path=config,
+        )
         return result
     except Exception as e:
         handle_exception(e)
@@ -280,14 +312,22 @@ def create_lvbitx_cmd(ctx, test, config):
 
 
 @cli.command("gen-guid", help="Generate a new GUID for LabVIEW FPGA target plugins")
+@click.option("--config", default=None, help="Path to nihdlcommandconfig.py")
 @click.pass_context
-def gen_guid_cmd(ctx):
+def gen_guid_cmd(ctx, config):
     """Generate a new GUID for LabVIEW FPGA target plugins."""
-    try:
+    def _gen_guid(**kwargs):
         guid = common.generate_guid()
         print("Generated GUID:", guid)
         print("Copy and paste this GUID into LVTargetGUID in the projectsettings.ini file.")
         return 0
+    try:
+        result = command_hooks.run_with_hooks(
+            "gen_guid",
+            _gen_guid,
+            command_config_path=config,
+        )
+        return result
     except Exception as e:
         handle_exception(e)
         return 1
