@@ -111,26 +111,18 @@ def _create_lv_bitfile(config=None):
     if config is None:
         config = common.CommandConfiguration()
 
-    # Determine path to CodeGenerationResults.lvtxt based on UseGeneratedLVWindowFiles setting
-    if config.use_gen_lv_window_files:
-        # Check if window folder is set
-        if config.the_window_folder_input is None:
-            print("Error: TheWindow folder not set in configuration")
-            return 1
+    # Determine path to CodeGenerationResults.lvtxt from TheWindow folder
+    if not config.the_window_folder_input:
+        print(
+            "Error: the_window_folder_input is not set. "
+            "create-lvbitx requires a Window netlist folder containing CodeGenerationResults.lvtxt."
+        )
+        return 1
 
-        print(f"Using generated LV window files: {config.the_window_folder_input}")
+    window_folder = os.path.abspath(config.the_window_folder_input)
+    print(f"Window folder resolved to: {window_folder}")
 
-        # Now safe to use window_folder since we checked for None
-        window_folder = os.path.abspath(config.the_window_folder_input)
-        print(f"Window folder resolved to: {window_folder}")
-
-        code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")
-    else:
-        print("Using default LV window files")
-        code_gen_results_path = config.code_generation_results_stub
-        if code_gen_results_path is None:
-            print("Error: code_generation_results_stub not set in configuration")
-            return 1
+    code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")
 
     if config.top_level_entity is None:
         print("Error: top_level_entity not set in configuration")

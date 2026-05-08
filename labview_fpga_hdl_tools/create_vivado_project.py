@@ -488,10 +488,8 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    # Check for LV Window folder if using generated window files
-    if config.use_gen_lv_window_files and not config.the_window_folder_input:
-        missing_settings.append("VivadoProjectSettings.TheWindowFolder")
-    elif config.use_gen_lv_window_files:
+    # Check for LV Window folder (optional - when not set, Window files are not integrated)
+    if config.the_window_folder_input:
         # Validate the window folder path
         invalid_path = common.validate_path(
             config.the_window_folder_input,
@@ -592,8 +590,8 @@ def _create_project(mode: ProjectMode, config):
     file_list = _copy_long_path_files(file_list)
     vhdl2008_file_list = _copy_long_path_files(vhdl2008_file_list)
 
-    # Override default LV generated files
-    if config.use_gen_lv_window_files:
+    # Override default LV generated files with extracted window files
+    if config.the_window_folder_input:
         file_list = _override_lv_window_files(config, file_list)
 
     # Combine regular and VHDL 2008 files for duplicate checking and add_files

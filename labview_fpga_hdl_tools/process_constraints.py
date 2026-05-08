@@ -117,18 +117,17 @@ def process_constraints_template(config):
     """
     # Define output directory
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
+    os.makedirs(output_folder, exist_ok=True)
     period_content = ""
     clip_content = ""
     from_to_content = ""
 
-    if config.the_window_folder_input is None:
-        print("TheWindowFolder input is not specified in the configuration.")
+    if not config.the_window_folder_input:
+        print("TheWindowFolder input is not specified - skipping Window constraint extraction.")
     else:
         window_constraints_path = os.path.join(
             config.the_window_folder_input, "TheWindowConstraints.xdc"
         )
-        # Create output directory if it doesn't exist
-        os.makedirs(output_folder, exist_ok=True)
 
         # Check if the window constraints file exists
         if os.path.exists(window_constraints_path):

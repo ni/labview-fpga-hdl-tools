@@ -80,11 +80,7 @@ class CommandConfiguration:
         None  # Relative path to Vivado TCL scripts folder
     )
     custom_constraints_file: Optional[str] = None  # Path to custom constraints XDC file
-    use_gen_lv_window_files: Optional[bool] = (
-        None  # Use files from the_input_window_folder to override what is in hdl_file_lists
-    )
     the_window_folder_input: Optional[str] = None  # Input folder for generated Window files
-    code_generation_results_stub: Optional[str] = None  # Path to code generation results stub file
     # ----- LV WINDOW NETLIST SETTINGS -----
     vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
     the_window_folder_output: Optional[str] = None  # Destination folder for generated Window files
@@ -97,7 +93,7 @@ class CommandConfiguration:
     )  # Template for TheWindow.vhd generation
     window_vhdl_output_folder: Optional[str] = None  # Output folder for TheWindow.vhd
     board_io_signal_assignments_example: Optional[str] = None  # Path for example output
-    target_xml_templates: List[str] = field(
+    lv_target_xml_templates: List[str] = field(
         default_factory=list
     )  # Templates for target XML generation
     lv_target_constraints_files: List[str] = field(
@@ -119,7 +115,7 @@ class CommandConfiguration:
     num_hdl_registers: Optional[int] = None  # Number of HDL registers
     max_hdl_reg_offset: Optional[int] = None  # Maximum HDL register byte offset
     # ----- CLIP MIGRATION SETTINGS -----
-    input_xml_path: Optional[str] = None  # Path to source CLIP XML file
+    clip_input_xml_path: Optional[str] = None  # Path to source CLIP XML file
     output_csv_path: Optional[str] = None  # Path where CSV signals will be written
     clip_hdl_path: Optional[str] = None  # Path to top-level CLIP HDL file
     clip_inst_example_path: Optional[str] = None  # Path where instantiation example will be written
@@ -232,20 +228,9 @@ class CommandConfiguration:
         """Set the custom constraints XDC file path (resolved to absolute)."""
         self.custom_constraints_file = resolve_path(value)
 
-    def set_use_gen_lv_window_files(self, value):
-        """Set whether to use generated LV Window files (bool or string)."""
-        if isinstance(value, str):
-            self.use_gen_lv_window_files = _parse_bool(value, False)
-        else:
-            self.use_gen_lv_window_files = value
-
     def set_the_window_folder_input(self, value):
         """Set the input Window folder path (resolved to absolute)."""
         self.the_window_folder_input = resolve_path(value)
-
-    def set_code_generation_results_stub(self, value):
-        """Set the code generation results stub path (resolved to absolute)."""
-        self.code_generation_results_stub = resolve_path(value)
 
     # --- LV Window Netlist Settings setters ---
 
@@ -285,11 +270,11 @@ class CommandConfiguration:
         if resolved is not None:
             self.window_vhdl_templates.append(resolved)
 
-    def add_target_xml_template(self, value):
+    def add_lv_target_xml_template(self, value):
         """Append a target XML template path (resolved to absolute)."""
         resolved = resolve_path(value)
         if resolved is not None:
-            self.target_xml_templates.append(resolved)
+            self.lv_target_xml_templates.append(resolved)
 
     def add_lv_target_constraints_file(self, value):
         """Append a LV target constraints file path (resolved to absolute)."""
@@ -352,9 +337,9 @@ class CommandConfiguration:
 
     # --- CLIP Migration Settings setters ---
 
-    def set_input_xml_path(self, value):
+    def set_clip_input_xml_path(self, value):
         """Set the CLIP XML input path (resolved to absolute)."""
-        self.input_xml_path = resolve_path(value)
+        self.clip_input_xml_path = resolve_path(value)
 
     def set_output_csv_path(self, value):
         """Set the CSV output path (resolved to absolute)."""

@@ -46,8 +46,7 @@ Available setters (grouped by section):
         set_top_level_entity, set_fpga_part, set_vivado_project_path,
         add_hdl_file_list, add_vhdl2008_file_list, add_constraints_template,
         add_vivado_project_constraints_file, set_custom_constraints_file,
-        set_use_gen_lv_window_files, set_the_window_folder_input,
-        set_code_generation_results_stub
+        set_the_window_folder_input
 
     LVFPGA Target Settings:
         set_custom_signals_csv, set_include_target_io_ports,
@@ -55,12 +54,12 @@ Available setters (grouped by section):
         set_lv_target_install_folder, add_lv_target_constraints_file,
         set_lv_target_menus_folder, set_lv_target_info_ini,
         set_lv_target_exclude_files, set_max_hdl_reg_offset,
-        add_window_vhdl_template, add_target_xml_template,
+        add_window_vhdl_template, add_lv_target_xml_template,
         set_window_vhdl_output_folder, set_board_io_signal_assignments_example,
         set_lv_target_plugin_folder, set_boardio_output, set_clock_output
 
     CLIP Migration Settings:
-        set_input_xml_path, set_output_csv_path, set_clip_hdl_path,
+        set_clip_input_xml_path, set_output_csv_path, set_clip_hdl_path,
         set_clip_inst_example_path, set_clip_instance_path,
         add_clip_xdc_path, set_updated_xdc_folder,
         set_clip_to_window_signal_definitions
@@ -114,11 +113,7 @@ def pre_all(context):
     )
     config.add_vivado_project_constraints_file("objects/xdc/constraints.xdc")
 
-    config.set_use_gen_lv_window_files(True)
     config.set_the_window_folder_input("lvWindowNetlist")
-    config.set_code_generation_results_stub(
-        "../../deps/flexrio/targets/pxie-7903/lvFpgaTarget/CodeGenerationResultsStub.lvtxt"
-    )
 
     # --- LVFPGA Target Settings ---
     config.set_custom_signals_csv("lvFpgaTarget/LVTargetBoardIO.csv")
@@ -155,10 +150,10 @@ def pre_all(context):
     config.add_window_vhdl_template("rtl-lvfpga/TheLvWindowFlatWrapper.vhd.mako")
     config.add_window_vhdl_template("rtl-lvfpga/PkgTheLvWindowFlatWrapper.vhd.mako")
 
-    config.add_target_xml_template(
+    config.add_lv_target_xml_template(
         "../../deps/flexrio/targets/pxie-7903/lvFpgaTarget/Resource.xml.mako"
     )
-    config.add_target_xml_template(
+    config.add_lv_target_xml_template(
         "../../deps/flexrio/targets/pxie-7903/lvFpgaTarget/Sasquatch7903.xml.mako"
     )
 
@@ -172,7 +167,7 @@ def pre_all(context):
     config.set_clock_output("objects/LVTargetPlugin/PXIe-7903Custom/CustomClocks.xml")
 
     # --- CLIP Migration Settings ---
-    # config.set_input_xml_path(...)
+    # config.set_clip_input_xml_path(...)
     # config.set_clip_hdl_path(...)
     # config.set_clip_instance_path(...)
     # config.add_clip_xdc_path(...)

@@ -576,12 +576,12 @@ def _validate_ini(config):
     invalid_paths = []
 
     # Check required paths
-    if not config.input_xml_path:
+    if not config.clip_input_xml_path:
         missing_settings.append("CLIPMigrationSettings.CLIPXML")
     else:
         # Validate input XML path
         invalid_path = common.validate_path(
-            config.input_xml_path, "CLIPMigrationSettings.CLIPXML", "file"
+            config.clip_input_xml_path, "CLIPMigrationSettings.CLIPXML", "file"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -648,7 +648,7 @@ def migrate_clip(config=None):
         return 1
 
     # Handle long paths on Windows - fixes path length limitations
-    long_input_xml_path = common.handle_long_path(config.input_xml_path)
+    long_input_xml_path = common.handle_long_path(config.clip_input_xml_path)
 
     # Process XML
     _generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)

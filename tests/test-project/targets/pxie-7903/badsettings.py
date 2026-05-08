@@ -29,8 +29,7 @@ def pre_all(context):
     config.add_vivado_project_constraints_file("xdc/constraints_place.xdc")
     config.add_vivado_project_constraints_file("objects/xdc/constraints.xdc")
 
-    config.set_use_gen_lv_window_files(False)
-    config.set_the_window_folder_input("objects/TheWindow")
+    config.set_the_window_folder_input("lvWindowNetlist")
 
     # --- LVFPGA Target Settings ---
     config.set_custom_signals_csv("lvFpgaTarget/LVTargetBoardIO.csv")
@@ -53,8 +52,8 @@ def pre_all(context):
     config.add_window_vhdl_template("rtl-lvfpga/TheWindowFlatWrapper.vhd.mako")
     config.add_window_vhdl_template("rtl-lvfpga/PkgTheWindowFlatWrapper.vhd.mako")
 
-    config.add_target_xml_template("lvFpgaTarget/Resource.xml.mako")
-    config.add_target_xml_template("lvFpgaTarget/Sasquatch7903.xml.mako")
+    config.add_lv_target_xml_template("lvFpgaTarget/Resource.xml.mako")
+    config.add_lv_target_xml_template("lvFpgaTarget/Sasquatch7903.xml.mako")
 
     # Outputs
     config.set_lv_target_plugin_folder("objects/LVTargetPlugin/PXIe-7903Aurora")
@@ -62,7 +61,7 @@ def pre_all(context):
     config.set_clock_output("objects/LVTargetPlugin/PXIe-7903Aurora/CustomClocks.xml")
 
     # --- CLIP Migration Settings ---
-    config.set_input_xml_path("../../incorrect_file_path.xml")
+    config.set_clip_input_xml_path("../../incorrect_file_path.xml")
     config.set_clip_hdl_path(
         "../../dependencies/githubdeps/ni.hw-flexrio.sasquatch_aurora64b66b_clip.25.5.0.11-ci-passed-main-f/aurora64b66b_framing_crcx4_28p0GHz/CLIP/aurora64b66b_framing_crcx4_28p0GHz/Source/vhdl/UserRTL_PXIe7903_Aurora64b66b_Framing_Crcx4_28p0GHz.vhd"
     )

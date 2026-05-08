@@ -339,7 +339,7 @@ def get_test_set_errors():
             "command": f"{nihdl_cmd} create-lvbitx --config=../../../badsettings.py",
             "working_dir": paths["impl_dir"],
             "disable_test": False,
-            "expected_exit_code": 1,  # Expect error
+            "expected_exit_code": 0,  # badsettings still has valid window folder + top entity
         },
         {
             "name": "check-syntax with bad settings",
@@ -375,6 +375,29 @@ def get_test_set_errors():
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
+        },
+    ]
+
+
+def get_test_set_no_window():
+    """Tests for configs without the_window_folder_input set."""
+    paths = get_standard_test_paths()
+    nihdl_cmd = get_nihdl_command()
+
+    return [
+        {
+            "name": "create-project without window folder",
+            "command": f"{nihdl_cmd} create-project --config=nowindowsettings.py",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 0,  # Should succeed without window folder
+        },
+        {
+            "name": "create-lvbitx without window folder",
+            "command": f"{nihdl_cmd} create-lvbitx --config=../../../nowindowsettings.py",
+            "working_dir": paths["impl_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Should fail - requires CodeGenerationResults.lvtxt
         },
     ]
 
@@ -655,6 +678,12 @@ if __name__ == "__main__":
 
     # Run project creation tests
     results.append(run_test_cases(get_test_set_errors(), "Expect Error Tests"))
+
+    # Re-clean target directories
+    clean_target_directories(paths["target_dir"])
+
+    # Run no-window tests
+    results.append(run_test_cases(get_test_set_no_window(), "No Window Folder Tests"))
 
     # Exit with appropriate status code
     success = all(results) and validation_success

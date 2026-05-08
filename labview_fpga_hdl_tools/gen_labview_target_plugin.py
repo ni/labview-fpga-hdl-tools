@@ -830,11 +830,11 @@ def _validate_ini(config, gen_window_only=False):
                 if invalid_path:
                     invalid_paths.append(invalid_path)
 
-        if not config.target_xml_templates:
+        if not config.lv_target_xml_templates:
             missing_settings.append("LVFPGATargetSettings.TargetXMLTemplates")
         else:
             # Validate each template file path
-            for i, template_path in enumerate(config.target_xml_templates):
+            for i, template_path in enumerate(config.lv_target_xml_templates):
                 invalid_path = common.validate_path(
                     template_path, f"LVFPGATargetSettings.TargetXMLTemplates[{i}]", "file"
                 )
@@ -937,7 +937,7 @@ def gen_lv_target_support(config=None):
     )
 
     register_space_warnings, register_space_errors = _generate_target_xml(
-        config.target_xml_templates,
+        config.lv_target_xml_templates,
         config.lv_target_plugin_folder,
         config.include_target_io_ports,
         config.include_custom_io,
