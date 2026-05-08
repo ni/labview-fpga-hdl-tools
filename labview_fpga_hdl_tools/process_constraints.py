@@ -113,7 +113,7 @@ def process_constraints_template(config):
     2. Inserts extracted content between NETLIST markers in template files
 
     Args:
-        config (FileConfiguration): Configuration settings object with path information
+        config (CommandConfiguration): Configuration settings object with path information
     """
     # Define output directory
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
@@ -164,7 +164,7 @@ def process_constraints_template(config):
                 clip_content = clip_match.group(1)
                 from_to_content = (
                     "\nset TopInstance0 [current_instance .]\n"
-                    "current_instance TheLvWindowWrapper"
+                    f"current_instance {config.entity_path_to_window_wrapper}"
                     + from_to_match.group(1)
                     + "current_instance -quiet\n"
                     "current_instance $TopInstance0\n"
@@ -274,6 +274,6 @@ def process_constraints(config=None):
         int: 0 on success.
     """
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
     process_constraints_template(config)
     return 0

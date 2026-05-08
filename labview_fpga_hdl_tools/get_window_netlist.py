@@ -11,6 +11,9 @@ import shutil
 
 from . import common
 
+# Generated flat wrapper file produced by the GetWindowNetlist TCL script.
+_WINDOW_FLAT_WRAPPER_FILE = "TheLvWindowFlatWrapper.v"
+
 
 def _get_window_netlist(config):
     """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
@@ -43,7 +46,7 @@ def _get_window_netlist(config):
             f"Please check your --vivado argument or VivadoToolsPath setting in nihdlsettings.py"
         )
 
-    source_file = os.path.join(vivado_project_path, "TheLvWindowFlatWrapper.v")
+    source_file = os.path.join(vivado_project_path, _WINDOW_FLAT_WRAPPER_FILE)
     destination_folder = config.the_window_folder_output
 
     # Create destination directory if it doesn't exist
@@ -93,7 +96,7 @@ def _get_window_netlist(config):
                 f"Vivado TCL script execution failed: Expected output file {source_file} was not generated."
             )
 
-    destination_file = os.path.join(destination_folder, "TheLvWindowFlatWrapper.v")
+    destination_file = os.path.join(destination_folder, _WINDOW_FLAT_WRAPPER_FILE)
 
     try:
         if os.path.exists(source_file):
@@ -150,7 +153,7 @@ def _extract_lv_window_constraints(config):
     containing just those constraints in the Window folder, excluding the marker lines.
 
     Args:
-        config (FileConfiguration): Configuration settings object
+        config (CommandConfiguration): Configuration settings object
     """
     # Extract the parent directory path from the XPR path
     # The NIProtectedFiles folder is typically at the same level as VivadoProject
@@ -267,7 +270,7 @@ def get_window(config=None):
     """Main entry point for the script."""
     # Load configuration
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     # Validate that all required settings are present
     try:

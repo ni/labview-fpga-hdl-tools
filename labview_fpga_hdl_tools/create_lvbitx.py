@@ -109,7 +109,7 @@ def _create_lv_bitfile(config=None):
 
     # Load configuration
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     # Determine path to CodeGenerationResults.lvtxt based on UseGeneratedLVWindowFiles setting
     if config.use_gen_lv_window_files:
@@ -190,7 +190,7 @@ def create_lv_bitx(config=None):
     """Main function to run the script.
 
     Args:
-        config (FileConfiguration | None): Configuration object.
+        config (CommandConfiguration | None): Configuration object.
 
     Returns:
         int: 0 for success, 1 for error

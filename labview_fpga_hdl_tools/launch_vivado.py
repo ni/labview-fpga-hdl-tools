@@ -62,7 +62,7 @@ def launch_vivado(config=None):
     """Launch Vivado using settings from nihdlsettings.py."""
     # Load configuration from nihdlsettings.py
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     # Validate that all required settings are present and paths exist
     try:

@@ -49,7 +49,7 @@ def _validate_ini(config):
 def launch_modelsim(batch=False, config=None):
     """Launch ModelSim using settings from nihdlsettings.py."""
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     try:
         _validate_ini(config)

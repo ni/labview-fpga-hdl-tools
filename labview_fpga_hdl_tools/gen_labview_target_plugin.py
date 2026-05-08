@@ -504,6 +504,8 @@ def _generate_target_xml(
     lv_target_name,
     lv_target_guid,
     max_hdl_reg_offset,
+    entity_path_to_window,
+    entity_path_to_window_wrapper,
 ):
     """Generate Target XML files from multiple Mako templates.
 
@@ -573,8 +575,8 @@ def _generate_target_xml(
                     "lv_target_guid": lv_target_guid,
                     "min_lv_reg_offset": min_lv_reg_offset,
                     "include_current_instance_path_for_window": True,
-                    "net_path_to_the_window": "TheLvWindowWrapper/TheLvWindow",
-                    "current_instance_path_for_window": "TheLvWindowWrapper",
+                    "net_path_to_the_window": entity_path_to_window,
+                    "current_instance_path_for_window": entity_path_to_window_wrapper,
                 }
 
                 output_text = template.render(**render_kwargs)
@@ -870,7 +872,7 @@ def gen_window_vhdl(config=None):
     """
     # Load configuration
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     # Validate that required settings for Window VHDL generation are present
     try:
@@ -896,7 +898,7 @@ def gen_lv_target_support(config=None):
     """Generate target support files."""
     # Load configuration
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
     has_validation_errors = False
     validation_errors = []
     register_space_warnings = []
@@ -944,6 +946,8 @@ def gen_lv_target_support(config=None):
         config.lv_target_name,
         config.lv_target_guid,
         config.max_hdl_reg_offset,
+        config.entity_path_to_window,
+        config.entity_path_to_window_wrapper,
     )
 
     _copy_fpgafiles(

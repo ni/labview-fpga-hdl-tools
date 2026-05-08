@@ -10,7 +10,7 @@ Hook execution order for each command:
     pre_all  →  pre_{command}  →  command  →  post_{command}  →  post_all
 
 The context object passed to every hook has these attributes:
-    context.config         - FileConfiguration (configure it in pre_all)
+    context.config         - CommandConfiguration (configure it in pre_all)
     context.command_name   - e.g. "create_project"
     context.command_kwargs - dict of CLI arguments forwarded to the command
     context.result         - return value of the command (available in post hooks)
@@ -67,6 +67,9 @@ Available setters (grouped by section):
 
     LV Window Netlist Settings:
         set_vivado_project_export_xpr, set_the_window_folder_output
+
+    Window Hierarchy Settings:
+        set_entity_path_to_window, set_entity_path_to_window_wrapper
 
     ModelSim Settings:
         set_modelsim_project_path, add_modelsim_file_list
@@ -184,6 +187,10 @@ def pre_all(context):
     # --- LV Window Netlist Settings ---
     # config.set_vivado_project_export_xpr("C:/temp/VPE/VivadoProject/Top.xpr")
     # config.set_the_window_folder_output("objects/TheWindow")
+
+    # --- Window Hierarchy Settings ---
+    config.set_entity_path_to_window("TheLvWindowWrapper/TheLvWindow")
+    config.set_entity_path_to_window_wrapper("TheLvWindowWrapper")
 
     # --- ModelSim Settings ---
     # config.set_modelsim_project_path("ModelSimProject/MyProj.mpf")

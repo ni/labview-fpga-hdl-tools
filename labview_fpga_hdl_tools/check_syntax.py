@@ -178,13 +178,13 @@ def check_syntax(config=None):
     """Check Vivado RTL syntax and hierarchy using RTL elaboration.
 
     Args:
-        config (FileConfiguration | None): Configuration object.
+        config (CommandConfiguration | None): Configuration object.
 
     Returns:
         int: 0 for success, 1 for error
     """
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     try:
         _validate_ini(config)

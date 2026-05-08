@@ -637,7 +637,7 @@ def migrate_clip(config=None):
     """Main program entry point."""
     # Load configuration
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
     validation_errors = []
 
     # Validate that all required settings are present

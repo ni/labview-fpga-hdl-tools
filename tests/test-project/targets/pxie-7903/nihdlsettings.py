@@ -98,6 +98,10 @@ def pre_all(context):
     config.set_vivado_project_export_xpr("../../../test-labview-vpe/VivadoProject/Top_FPGA.xpr")
     config.set_the_window_folder_output("objects/TheWindow")
 
+    # --- Window Hierarchy Settings ---
+    config.set_entity_path_to_window("TheLvWindowWrapper/TheLvWindow")
+    config.set_entity_path_to_window_wrapper("TheLvWindowWrapper")
+
     # --- ModelSim Settings ---
     config.set_modelsim_project_path("ModelSimProject/MySasquatchProj.mpf")
 

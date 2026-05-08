@@ -44,13 +44,13 @@ def sim_modelsim(do_file=None, config=None):
     Args:
         do_file (str | None): Optional custom .do file to run instead of the
             default sim_<entity>.do script.
-        config (FileConfiguration | None): Configuration object.
+        config (CommandConfiguration | None): Configuration object.
 
     Returns:
         int: 0 on success, non-zero on failure.
     """
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     try:
         _validate_ini(config)

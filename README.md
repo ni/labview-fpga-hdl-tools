@@ -51,7 +51,7 @@ Every hook receives a `CommandContext` with these attributes:
 
 | Attribute | Description |
 | --- | --- |
-| `context.config` | `FileConfiguration` object — configure it in `pre_all` via setters. |
+| `context.config` | `CommandConfiguration` object — configure it in `pre_all` via setters. |
 | `context.command_name` | Underscore-separated command name (for example, `"create_project"`). |
 | `context.command_kwargs` | Dict of CLI arguments forwarded to the command function. |
 | `context.result` | Return value of the command (available in post hooks only). |

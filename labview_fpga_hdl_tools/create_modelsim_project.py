@@ -351,7 +351,7 @@ def create_modelsim_project(overwrite=False, config=None):
     - .do files for GUI and batch simulation
     """
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     try:
         _validate_ini(config)

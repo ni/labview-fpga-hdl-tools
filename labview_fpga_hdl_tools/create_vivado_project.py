@@ -284,7 +284,7 @@ def _override_lv_window_files(config, file_list):
     It also adds all files from the window folder to the file list.
 
     Args:
-        config (FileConfiguration): Configuration settings object
+        config (CommandConfiguration): Configuration settings object
         file_list (list): List of file paths to check and potentially replace
 
     Returns:
@@ -433,7 +433,7 @@ def _validate_ini(config):
     due to missing configuration.
 
     Args:
-        config (FileConfiguration): Configuration settings object to validate
+        config (CommandConfiguration): Configuration settings object to validate
 
     Raises:
         ValueError: If any required settings are missing or invalid
@@ -556,7 +556,7 @@ def _create_project(mode: ProjectMode, config):
 
     Args:
         mode (ProjectMode): Operation mode (NEW or UPDATE)
-        config (FileConfiguration): Parsed configuration settings
+        config (CommandConfiguration): Parsed configuration settings
 
     Raises:
         ValueError: If an unsupported mode is specified
@@ -711,7 +711,7 @@ def _create_project_handler(config, overwrite=False, update=False):
     - With both flags: Error (invalid combination)
 
     Args:
-        config (FileConfiguration): Parsed configuration settings
+        config (CommandConfiguration): Parsed configuration settings
         overwrite (bool): Whether to overwrite an existing project
         update (bool): Whether to update files in an existing project
 
@@ -759,11 +759,11 @@ def create_project(overwrite=False, update=False, config=None):
     Args:
         overwrite (bool): Force creation of a new project, overwriting existing
         update (bool): Update files in an existing project
-        config (FileConfiguration): Configuration object
+        config (CommandConfiguration): Configuration object
     """
     # Load configuration with optional custom config path
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     # Validate that all required settings are present
     try:
