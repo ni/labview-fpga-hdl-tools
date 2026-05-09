@@ -81,7 +81,9 @@ def pre_all(context):
     config.set_clip_output_xdc_folder("objects/CLIPMigration/xdc")
 
     # --- LV Window Netlist Settings ---
-    config.set_lv_window_vivado_project_export_xpr("../../../test-labview-vpe/VivadoProject/bad_xpr_file.xpr")
+    config.set_lv_window_vivado_project_export_xpr(
+        "../../../test-labview-vpe/VivadoProject/bad_xpr_file.xpr"
+    )
     config.set_lv_window_netlist_output_folder("objects/TheWindow")
 
     # --- ModelSim Settings ---
