@@ -366,7 +366,7 @@ def install_dependencies(
         print(f"Error reading TOML file: {e}")
         return 1
 
-    dependencies = data.get("dependencies", {})
+    dependencies = data.get("github_dependencies", data.get("dependencies", {}))
 
     if not dependencies:
         print("No dependencies found in TOML file")
