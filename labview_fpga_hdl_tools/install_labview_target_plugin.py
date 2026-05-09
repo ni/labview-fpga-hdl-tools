@@ -90,12 +90,12 @@ def _validate_ini(config):
     if not config.lv_target_name:
         missing_settings.append("LVFPGATargetSettings.LVTargetName")
 
-    if not config.lv_target_plugin_folder:
-        missing_settings.append("LVFPGATargetSettings.LVTargetPluginFolder")
+    if not config.lv_target_plugin_output_folder:
+        missing_settings.append("LVFPGATargetSettings.LVTargetPluginOutputFolder")
     else:
         # Validate plugin folder
         invalid_path = common.validate_path(
-            config.lv_target_plugin_folder, "LVFPGATargetSettings.LVTargetPluginFolder", "directory"
+            config.lv_target_plugin_output_folder, "LVFPGATargetSettings.LVTargetPluginOutputFolder", "directory"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
@@ -147,7 +147,7 @@ def install_lv_target_support(config=None):
         return  # Exit current instance as the elevated instance will continue
 
     print(f"Installing LabVIEW Target '{config.lv_target_name}' files...")
-    print(f"From: {config.lv_target_plugin_folder}")
+    print(f"From: {config.lv_target_plugin_output_folder}")
     print(f"To: {install_folder}")
 
     try:
@@ -178,7 +178,7 @@ def install_lv_target_support(config=None):
                 shutil.copy2(src, dst)
 
         # Copy everything from plugin folder to install folder
-        _copy_recursively(config.lv_target_plugin_folder, install_folder)
+        _copy_recursively(config.lv_target_plugin_output_folder, install_folder)
 
         print(
             f"Successfully installed LabVIEW Target '{config.lv_target_name}' to {install_folder}"

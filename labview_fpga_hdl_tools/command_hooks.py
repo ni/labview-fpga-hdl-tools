@@ -92,7 +92,7 @@ def load_settings(settings_path, context):
             # Override Vivado path from environment
             xilinx = os.environ.get("XILINX")
             if xilinx:
-                context.config.set_vivado_tools_path(xilinx)
+                context.config.set_vivado_tools_folder(xilinx)
 
     Relative paths are resolved from the loaded file's directory, matching the
     normal nihdlsettings.py behavior.

@@ -642,7 +642,7 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
 
 def _copy_fpgafiles(
     hdl_file_lists,
-    lv_target_constraints_files,
+    lv_target_constraints,
     plugin_folder,
     target_family,
     base_target,
@@ -654,9 +654,9 @@ def _copy_fpgafiles(
     file_list = common.get_vivado_project_files(hdl_file_lists)
 
     # Add constraints XDC files listed in the config file
-    if lv_target_constraints_files:
+    if lv_target_constraints:
         file_list = file_list + [
-            common.fix_file_slashes(file) for file in lv_target_constraints_files
+            common.fix_file_slashes(file) for file in lv_target_constraints
         ]
 
     print(f"Found {len(file_list)} files in HDL file lists")
@@ -842,10 +842,10 @@ def _validate_ini(config, gen_window_only=False):
                     invalid_paths.append(invalid_path)
 
         # Validate any constraint files if specified
-        if config.lv_target_constraints_files:
-            for i, constraint_path in enumerate(config.lv_target_constraints_files):
+        if config.lv_target_constraints:
+            for i, constraint_path in enumerate(config.lv_target_constraints):
                 invalid_path = common.validate_path(
-                    constraint_path, f"LVFPGATargetSettings.LVTargetConstraintsFiles[{i}]", "file"
+                    constraint_path, f"LVFPGATargetSettings.LVTargetConstraints[{i}]", "file"
                 )
                 if invalid_path:
                     invalid_paths.append(invalid_path)
@@ -952,7 +952,7 @@ def gen_lv_target_support(config=None):
 
     _copy_fpgafiles(
         config.hdl_file_lists,
-        config.lv_target_constraints_files,
+        config.lv_target_constraints,
         config.lv_target_plugin_folder,
         config.target_family,
         config.base_target,

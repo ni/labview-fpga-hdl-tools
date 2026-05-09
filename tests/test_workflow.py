@@ -130,7 +130,7 @@ def get_standard_test_paths():
             "targets",
             "pxie-7903",
             "VivadoProject",
-            "MySasquatchProj.runs",
+            "SasquatchTopTemplate.runs",
             "impl_1",
         ),
         "plugin_install_dir": os.path.join(TEST_DIR, "test-plugin-install-dir"),
@@ -380,7 +380,7 @@ def get_test_set_errors():
 
 
 def get_test_set_no_window():
-    """Tests for configs without the_window_folder_input set."""
+    """Tests for configs without lv_window_netlist_folder set."""
     paths = get_standard_test_paths()
     nihdl_cmd = get_nihdl_command()
 

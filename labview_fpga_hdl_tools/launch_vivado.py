@@ -29,18 +29,18 @@ def _validate_ini(config):
     invalid_paths = []
 
     # Check required Vivado settings
-    if not config.vivado_tools_path:
-        missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
+    if not config.vivado_tools_folder:
+        missing_settings.append("VivadoProjectSettings.VivadoToolsFolder")
     else:
         invalid_path = common.validate_vivado_setting(
-            config.vivado_tools_path,
-            "VivadoProjectSettings.VivadoToolsPath",
+            config.vivado_tools_folder,
+            "VivadoProjectSettings.VivadoToolsFolder",
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not config.vivado_project_name:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectPath")
+    if not config.vivado_project_folder:
+        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
 
     # If any required settings are missing, raise an error
     if missing_settings:
@@ -72,14 +72,14 @@ def launch_vivado(config=None):
         return 1
 
     # Change to the VivadoProject directory
-    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_dir or "")
+    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_folder or "")
 
-    # Check vivado_tools_path before using
-    if not config.vivado_tools_path:
-        raise ValueError("VivadoToolsPath setting is missing from configuration")
+    # Check vivado_tools_folder before using
+    if not config.vivado_tools_folder:
+        raise ValueError("VivadoToolsFolder setting is missing from configuration")
 
     # Determine Vivado executable from either direct executable path or tools dir.
-    vivado_executable = common.get_vivado_executable(config.vivado_tools_path)
+    vivado_executable = common.get_vivado_executable(config.vivado_tools_folder)
     if not vivado_executable:
         raise ValueError("Unable to resolve Vivado executable from configuration")
 
@@ -91,7 +91,7 @@ def launch_vivado(config=None):
         raise ValueError(error_msg)
 
     # Construct the project file path
-    project_arg = f"{config.vivado_project_name}.xpr"
+    project_arg = f"{config.top_level_entity}.xpr"
 
     # Validate project file exists
     project_file = os.path.join(vivado_project_dir, project_arg)

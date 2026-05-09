@@ -293,8 +293,8 @@ def _override_lv_window_files(config, file_list):
     """
     # Get all files in the window folder, indexed by name without extension
     window_files = {}
-    for filename in os.listdir(config.the_window_folder_input):
-        full_path = os.path.join(config.the_window_folder_input, filename)
+    for filename in os.listdir(config.lv_window_netlist_folder):
+        full_path = os.path.join(config.lv_window_netlist_folder, filename)
         if os.path.isfile(full_path):
             # Use splitext to get the filename without extension
             name_without_ext = os.path.splitext(filename)[0]
@@ -442,8 +442,8 @@ def _validate_ini(config):
     invalid_paths = []
 
     # Check VivadoProjectSettings
-    if not config.vivado_project_path:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectPath")
+    if not config.vivado_project_folder:
+        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
 
     if not config.top_level_entity:
         missing_settings.append("VivadoProjectSettings.TopLevelEntity")
@@ -453,13 +453,13 @@ def _validate_ini(config):
 
     # Don't validate Vivado path if skip_vivado is set
     if not config.skip_vivado:
-        if not config.vivado_tools_path:
-            missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
+        if not config.vivado_tools_folder:
+            missing_settings.append("VivadoProjectSettings.VivadoToolsFolder")
         else:
             # Validate Vivado setting as either tools dir or executable path.
             invalid_path = common.validate_vivado_setting(
-                config.vivado_tools_path,
-                "VivadoProjectSettings.VivadoToolsPath",
+                config.vivado_tools_folder,
+                "VivadoProjectSettings.VivadoToolsFolder",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -489,11 +489,11 @@ def _validate_ini(config):
             invalid_paths.append(invalid_path)
 
     # Check for LV Window folder (optional - when not set, Window files are not integrated)
-    if config.the_window_folder_input:
+    if config.lv_window_netlist_folder:
         # Validate the window folder path
         invalid_path = common.validate_path(
-            config.the_window_folder_input,
-            "VivadoProjectSettings.TheWindowFolder",
+            config.lv_window_netlist_folder,
+            "VivadoProjectSettings.LVWindowNetlistFolder",
             "directory",
         )
         if invalid_path:
@@ -521,11 +521,11 @@ def _validate_ini(config):
 
 def _validate_constraints_files(config):
     invalid_paths = []
-    if config.vivado_project_constraints_files:
-        for i, constr_path in enumerate(config.vivado_project_constraints_files):
+    if config.vivado_project_constraints:
+        for i, constr_path in enumerate(config.vivado_project_constraints):
             invalid_path = common.validate_path(
                 constr_path,
-                f"VivadoProjectSettings.VivadoProjectConstraintsFiles[{i}]",
+                f"VivadoProjectSettings.VivadoProjectConstraints[{i}]",
                 "file",
             )
             if invalid_path:
@@ -575,7 +575,7 @@ def _create_project(mode: ProjectMode, config):
 
     # Add constriants XDC files listed in the config file
     file_list = file_list + [
-        common.fix_file_slashes(file) for file in config.vivado_project_constraints_files
+        common.fix_file_slashes(file) for file in config.vivado_project_constraints
     ]
 
     # Get the lists of VHDL 2008 project files from the configuration
@@ -591,7 +591,7 @@ def _create_project(mode: ProjectMode, config):
     vhdl2008_file_list = _copy_long_path_files(vhdl2008_file_list)
 
     # Override default LV generated files with extracted window files
-    if config.the_window_folder_input:
+    if config.lv_window_netlist_folder:
         file_list = _override_lv_window_files(config, file_list)
 
     # Combine regular and VHDL 2008 files for duplicate checking and add_files
@@ -606,7 +606,7 @@ def _create_project(mode: ProjectMode, config):
     )
 
     # Get settings from VivadoProjectSettings section
-    project_name = config.vivado_project_name
+    project_name = config.top_level_entity
     top_entity = config.top_level_entity
     fpga_part = config.fpga_part
 
@@ -632,8 +632,8 @@ def _create_project(mode: ProjectMode, config):
         set_vhdl2008_files,
     )
 
-    # Use the vivado_tools_path from the config instead of the XILINX environment variable
-    vivado_path = config.vivado_tools_path
+    # Use the vivado_tools_folder from the config instead of the XILINX environment variable
+    vivado_path = config.vivado_tools_folder
 
     # Determine Vivado executable from either direct executable path or tools dir.
     vivado_executable = common.get_vivado_executable(vivado_path)
@@ -642,12 +642,12 @@ def _create_project(mode: ProjectMode, config):
 
     vivado_abs = os.path.abspath(vivado_executable)
 
-    vivado_project_path = os.path.join(os.getcwd(), config.vivado_project_dir)
+    vivado_project_path = os.path.join(os.getcwd(), config.vivado_project_folder)
     if not os.path.exists(vivado_project_path):
         os.makedirs(vivado_project_path)
 
     # Vivado expects to be run from within the project directory
-    os.chdir(config.vivado_project_dir)
+    os.chdir(config.vivado_project_folder)
 
     # Check if the project file exists
     project_file_path = os.path.join(os.getcwd(), project_name + ".xpr")
@@ -658,7 +658,7 @@ def _create_project(mode: ProjectMode, config):
     if not config.skip_vivado and not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your --vivado argument or VivadoToolsPath setting in nihdlsettings.py"
+            f"Please check your --vivado argument or VivadoToolsFolder setting in nihdlsettings.py"
         )
 
     if mode == ProjectMode.NEW:
@@ -719,7 +719,9 @@ def _create_project_handler(config, overwrite=False, update=False):
         ValueError: If both overwrite and update flags were provided
     """
     # Get project file path from VivadoProjectSettings section
-    project_file_path = os.path.join(os.getcwd(), config.vivado_project_path)
+    project_file_path = os.path.join(
+        os.getcwd(), config.vivado_project_folder, f"{config.top_level_entity}.xpr"
+    )
     print(f"Project file path: {project_file_path}")
 
     if not overwrite and not update:

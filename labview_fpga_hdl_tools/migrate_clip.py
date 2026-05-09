@@ -152,7 +152,7 @@ def _extract_data_type(element):
     return "Unknown"
 
 
-def _generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
+def _generate_board_io_csv_from_clip_xml(input_xml_path, clip_output_csv):
     """Process CLIP XML and generate CSV with signal information.
 
     This function:
@@ -162,7 +162,7 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
 
     Args:
         input_xml_path: Path to input CLIP XML file
-        output_csv_path: Path where output CSV will be written
+        clip_output_csv: Path where output CSV will be written
 
     Returns:
         None
@@ -176,7 +176,7 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
             sys.exit(f"Error: Input file not found: {input_xml_path}")
 
         # Ensure output directory exists
-        os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
+        os.makedirs(os.path.dirname(clip_output_csv), exist_ok=True)
 
         # Parse XML
         try:
@@ -191,7 +191,7 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, output_csv_path):
             sys.exit(f"No LabVIEW interface found in {input_xml_path}")
 
         # Open CSV for writing
-        with open(output_csv_path, "w", newline="", encoding="utf-8") as csvfile:
+        with open(clip_output_csv, "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
 
             # Write header
@@ -316,8 +316,8 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
 
         # Extract the original filename
         file_name = os.path.basename(input_xml_path)
-        output_csv_path = os.path.join(output_folder, file_name)
-        long_output_csv_path = common.handle_long_path(output_csv_path)
+        clip_output_csv = os.path.join(output_folder, file_name)
+        long_clip_output_csv = common.handle_long_path(clip_output_csv)
 
         # Read the input file
         with open(long_input_xml_path, "r", encoding="utf-8") as infile:
@@ -329,10 +329,10 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
         updated_content = content.replace("%ClipInstancePath%", instance_path)
 
         # Ensure the output directory exists
-        os.makedirs(os.path.dirname(long_output_csv_path), exist_ok=True)
+        os.makedirs(os.path.dirname(long_clip_output_csv), exist_ok=True)
 
         # Write the updated content to the output file
-        with open(long_output_csv_path, "w", encoding="utf-8") as outfile:
+        with open(long_clip_output_csv, "w", encoding="utf-8") as outfile:
             outfile.write(updated_content)
 
         print(f"Processed XDC file: {file_name}")
@@ -576,44 +576,44 @@ def _validate_ini(config):
     invalid_paths = []
 
     # Check required paths
-    if not config.clip_input_xml_path:
+    if not config.clip_input_xml:
         missing_settings.append("CLIPMigrationSettings.CLIPXML")
     else:
         # Validate input XML path
         invalid_path = common.validate_path(
-            config.clip_input_xml_path, "CLIPMigrationSettings.CLIPXML", "file"
+            config.clip_input_xml, "CLIPMigrationSettings.CLIPXML", "file"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not config.output_csv_path:
+    if not config.clip_output_csv:
         missing_settings.append("CLIPMigrationSettings.LVTargetBoardIO")
 
-    if not config.clip_hdl_path:
+    if not config.clip_top_hdl:
         missing_settings.append("CLIPMigrationSettings.CLIPHDLTop")
     else:
         # Validate CLIP HDL path
         invalid_path = common.validate_path(
-            config.clip_hdl_path, "CLIPMigrationSettings.CLIPHDLTop", "file"
+            config.clip_top_hdl, "CLIPMigrationSettings.CLIPHDLTop", "file"
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not config.clip_inst_example_path:
+    if not config.clip_inst_example:
         missing_settings.append("CLIPMigrationSettings.CLIPInstantiationExample")
 
     # Note: CLIPXDCIn is optional, so we don't check if it's missing -
     #   but if they are present, validate them
-    # Only check for CLIPInstancePath and XDC output folder if there are XDC paths
-    if config.clip_xdc_paths:
-        if not config.clip_instance_path:
-            missing_settings.append("CLIPMigrationSettings.CLIPInstancePath")
+    # Only check for CLIPEntityPath and XDC output folder if there are XDC paths
+    if config.clip_constraints:
+        if not config.clip_entity_path:
+            missing_settings.append("CLIPMigrationSettings.CLIPEntityPath")
 
-        if not config.updated_xdc_folder:
+        if not config.clip_output_xdc_folder:
             missing_settings.append("CLIPMigrationSettings.CLIPXDCOutFolder")
 
         # Validate each XDC path
-        for i, xdc_path in enumerate(config.clip_xdc_paths):
+        for i, xdc_path in enumerate(config.clip_constraints):
             invalid_path = common.validate_path(
                 xdc_path, f"CLIPMigrationSettings.CLIPXDCIn[{i}]", "file"
             )
@@ -648,19 +648,19 @@ def migrate_clip(config=None):
         return 1
 
     # Handle long paths on Windows - fixes path length limitations
-    long_input_xml_path = common.handle_long_path(config.clip_input_xml_path)
+    long_input_xml_path = common.handle_long_path(config.clip_input_xml)
 
     # Process XML
-    _generate_board_io_csv_from_clip_xml(long_input_xml_path, config.output_csv_path)
+    _generate_board_io_csv_from_clip_xml(long_input_xml_path, config.clip_output_csv)
 
     # Generate entity instantiation
     common.generate_hdl_instantiation_example(
-        config.clip_hdl_path, config.clip_inst_example_path, use_component=False
+        config.clip_top_hdl, config.clip_inst_example, use_component=False
     )
 
     # Process all constraint files
-    for xdc_path in config.clip_xdc_paths:
-        _process_constraint_file(xdc_path, config.updated_xdc_folder, config.clip_instance_path)
+    for xdc_path in config.clip_constraints:
+        _process_constraint_file(xdc_path, config.clip_output_xdc_folder, config.clip_entity_path)
 
     # Generate CLIP to Window signal definitions
     _, errors = _generate_clip_to_window_signals(

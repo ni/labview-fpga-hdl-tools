@@ -1,6 +1,6 @@
 # githubvisible=true
 
-set ProjName {MySasquatchProj}
+set ProjName {SasquatchTopTemplate}
 create_project -force $ProjName [pwd] -part xcvu11p-flgb2104-2-e
 set_property target_language VHDL [current_project]
 

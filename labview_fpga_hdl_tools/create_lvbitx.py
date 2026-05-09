@@ -112,14 +112,14 @@ def _create_lv_bitfile(config=None):
         config = common.CommandConfiguration()
 
     # Determine path to CodeGenerationResults.lvtxt from TheWindow folder
-    if not config.the_window_folder_input:
+    if not config.lv_window_netlist_folder:
         print(
-            "Error: the_window_folder_input is not set. "
+            "Error: lv_window_netlist_folder is not set. "
             "create-lvbitx requires a Window netlist folder containing CodeGenerationResults.lvtxt."
         )
         return 1
 
-    window_folder = os.path.abspath(config.the_window_folder_input)
+    window_folder = os.path.abspath(config.lv_window_netlist_folder)
     print(f"Window folder resolved to: {window_folder}")
 
     code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")

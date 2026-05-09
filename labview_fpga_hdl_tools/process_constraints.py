@@ -122,11 +122,11 @@ def process_constraints_template(config):
     clip_content = ""
     from_to_content = ""
 
-    if not config.the_window_folder_input:
-        print("TheWindowFolder input is not specified - skipping Window constraint extraction.")
+    if not config.lv_window_folder:
+        print("LVWindowFolder input is not specified - skipping Window constraint extraction.")
     else:
         window_constraints_path = os.path.join(
-            config.the_window_folder_input, "TheWindowConstraints.xdc"
+            config.lv_window_folder, "TheWindowConstraints.xdc"
         )
 
         # Check if the window constraints file exists
@@ -176,10 +176,10 @@ def process_constraints_template(config):
 
     # Read custom constraints file if specified
     custom_constraints_content = ""
-    if config.custom_constraints_file and os.path.exists(config.custom_constraints_file):
-        with open(config.custom_constraints_file, "r", encoding="utf-8") as f:
+    if config.custom_constraints and os.path.exists(config.custom_constraints):
+        with open(config.custom_constraints, "r", encoding="utf-8") as f:
             custom_constraints_content = f.read()
-        print(f"Loaded custom constraints from {config.custom_constraints_file}")
+        print(f"Loaded custom constraints from {config.custom_constraints}")
     else:
         print("No custom constraints file specified or file not found")
 

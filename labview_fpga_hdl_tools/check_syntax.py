@@ -23,7 +23,7 @@ def _generate_check_syntax_tcl(config, output_path):
         template_tcl_path,
         output_path,
         pre_synth_tcl_path=common.fix_file_slashes(pre_synth_tcl),
-        project_file_name=f"{config.vivado_project_name}.xpr",
+        project_file_name=f"{config.top_level_entity}.xpr",
         top_entity_name=config.top_level_entity,
         fpga_part_name=config.fpga_part,
     )
@@ -34,8 +34,8 @@ def _validate_ini(config):
     missing_settings = []
     invalid_paths = []
 
-    if not config.vivado_project_path:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectPath")
+    if not config.vivado_project_folder:
+        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
 
     if not config.top_level_entity:
         missing_settings.append("VivadoProjectSettings.TopLevelEntity")
@@ -66,18 +66,21 @@ def _validate_ini(config):
             invalid_paths.append(invalid_path)
 
     if not config.skip_vivado:
-        if not config.vivado_tools_path:
-            missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
+        if not config.vivado_tools_folder:
+            missing_settings.append("VivadoProjectSettings.VivadoToolsFolder")
         else:
             invalid_path = common.validate_vivado_setting(
-                config.vivado_tools_path,
-                "VivadoProjectSettings.VivadoToolsPath",
+                config.vivado_tools_folder,
+                "VivadoProjectSettings.VivadoToolsFolder",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
-        if config.vivado_project_path:
-            project_file_path = os.path.join(os.getcwd(), config.vivado_project_path)
+        if config.vivado_project_folder:
+            project_file_path = os.path.join(
+                os.getcwd(), config.vivado_project_folder,
+                f"{config.top_level_entity}.xpr"
+            )
             invalid_path = common.validate_path(project_file_path, "Vivado project file", "file")
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -108,20 +111,20 @@ def _get_check_syntax_status_from_log(log_contents):
 
 def _run_check_syntax(config, generated_tcl_path):
     """Run the generated check-syntax TCL script in Vivado batch mode."""
-    vivado_executable = common.get_vivado_executable(config.vivado_tools_path)
+    vivado_executable = common.get_vivado_executable(config.vivado_tools_folder)
     if not vivado_executable:
-        raise ValueError("VivadoToolsPath setting is missing from configuration")
+        raise ValueError("VivadoToolsFolder setting is missing from configuration")
 
     vivado_abs = os.path.abspath(vivado_executable)
     if not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your --vivado argument or VivadoToolsPath setting in nihdlsettings.py"
+            f"Please check your --vivado argument or VivadoToolsFolder setting in nihdlsettings.py"
         )
 
-    vivado_project_path = os.path.join(os.getcwd(), "VivadoProject")
-    log_path = os.path.join(vivado_project_path, "check_syntax.log")
-    journal_path = os.path.join(vivado_project_path, "check_syntax.jou")
+    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_folder)
+    log_path = os.path.join(vivado_project_dir, "check_syntax.log")
+    journal_path = os.path.join(vivado_project_dir, "check_syntax.jou")
 
     for path in [log_path, journal_path]:
         if os.path.exists(path):
@@ -136,10 +139,10 @@ def _run_check_syntax(config, generated_tcl_path):
 
     print(f"Generated TCL script: {generated_tcl_path}")
     print(f"Vivado executable: {vivado_abs}")
-    print(f"Working directory: {vivado_project_path}")
+    print(f"Working directory: {vivado_project_dir}")
     print(f"Running command: {command}")
 
-    result = subprocess.run(command, cwd=vivado_project_path, shell=True, check=False)
+    result = subprocess.run(command, cwd=vivado_project_dir, shell=True, check=False)
 
     if not os.path.exists(log_path):
         raise RuntimeError("Vivado check-syntax log file was not created.")

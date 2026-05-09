@@ -59,10 +59,8 @@ class CommandConfiguration:
     # ----- VIVADO PROJECT SETTINGS -----
     top_level_entity: Optional[str] = None  # Top-level entity name for Vivado project
     fpga_part: Optional[str] = None  # FPGA part used when creating the Vivado project
-    vivado_project_path: Optional[str] = (
-        None  # Relative path to Vivado project file (e.g., VivadoProject/MyProj.xpr)
-    )
-    vivado_tools_path: Optional[str] = None  # Path to Vivado tools
+    vivado_project_folder: Optional[str] = None  # Relative path to Vivado project folder
+    vivado_tools_folder: Optional[str] = None  # Path to Vivado tools
     hdl_file_lists: List[str] = field(
         default_factory=list
     )  # List of HDL file list paths for Vivado project generation
@@ -72,18 +70,18 @@ class CommandConfiguration:
     constraints_templates: List[str] = field(
         default_factory=list
     )  # List of constraint template file paths
-    vivado_project_constraints_files: List[str] = field(
+    vivado_project_constraints: List[str] = field(
         default_factory=list
     )  # List of Vivado project constraint file paths
     vivado_tcl_scripts_folder: Optional[str] = None  # Folder containing Vivado TCL scripts
     vivado_tcl_scripts_folder_relpath: Optional[str] = (
         None  # Relative path to Vivado TCL scripts folder
     )
-    custom_constraints_file: Optional[str] = None  # Path to custom constraints XDC file
-    the_window_folder_input: Optional[str] = None  # Input folder for generated Window files
+    custom_constraints: Optional[str] = None  # Path to custom constraints XDC file
+    lv_window_netlist_folder: Optional[str] = None  # Input folder for generated Window files
     # ----- LV WINDOW NETLIST SETTINGS -----
-    vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
-    the_window_folder_output: Optional[str] = None  # Destination folder for generated Window files
+    lv_window_vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
+    lv_window_netlist_output_folder: Optional[str] = None  # Destination folder for generated Window files
     # ----- LVFPGA TARGET SETTINGS -----
     custom_signals_csv: Optional[str] = None  # Path to CSV containing signal definitions
     boardio_output: Optional[str] = None  # Path where BoardIO XML will be written
@@ -96,14 +94,14 @@ class CommandConfiguration:
     lv_target_xml_templates: List[str] = field(
         default_factory=list
     )  # Templates for target XML generation
-    lv_target_constraints_files: List[str] = field(
+    lv_target_constraints: List[str] = field(
         default_factory=list
     )  # List of LabVIEW target constraint file paths
     include_target_io_ports: Optional[bool] = (
         None  # Whether to include CLIP socket ports in generated files
     )
     include_custom_io: Optional[bool] = None  # Whether to include custom I/O in generated files
-    lv_target_plugin_folder: Optional[str] = None  # Destination folder for plugin generation
+    lv_target_plugin_output_folder: Optional[str] = None  # Destination folder for plugin generation
     lv_target_name: Optional[str] = None  # Name of the LabVIEW FPGA target (e.g., "PXIe-7903")
     lv_target_guid: Optional[str] = None  # GUID for the LabVIEW FPGA target
     lv_target_install_folder: Optional[str] = None  # Installation folder for target plugins
@@ -115,24 +113,22 @@ class CommandConfiguration:
     num_hdl_registers: Optional[int] = None  # Number of HDL registers
     max_hdl_reg_offset: Optional[int] = None  # Maximum HDL register byte offset
     # ----- CLIP MIGRATION SETTINGS -----
-    clip_input_xml_path: Optional[str] = None  # Path to source CLIP XML file
-    output_csv_path: Optional[str] = None  # Path where CSV signals will be written
-    clip_hdl_path: Optional[str] = None  # Path to top-level CLIP HDL file
-    clip_inst_example_path: Optional[str] = None  # Path where instantiation example will be written
-    clip_instance_path: Optional[str] = (
+    clip_input_xml: Optional[str] = None  # Path to source CLIP XML file
+    clip_output_csv: Optional[str] = None  # Path where CSV signals will be written
+    clip_top_hdl: Optional[str] = None  # Path to top-level CLIP HDL file
+    clip_inst_example: Optional[str] = None  # Path where instantiation example will be written
+    clip_entity_path: Optional[str] = (
         None  # HDL hierarchy path for CLIP instance (not a file path)
     )
-    clip_xdc_paths: List[str] = field(default_factory=list)  # List of paths to XDC constraint files
-    updated_xdc_folder: Optional[str] = None  # Folder where updated XDC files will be written
+    clip_constraints: List[str] = field(default_factory=list)  # List of paths to XDC constraint files
+    clip_output_xdc_folder: Optional[str] = None  # Folder where updated XDC files will be written
     clip_to_window_signal_definitions: Optional[str] = (
         None  # Path for CLIP-to-Window signal definitions file
     )
     # ----- MODELSIM SETTINGS -----
-    modelsim_tools_path: Optional[str] = None  # Path to ModelSim installation directory
-    xilinx_sim_lib_path: Optional[str] = None  # Path to compiled Xilinx simulation libraries
-    modelsim_project_path: Optional[str] = (
-        None  # Relative path to ModelSim project file (e.g., ModelSimProject/MyProj.mpf)
-    )
+    modelsim_tools_folder: Optional[str] = None  # Path to ModelSim installation directory
+    xilinx_sim_lib_folder: Optional[str] = None  # Path to compiled Xilinx simulation libraries
+    modelsim_project_folder: Optional[str] = None  # Relative path to ModelSim project folder
     modelsim_file_lists: List[str] = field(
         default_factory=list
     )  # Ordered file lists for ModelSim compilation (deps before sources)
@@ -173,27 +169,13 @@ class CommandConfiguration:
         """Set the FPGA part (e.g., 'xcku040-ffva1156-2-e')."""
         self.fpga_part = value
 
-    def set_vivado_project_path(self, value):
-        """Set the Vivado project path (e.g., 'VivadoProject/MyProj.xpr')."""
-        self.vivado_project_path = value
+    def set_vivado_project_folder(self, value):
+        """Set the Vivado project folder (e.g., 'VivadoProject')."""
+        self.vivado_project_folder = value
 
-    @property
-    def vivado_project_name(self):
-        """Derive project name (stem without extension) from vivado_project_path."""
-        if self.vivado_project_path is None:
-            return None
-        return os.path.splitext(os.path.basename(self.vivado_project_path))[0]
-
-    @property
-    def vivado_project_dir(self):
-        """Derive project directory from vivado_project_path."""
-        if self.vivado_project_path is None:
-            return None
-        return os.path.dirname(self.vivado_project_path) or "."
-
-    def set_vivado_tools_path(self, value):
+    def set_vivado_tools_folder(self, value):
         """Set the Vivado tools path (resolved to absolute)."""
-        self.vivado_tools_path = resolve_path(value)
+        self.vivado_tools_folder = resolve_path(value)
 
     def add_hdl_file_list(self, value):
         """Append an HDL file list path (resolved to absolute)."""
@@ -213,34 +195,34 @@ class CommandConfiguration:
         if resolved is not None:
             self.constraints_templates.append(resolved)
 
-    def add_vivado_project_constraints_file(self, value):
+    def add_vivado_project_constraints(self, value):
         """Append a Vivado project constraints file path (resolved to absolute)."""
         resolved = resolve_path(value)
         if resolved is not None:
-            self.vivado_project_constraints_files.append(resolved)
+            self.vivado_project_constraints.append(resolved)
 
     def set_vivado_tcl_scripts_folder(self, value):
         """Set the Vivado TCL scripts folder (resolved to absolute)."""
         self.vivado_tcl_scripts_folder = resolve_path(value)
         self.vivado_tcl_scripts_folder_relpath = value
 
-    def set_custom_constraints_file(self, value):
+    def set_custom_constraints(self, value):
         """Set the custom constraints XDC file path (resolved to absolute)."""
-        self.custom_constraints_file = resolve_path(value)
+        self.custom_constraints = resolve_path(value)
 
-    def set_the_window_folder_input(self, value):
+    def set_lv_window_netlist_folder(self, value):
         """Set the input Window folder path (resolved to absolute)."""
-        self.the_window_folder_input = resolve_path(value)
+        self.lv_window_netlist_folder = resolve_path(value)
 
     # --- LV Window Netlist Settings setters ---
 
-    def set_vivado_project_export_xpr(self, value):
+    def set_lv_window_vivado_project_export_xpr(self, value):
         """Set the exported Vivado project .xpr path (resolved to absolute)."""
-        self.vivado_project_export_xpr = resolve_path(value)
+        self.lv_window_vivado_project_export_xpr = resolve_path(value)
 
-    def set_the_window_folder_output(self, value):
+    def set_lv_window_netlist_output_folder(self, value):
         """Set the output Window folder path (resolved to absolute)."""
-        self.the_window_folder_output = resolve_path(value)
+        self.lv_window_netlist_output_folder = resolve_path(value)
 
     # --- LVFPGA Target Settings setters ---
 
@@ -276,11 +258,11 @@ class CommandConfiguration:
         if resolved is not None:
             self.lv_target_xml_templates.append(resolved)
 
-    def add_lv_target_constraints_file(self, value):
+    def add_lv_target_constraints(self, value):
         """Append a LV target constraints file path (resolved to absolute)."""
         resolved = resolve_path(value)
         if resolved is not None:
-            self.lv_target_constraints_files.append(resolved)
+            self.lv_target_constraints.append(resolved)
 
     def set_include_target_io_ports(self, value):
         """Set whether to include CLIP socket ports (bool or string)."""
@@ -296,9 +278,9 @@ class CommandConfiguration:
         else:
             self.include_custom_io = value
 
-    def set_lv_target_plugin_folder(self, value):
+    def set_lv_target_plugin_output_folder(self, value):
         """Set the LV target plugin folder (resolved to absolute)."""
-        self.lv_target_plugin_folder = resolve_path(value)
+        self.lv_target_plugin_output_folder = resolve_path(value)
 
     def set_lv_target_name(self, value):
         """Set the LabVIEW FPGA target name."""
@@ -337,35 +319,35 @@ class CommandConfiguration:
 
     # --- CLIP Migration Settings setters ---
 
-    def set_clip_input_xml_path(self, value):
+    def set_clip_input_xml(self, value):
         """Set the CLIP XML input path (resolved to absolute)."""
-        self.clip_input_xml_path = resolve_path(value)
+        self.clip_input_xml = resolve_path(value)
 
-    def set_output_csv_path(self, value):
+    def set_clip_output_csv(self, value):
         """Set the CSV output path (resolved to absolute)."""
-        self.output_csv_path = resolve_path(value)
+        self.clip_output_csv = resolve_path(value)
 
-    def set_clip_hdl_path(self, value):
+    def set_clip_top_hdl(self, value):
         """Set the CLIP HDL top-level file path (resolved to absolute)."""
-        self.clip_hdl_path = resolve_path(value)
+        self.clip_top_hdl = resolve_path(value)
 
-    def set_clip_inst_example_path(self, value):
+    def set_clip_inst_example(self, value):
         """Set the CLIP instantiation example path (resolved to absolute)."""
-        self.clip_inst_example_path = resolve_path(value)
+        self.clip_inst_example = resolve_path(value)
 
-    def set_clip_instance_path(self, value):
+    def set_clip_entity_path(self, value):
         """Set the CLIP instance HDL hierarchy path (not a file path)."""
-        self.clip_instance_path = value
+        self.clip_entity_path = value
 
-    def add_clip_xdc_path(self, value):
+    def add_clip_constraints(self, value):
         """Append a CLIP XDC constraint file path (resolved to absolute)."""
         resolved = resolve_path(value)
         if resolved is not None:
-            self.clip_xdc_paths.append(resolved)
+            self.clip_constraints.append(resolved)
 
-    def set_updated_xdc_folder(self, value):
+    def set_clip_output_xdc_folder(self, value):
         """Set the updated XDC output folder (resolved to absolute)."""
-        self.updated_xdc_folder = resolve_path(value)
+        self.clip_output_xdc_folder = resolve_path(value)
 
     def set_clip_to_window_signal_definitions(self, value):
         """Set the CLIP-to-Window signal definitions path (resolved to absolute)."""
@@ -373,13 +355,13 @@ class CommandConfiguration:
 
     # --- ModelSim Settings setters ---
 
-    def set_modelsim_tools_path(self, value):
+    def set_modelsim_tools_folder(self, value):
         """Set the ModelSim installation path (resolved to absolute)."""
-        self.modelsim_tools_path = resolve_path(value)
+        self.modelsim_tools_folder = resolve_path(value)
 
-    def set_xilinx_sim_lib_path(self, value):
+    def set_xilinx_sim_lib_folder(self, value):
         """Set the Xilinx simulation library path (resolved to absolute)."""
-        self.xilinx_sim_lib_path = resolve_path(value)
+        self.xilinx_sim_lib_folder = resolve_path(value)
 
     def add_modelsim_file_list(self, value):
         """Append a ModelSim file list path (resolved to absolute)."""
@@ -387,16 +369,9 @@ class CommandConfiguration:
         if resolved is not None:
             self.modelsim_file_lists.append(resolved)
 
-    def set_modelsim_project_path(self, value):
-        """Set the ModelSim project path (e.g., 'ModelSimProject/MyProj.mpf')."""
-        self.modelsim_project_path = value
-
-    @property
-    def modelsim_project_dir(self):
-        """Derive project directory from modelsim_project_path."""
-        if self.modelsim_project_path is None:
-            return None
-        return os.path.dirname(self.modelsim_project_path) or "."
+    def set_modelsim_project_folder(self, value):
+        """Set the ModelSim project folder (e.g., 'ModelSimProject')."""
+        self.modelsim_project_folder = value
 
     # --- Window Hierarchy Settings setters ---
 
