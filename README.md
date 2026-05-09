@@ -52,7 +52,7 @@ Every hook receives a `CommandContext` with these attributes:
 | Attribute | Description |
 | --- | --- |
 | `context.config` | `CommandConfiguration` object — configure it in `pre_all` via setters. |
-| `context.command_name` | Underscore-separated command name (for example, `"create_project"`). |
+| `context.command_name` | Underscore-separated command name (for example, `"gen_vivado"`). |
 | `context.command_kwargs` | Dict of CLI arguments forwarded to the command function. |
 | `context.result` | Return value of the command (available in post hooks only). |
 
@@ -92,8 +92,8 @@ def pre_all(context):
     config.set_fpga_part("xcvu11p-flgb2104-2-e")
     # ... other settings ...
 
-def pre_create_project(context):
-    # Override just for create-project
+def pre_gen_vivado(context):
+    # Override just for gen-vivado
     context.config.set_fpga_part("xcku060-ffva1156-2-e")
     context.config.set_vivado_project_path("VivadoProject/MyCustomProj.xpr")
 ```
@@ -188,12 +188,12 @@ def pre_create_project(context):
 Define `pre_{command}` / `post_{command}` functions using underscore-separated command names:
 
 ```python
-def pre_check_syntax(context):
-    """Runs before check-syntax."""
+def pre_check_vivado(context):
+    """Runs before check-vivado."""
     pass
 
-def post_compile_project(context):
-    """Runs after compile-project. context.result has the return value."""
+def post_compile_vivado(context):
+    """Runs after compile-vivado. context.result has the return value."""
     pass
 ```
 
@@ -205,25 +205,51 @@ A default template is provided at `labview_fpga_hdl_tools/nihdlsettings_default.
 
 The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 
+### Workspace Setup
+
+| Command | Purpose | Options |
+| --- | --- | --- |
+| install-deps | Install GitHub dependencies from dependencies.toml. | --delete, --pre, --latest, --config |
+
+### Vivado
+
+| Command | Purpose | Options |
+| --- | --- | --- |
+| gen-vivado | Create or update the Vivado project from settings + file lists. | --overwrite (-o), --update (-u), --config |
+| launch-vivado | Launch the configured Vivado project. | --config |
+| check-vivado | Run Vivado RTL elaboration syntax/hierarchy check. | --config |
+| compile-vivado | Run Vivado compile flow to bitstream generation. | --config |
+
+### HDL Tools
+
+| Command | Purpose | Options |
+| --- | --- | --- |
+| gen-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
+| gen-hdl | Generate Window VHDL outputs only (automatically run in gen-vivado). | --config |
+| gen-xdc | Generate XDC files from constraint templates/macros (automatically run in gen-vivado). | --config |
+| gen-lvbitx | Build a .lvbitx from Vivado implementation output (automatically run in compile-vivado). | --config |
+
+### LabVIEW FPGA Target
+
+| Command | Purpose | Options |
+| --- | --- | --- |
+| gen-guid | Generate a new GUID for LVTargetGUID. | --config |
+| gen-target | Generate full LabVIEW FPGA target support outputs (XML, VHDL stubs, plugin content). | --config |
+| install-target | Install generated LabVIEW FPGA target plugin files. | --config |
+
+### ModelSim
+
+| Command | Purpose | Options |
+| --- | --- | --- |
+| gen-modelsim | Create a ModelSim project for HDL simulation. | --overwrite (-o), --config |
+| launch-modelsim | Launch ModelSim with the current project. | --batch, --config |
+| sim-modelsim | Run a ModelSim simulation with a custom .do file. | --do-file, --config |
+
+### CLIP Migration
+
 | Command | Purpose | Options |
 | --- | --- | --- |
 | migrate-clip | Migrate CLIP assets into top-level HDL workflow artifacts. | --config |
-| install-target | Install generated LabVIEW FPGA target plugin files. | --config |
-| get-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
-| get-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
-| gen-target | Generate full LabVIEW FPGA target support outputs (XML, VHDL stubs, plugin content). | --config |
-| gen-hdl | Generate Window VHDL outputs only. | --config |
-| gen-xdc | Generate XDC files from constraint templates/macros. | --config |
-| create-project | Create or update the Vivado project from settings + file lists. | --overwrite (-o), --update (-u), --config |
-| check-syntax | Run Vivado RTL elaboration syntax/hierarchy check. | --config |
-| compile-project | Run Vivado compile flow to bitstream generation. | --config |
-| launch-vivado | Launch the configured Vivado project. | --config |
-| create-modelsim | Create a ModelSim project for HDL simulation. | --overwrite (-o), --config |
-| launch-modelsim | Launch ModelSim with the current project. | --batch, --config |
-| sim-modelsim | Run a ModelSim simulation with a custom .do file. | --do-file, --config |
-| install-deps | Install GitHub dependencies from dependencies.toml. | --delete, --pre, --latest, --config |
-| create-lvbitx | Build a .lvbitx from Vivado implementation output. | --config |
-| gen-guid | Generate a new GUID for LVTargetGUID. | --config |
 
 ### Common Command Notes
 
@@ -231,45 +257,48 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 - Use `set_skip_vivado(True)` / `set_skip_modelsim(True)` in `nihdlsettings.py` to validate settings without launching external tools.
 - install-deps and gen-guid do not need most settings (but still require `nihdlsettings.py`).
 - install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.
-- create-lvbitx is intended to run from VivadoProject/<project>.runs/impl_1 (it warns if run elsewhere).
-- create-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
+- gen-lvbitx is intended to run from VivadoProject/<project>.runs/impl_1 (it warns if run elsewhere).
+- gen-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
 - launch-modelsim defaults to GUI mode; use --batch for headless simulation.
 
 ## Per-Command Setting Requirements
 
 | Command | Required Settings (normal run) | Notes |
 | --- | --- | --- |
-| migrate-clip | `clip_input_xml_path`, `output_csv_path`, `clip_hdl_path`, `clip_inst_example_path`, `clip_to_window_signal_definitions` | If `clip_xdc_paths` is set, `clip_instance_path` and `updated_xdc_folder` are also required. |
-| install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_folder` | Install folder and plugin folder must exist. |
-| get-window | `vivado_project_export_xpr`, `the_window_folder_output`, `vivado_tools_path` | When skip_vivado is set, Vivado is not launched. |
-| gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
+| install-deps | `dependencies` | Does not use other settings. |
+| gen-vivado | `vivado_project_path`, `top_level_entity`, `fpga_part`, `hdl_file_lists` | Non-skip adds `vivado_tools_path`. If `the_window_folder_input` is set, Window files are integrated. |
+| launch-vivado | `vivado_tools_path`, `vivado_project_path` | Also requires existing project .xpr file. |
+| check-vivado | `vivado_project_path`, `top_level_entity`, `fpga_part`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
+| compile-vivado | `vivado_project_path`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
+| gen-window | `vivado_project_export_xpr`, `the_window_folder_output`, `vivado_tools_path` | When skip_vivado is set, Vivado is not launched. |
 | gen-hdl | `window_vhdl_templates`, `window_vhdl_output_folder` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
 | gen-xdc | None enforced by a dedicated validator | For useful output, set `constraints_templates`. |
-| create-project | `vivado_project_path`, `top_level_entity`, `fpga_part`, `hdl_file_lists` | Non-skip adds `vivado_tools_path`. If `the_window_folder_input` is set, Window files are integrated. |
-| check-syntax | `vivado_project_path`, `top_level_entity`, `fpga_part`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
-| compile-project | `vivado_project_path`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
-| launch-vivado | `vivado_tools_path`, `vivado_project_path` | Also requires existing project .xpr file. |
-| create-modelsim | `top_level_entity`, `hdl_file_lists`, `modelsim_tools_path` | Uses `modelsim_file_lists` if set, otherwise `hdl_file_lists`. |
-| launch-modelsim | `top_level_entity`, `modelsim_tools_path` | Requires existing ModelSim project directory (run create-modelsim first). |
-| create-lvbitx | `top_level_entity` | Auto-discovers LabVIEW via nisyscfg. Uses `top_level_entity` to derive filenames. |
-| install-deps | `dependencies` | Does not use other settings. |
+| gen-lvbitx | `top_level_entity` | Auto-discovers LabVIEW via nisyscfg. Uses `top_level_entity` to derive filenames. |
 | gen-guid | None | Does not use any settings. |
+| gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
+| install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_folder` | Install folder and plugin folder must exist. |
+| gen-modelsim | `top_level_entity`, `hdl_file_lists`, `modelsim_tools_path` | Uses `modelsim_file_lists` if set, otherwise `hdl_file_lists`. |
+| launch-modelsim | `top_level_entity`, `modelsim_tools_path` | Requires existing ModelSim project directory (run gen-modelsim first). |
+| sim-modelsim | `top_level_entity`, `modelsim_tools_path` | Requires existing ModelSim project directory. |
+| migrate-clip | `clip_input_xml_path`, `output_csv_path`, `clip_hdl_path`, `clip_inst_example_path`, `clip_to_window_signal_definitions` | If `clip_xdc_paths` is set, `clip_instance_path` and `updated_xdc_folder` are also required. |
 
 ## Example Usage
 
 ```bash
 # Create or refresh Vivado project
-# Create or refresh Vivado project
-nihdl create-project --overwrite
+nihdl gen-vivado --overwrite
 
 # Fast RTL syntax/hierarchy check
-nihdl check-syntax
+nihdl check-vivado
+
+# Full compile to bitstream
+nihdl compile-vivado
 
 # Generate custom target support artifacts
 nihdl gen-target
 
 # Create ModelSim project and compile all VHDL
-nihdl create-modelsim
+nihdl gen-modelsim
 
 # Launch ModelSim GUI
 nihdl launch-modelsim
