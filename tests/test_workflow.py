@@ -321,8 +321,8 @@ def get_test_set_errors():
             "expected_exit_code": 1,  # Expect error
         },
         {
-            "name": "get-window with bad settings",
-            "command": f"{nihdl_cmd} get-window --config=badsettings.py",
+            "name": "gen-window with bad settings",
+            "command": f"{nihdl_cmd} gen-window --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
@@ -335,29 +335,29 @@ def get_test_set_errors():
             "expected_exit_code": 1,  # Expect error
         },
         {
-            "name": "create-lvbitx with bad settings",
-            "command": f"{nihdl_cmd} create-lvbitx --config=../../../badsettings.py",
+            "name": "gen-lvbitx with bad settings",
+            "command": f"{nihdl_cmd} gen-lvbitx --config=../../../badsettings.py",
             "working_dir": paths["impl_dir"],
             "disable_test": False,
             "expected_exit_code": 0,  # badsettings still has valid window folder + top entity
         },
         {
-            "name": "check-syntax with bad settings",
-            "command": f"{nihdl_cmd} check-syntax --config=badsettings.py",
+            "name": "check-vivado with bad settings",
+            "command": f"{nihdl_cmd} check-vivado --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
-            "name": "compile-project with bad settings",
-            "command": f"{nihdl_cmd} compile-project --config=badsettings.py",
+            "name": "compile-vivado with bad settings",
+            "command": f"{nihdl_cmd} compile-vivado --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
-            "name": "create-modelsim with bad settings",
-            "command": f"{nihdl_cmd} create-modelsim --config=badsettings.py",
+            "name": "gen-modelsim with bad settings",
+            "command": f"{nihdl_cmd} gen-modelsim --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 0,  # skip_modelsim is set, ModelSim path validation is skipped
@@ -386,15 +386,15 @@ def get_test_set_no_window():
 
     return [
         {
-            "name": "create-project without window folder",
-            "command": f"{nihdl_cmd} create-project --config=nowindowsettings.py",
+            "name": "gen-vivado without window folder",
+            "command": f"{nihdl_cmd} gen-vivado --config=nowindowsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 0,  # Should succeed without window folder
         },
         {
-            "name": "create-lvbitx without window folder",
-            "command": f"{nihdl_cmd} create-lvbitx --config=../../../nowindowsettings.py",
+            "name": "gen-lvbitx without window folder",
+            "command": f"{nihdl_cmd} gen-lvbitx --config=../../../nowindowsettings.py",
             "working_dir": paths["impl_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Should fail - requires CodeGenerationResults.lvtxt
