@@ -11,7 +11,7 @@ Hook execution order for each command:
 
 The context object passed to every hook has these attributes:
     context.config         - CommandConfiguration (configure it in pre_all)
-    context.command_name   - e.g. "create_project"
+    context.command_name   - e.g. "gen_vivado"
     context.command_kwargs - dict of CLI arguments forwarded to the command
     context.result         - return value of the command (available in post hooks)
 
@@ -196,22 +196,22 @@ def post_all(context):
 # Uncomment and customize the hooks you need.
 # ---------------------------------------------------------------------------
 
-# def pre_create_project(context):
+# def pre_gen_vivado(context):
 #     pass
 #
-# def post_create_project(context):
+# def post_gen_vivado(context):
 #     pass
 #
-# def pre_check_syntax(context):
+# def pre_check_vivado(context):
 #     pass
 #
-# def post_check_syntax(context):
+# def post_check_vivado(context):
 #     pass
 #
-# def pre_compile_project(context):
+# def pre_compile_vivado(context):
 #     pass
 #
-# def post_compile_project(context):
+# def post_compile_vivado(context):
 #     pass
 #
 # def pre_launch_vivado(context):
@@ -220,10 +220,10 @@ def post_all(context):
 # def post_launch_vivado(context):
 #     pass
 #
-# def pre_get_window(context):
+# def pre_gen_window(context):
 #     pass
 #
-# def post_get_window(context):
+# def post_gen_window(context):
 #     pass
 #
 # def pre_gen_target(context):
@@ -248,6 +248,30 @@ def post_all(context):
 #     pass
 #
 # def post_gen_guid(context):
+#     pass
+#
+# def pre_gen_modelsim(context):
+#     pass
+#
+# def post_gen_modelsim(context):
+#     pass
+#
+# def pre_launch_modelsim(context):
+#     pass
+#
+# def post_launch_modelsim(context):
+#     pass
+#
+# def pre_sim_modelsim(context):
+#     pass
+#
+# def post_sim_modelsim(context):
+#     pass
+#
+# def pre_gen_lvbitx(context):
+#     pass
+#
+# def post_gen_lvbitx(context):
 #     pass
 #
 # def pre_migrate_clip(context):

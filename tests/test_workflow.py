@@ -178,26 +178,26 @@ def get_test_set_no_errors():
             "disable_test": False,
         },
         {
-            "name": "create-project new",
-            "command": f"{nihdl_cmd} create-project",
+            "name": "gen-vivado new",
+            "command": f"{nihdl_cmd} gen-vivado",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
-            "name": "create-project overwrite",
-            "command": f"{nihdl_cmd} create-project --overwrite",
+            "name": "gen-vivado overwrite",
+            "command": f"{nihdl_cmd} gen-vivado --overwrite",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
-            "name": "create-project update",
-            "command": f"{nihdl_cmd} create-project --update",
+            "name": "gen-vivado update",
+            "command": f"{nihdl_cmd} gen-vivado --update",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
-            "name": "get-window",
-            "command": f"{nihdl_cmd} get-window",
+            "name": "gen-window",
+            "command": f"{nihdl_cmd} gen-window",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
@@ -208,8 +208,8 @@ def get_test_set_no_errors():
             "disable_test": False,
         },
         {
-            "name": "create-lvbitx",
-            "command": f"{nihdl_cmd} create-lvbitx --config=../../../nihdlsettings.py",
+            "name": "gen-lvbitx",
+            "command": f"{nihdl_cmd} gen-lvbitx --config=../../../nihdlsettings.py",
             "working_dir": paths["impl_dir"],
             "disable_test": False,
         },
@@ -232,20 +232,20 @@ def get_test_set_no_errors():
             "disable_test": False,
         },
         {
-            "name": "check-syntax",
-            "command": f"{nihdl_cmd} check-syntax",
+            "name": "check-vivado",
+            "command": f"{nihdl_cmd} check-vivado",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
-            "name": "compile-project",
-            "command": f"{nihdl_cmd} compile-project",
+            "name": "compile-vivado",
+            "command": f"{nihdl_cmd} compile-vivado",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
         {
-            "name": "create-modelsim",
-            "command": f"{nihdl_cmd} create-modelsim",
+            "name": "gen-modelsim",
+            "command": f"{nihdl_cmd} gen-modelsim",
             "working_dir": paths["target_dir"],
             "disable_test": False,
         },
@@ -272,29 +272,29 @@ def get_test_set_errors():
 
     return [
         {
-            "name": "create-project with bad settings",
-            "command": f"{nihdl_cmd} create-project --config=badsettings.py",
+            "name": "gen-vivado with bad settings",
+            "command": f"{nihdl_cmd} gen-vivado --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
-            "name": "create-project with --update flag but no project",
-            "command": f"{nihdl_cmd} create-project --update",
+            "name": "gen-vivado with --update flag but no project",
+            "command": f"{nihdl_cmd} gen-vivado --update",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error
         },
         {
-            "name": "create-project with no flags - should complete successfully",
-            "command": f"{nihdl_cmd} create-project",
+            "name": "gen-vivado with no flags - should complete successfully",
+            "command": f"{nihdl_cmd} gen-vivado",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 0,  # Expect NO error
         },
         {
-            "name": "create-project with no flags but project already created",
-            "command": f"{nihdl_cmd} create-project",
+            "name": "gen-vivado with no flags but project already created",
+            "command": f"{nihdl_cmd} gen-vivado",
             "working_dir": paths["target_dir"],
             "disable_test": False,
             "expected_exit_code": 1,  # Expect error

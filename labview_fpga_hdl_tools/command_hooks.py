@@ -24,7 +24,7 @@ class CommandContext:
 
     Attributes:
         config: CommandConfiguration loaded from nihdlsettings.py (set by pre_all).
-        command_name: Name of the command being executed (e.g. "create_project").
+        command_name: Name of the command being executed (e.g. "gen_vivado").
         command_kwargs: Dict of keyword arguments that will be passed to the command.
         result: Return value from the command function (available in post hooks).
         invocation_dir: The working directory from which the nihdl command was
@@ -122,7 +122,7 @@ def run_with_hooks(command_name, command_func, command_config_path=None, **comma
     The command itself runs from the original working directory.
 
     Args:
-        command_name: Underscore-separated command name (e.g. "create_project").
+        command_name: Underscore-separated command name (e.g. "gen_vivado").
         command_func: The callable command function to execute.
         command_config_path: Optional path to nihdlsettings.py.
         **command_kwargs: Keyword arguments to pass to the command function.
