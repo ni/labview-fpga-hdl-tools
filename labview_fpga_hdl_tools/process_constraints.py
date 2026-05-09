@@ -122,11 +122,11 @@ def process_constraints_template(config):
     clip_content = ""
     from_to_content = ""
 
-    if not config.lv_window_folder:
-        print("LVWindowFolder input is not specified - skipping Window constraint extraction.")
+    if not config.lv_window_netlist_folder:
+        print("TheWindowFolder input is not specified - skipping Window constraint extraction.")
     else:
         window_constraints_path = os.path.join(
-            config.lv_window_folder, "TheWindowConstraints.xdc"
+            config.lv_window_netlist_folder, "TheWindowConstraints.xdc"
         )
 
         # Check if the window constraints file exists

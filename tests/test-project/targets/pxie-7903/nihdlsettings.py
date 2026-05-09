@@ -38,9 +38,9 @@ def pre_all(context):
     config.set_lv_window_netlist_folder("lvWindowNetlist")
 
     # --- LVFPGA Target Settings ---
-    config.set_custom_signals_csv("lvFpgaTarget/LVTargetBoardIO.csv")
-    config.set_include_target_io_ports(True)
-    config.set_include_custom_io(True)
+    config.set_custom_io_csv("lvFpgaTarget/LVTargetBoardIO.csv")
+    config.set_include_board_io_on_lv_window(True)
+    config.set_include_custom_io_on_lv_window(True)
     config.set_lv_target_name("PXIe-7903Aurora")
     config.set_lv_target_guid("8943868e-fc0c-4e48-a2e9-1ebce7779d5c")
     config.set_lv_target_install_folder("../../../test-plugin-install-dir")
@@ -63,9 +63,6 @@ def pre_all(context):
 
     # Outputs
     config.set_window_vhdl_output_folder("objects/GeneratedHDL")
-    config.set_board_io_signal_assignments_example(
-        "objects/GeneratedHDL/BoardIOSignalAssignmentsExample.vhd"
-    )
     config.set_lv_target_plugin_output_folder("objects/LVTargetPlugin/PXIe-7903Aurora")
     config.set_boardio_output("objects/LVTargetPlugin/PXIe-7903Aurora/boardio.xml")
     config.set_clock_output("objects/LVTargetPlugin/PXIe-7903Aurora/CustomClocks.xml")

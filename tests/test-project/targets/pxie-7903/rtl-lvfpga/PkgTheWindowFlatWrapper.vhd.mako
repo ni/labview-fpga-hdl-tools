@@ -160,7 +160,7 @@ package PkgTheWindowFlatWrapper is
       aPxieDstarB : in std_logic;
       aPxieDstarC : out std_logic;
 
-  % if include_target_io:
+  % if include_board_io:
       -----------------------------------
       -- CLIP Socket ports
       -----------------------------------

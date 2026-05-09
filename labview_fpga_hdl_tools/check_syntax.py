@@ -78,8 +78,7 @@ def _validate_ini(config):
 
         if config.vivado_project_folder:
             project_file_path = os.path.join(
-                os.getcwd(), config.vivado_project_folder,
-                f"{config.top_level_entity}.xpr"
+                os.getcwd(), config.vivado_project_folder, f"{config.top_level_entity}.xpr"
             )
             invalid_path = common.validate_path(project_file_path, "Vivado project file", "file")
             if invalid_path:

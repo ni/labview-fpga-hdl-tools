@@ -49,13 +49,13 @@ Available setters (grouped by section):
         set_lv_window_netlist_folder
 
     LVFPGA Target Settings:
-        set_custom_signals_csv, set_include_target_io_ports,
-        set_include_custom_io, set_lv_target_name, set_lv_target_guid,
+        set_custom_io_csv, set_include_board_io_on_lv_window,
+        set_include_custom_io_on_lv_window, set_lv_target_name, set_lv_target_guid,
         set_lv_target_install_folder, add_lv_target_constraints,
         set_lv_target_menus_folder, set_lv_target_info_ini,
         set_lv_target_exclude_files, set_max_hdl_reg_offset,
         add_window_vhdl_template, add_lv_target_xml_template,
-        set_window_vhdl_output_folder, set_board_io_signal_assignments_example,
+        set_window_vhdl_output_folder,
         set_lv_target_plugin_output_folder, set_boardio_output, set_clock_output
 
     CLIP Migration Settings:
@@ -116,18 +116,16 @@ def pre_all(context):
     config.set_lv_window_netlist_folder("lvWindowNetlist")
 
     # --- LVFPGA Target Settings ---
-    config.set_custom_signals_csv("lvFpgaTarget/LVTargetBoardIO.csv")
-    config.set_include_target_io_ports(False)
-    config.set_include_custom_io(False)
+    config.set_custom_io_csv("lvFpgaTarget/LVTargetBoardIO.csv")
+    config.set_include_board_io_on_lv_window(False)
+    config.set_include_custom_io_on_lv_window(False)
     config.set_lv_target_name("PXIe-7903Custom")
     config.set_lv_target_guid("00000000-0000-0000-0000-000000000000")
     config.set_lv_target_install_folder(
         "C:/Program Files/NI/LVAddons/flexrioii/1/Targets/NI/FPGA/RIO/79XXR"
     )
 
-    config.add_lv_target_constraints(
-        "../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc"
-    )
+    config.add_lv_target_constraints("../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc")
     config.add_lv_target_constraints(
         "../../deps/flexrio/targets/pxie-7903/xdc/constraints_place.xdc"
     )
@@ -159,9 +157,6 @@ def pre_all(context):
 
     # Outputs
     config.set_window_vhdl_output_folder("objects/GeneratedHDL")
-    config.set_board_io_signal_assignments_example(
-        "objects/GeneratedHDL/BoardIOSignalAssignmentsExample.vhd"
-    )
     config.set_lv_target_plugin_output_folder("objects/LVTargetPlugin/PXIe-7903Custom")
     config.set_boardio_output("objects/LVTargetPlugin/PXIe-7903Custom/boardio.xml")
     config.set_clock_output("objects/LVTargetPlugin/PXIe-7903Custom/CustomClocks.xml")

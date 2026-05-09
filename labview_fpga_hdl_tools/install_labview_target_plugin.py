@@ -95,7 +95,9 @@ def _validate_ini(config):
     else:
         # Validate plugin folder
         invalid_path = common.validate_path(
-            config.lv_target_plugin_output_folder, "LVFPGATargetSettings.LVTargetPluginOutputFolder", "directory"
+            config.lv_target_plugin_output_folder,
+            "LVFPGATargetSettings.LVTargetPluginOutputFolder",
+            "directory",
         )
         if invalid_path:
             invalid_paths.append(invalid_path)

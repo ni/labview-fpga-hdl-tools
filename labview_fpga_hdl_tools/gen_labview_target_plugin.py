@@ -430,7 +430,7 @@ def _get_board_io_signals(csv_path):
 
 
 def _generate_window_vhdl_from_csv(
-    csv_path, template_paths, output_folder, include_target_io, include_custom_io
+    csv_path, template_paths, output_folder, include_board_io, include_custom_io
 ):
     """Generate Window VHDL from CSV using Mako templates.
 
@@ -448,7 +448,7 @@ def _generate_window_vhdl_from_csv(
         csv_path (str): Path to the CSV containing signal definitions
         template_paths (list): List of paths to Mako templates for VHDL generation
         output_folder (str): Folder where the generated VHDL files will be written
-        include_target_io (bool): Whether to include CLIP socket ports
+        include_board_io (bool): Whether to include standard board I/O ports
         include_custom_io (bool): Whether to include custom I/O
 
     Raises:
@@ -478,7 +478,7 @@ def _generate_window_vhdl_from_csv(
 
             output_text = template.render(
                 custom_signals=signals,
-                include_target_io=include_target_io,
+                include_board_io=include_board_io,
                 include_custom_io=include_custom_io,
             )
 
@@ -497,7 +497,7 @@ def _generate_window_vhdl_from_csv(
 def _generate_target_xml(
     template_paths,
     output_folder,
-    include_target_io,
+    include_board_io,
     include_custom_io,
     boardio_path,
     clock_path,
@@ -515,7 +515,7 @@ def _generate_target_xml(
     Args:
         template_paths (list): List of paths to Mako templates for target XML
         output_folder (str): Folder where the target XML files will be written
-        include_target_io (bool): Whether to include CLIP socket ports
+        include_board_io (bool): Whether to include standard board I/O ports
         include_custom_io (bool): Whether to include custom I/O
         boardio_path (str): Path to the BoardIO XML (for filename extraction)
         clock_path (str): Path to the Clock XML (for filename extraction)
@@ -566,7 +566,7 @@ def _generate_target_xml(
                     template = Template(f.read())
 
                 render_kwargs = {
-                    "include_target_io": include_target_io,
+                    "include_board_io": include_board_io,
                     "include_custom_io": include_custom_io,
                     "custom_boardio": boardio_filename,
                     "custom_clock": clock_filename,
@@ -655,9 +655,7 @@ def _copy_fpgafiles(
 
     # Add constraints XDC files listed in the config file
     if lv_target_constraints:
-        file_list = file_list + [
-            common.fix_file_slashes(file) for file in lv_target_constraints
-        ]
+        file_list = file_list + [common.fix_file_slashes(file) for file in lv_target_constraints]
 
     print(f"Found {len(file_list)} files in HDL file lists")
 
@@ -771,7 +769,7 @@ def _validate_ini(config, gen_window_only=False):
     invalid_paths = []
 
     # Validate input CSV if custom IO is included (required for both modes)
-    if config.include_custom_io and not config.custom_signals_csv:
+    if config.include_custom_io_on_lv_window and not config.custom_io_csv:
         missing_settings.append("LVFPGATargetSettings.LVTargetBoardIO")
 
     # Validate Window VHDL template paths (required for both modes)
@@ -799,8 +797,8 @@ def _validate_ini(config, gen_window_only=False):
             missing_settings.append("GeneralSettings.BaseTarget")
 
         # Required plugin settings
-        if not config.lv_target_plugin_folder:
-            missing_settings.append("LVFPGATargetSettings.LVTargetPluginFolder")
+        if not config.lv_target_plugin_output_folder:
+            missing_settings.append("LVFPGATargetSettings.LVTargetPluginOutputFolder")
 
         if not config.lv_target_name:
             missing_settings.append("LVFPGATargetSettings.LVTargetName")
@@ -814,9 +812,6 @@ def _validate_ini(config, gen_window_only=False):
 
         if not config.clock_output:
             missing_settings.append("LVFPGATargetSettings.ClockXML")
-
-        if not config.board_io_signal_assignments_example:
-            missing_settings.append("LVFPGATargetSettings.BoardIOSignalAssignmentsExample")
 
         # Check list settings
         if not config.hdl_file_lists:
@@ -883,11 +878,11 @@ def gen_window_vhdl(config=None):
 
     # Generate Window VHDL files
     _generate_window_vhdl_from_csv(
-        config.custom_signals_csv,
+        config.custom_io_csv,
         config.window_vhdl_templates,
         config.window_vhdl_output_folder,
-        config.include_target_io_ports,
-        config.include_custom_io,
+        config.include_board_io_on_lv_window,
+        config.include_custom_io_on_lv_window,
     )
 
     print("Window VHDL generation complete.")
@@ -912,35 +907,38 @@ def gen_lv_target_support(config=None):
         return 1
 
     # Clean fpga plugins folder
-    if config.lv_target_plugin_folder:
-        shutil.rmtree(config.lv_target_plugin_folder, ignore_errors=True)
+    if config.lv_target_plugin_output_folder:
+        shutil.rmtree(config.lv_target_plugin_output_folder, ignore_errors=True)
 
     # Only generate custom IO files if the plugin is configured to include them
-    if config.include_custom_io:
+    if config.include_custom_io_on_lv_window:
         errors = _generate_xml_from_csv(
-            config.custom_signals_csv, config.boardio_output, config.clock_output
+            config.custom_io_csv, config.boardio_output, config.clock_output
         )
         if errors:
             has_validation_errors = True
             validation_errors.extend(errors)
 
     _generate_window_vhdl_from_csv(
-        config.custom_signals_csv,
+        config.custom_io_csv,
         config.window_vhdl_templates,
         config.window_vhdl_output_folder,
-        config.include_target_io_ports,
-        config.include_custom_io,
+        config.include_board_io_on_lv_window,
+        config.include_custom_io_on_lv_window,
     )
 
-    _generate_board_io_signal_assignments_example(
-        config.custom_signals_csv, config.board_io_signal_assignments_example
-    )
+    # Always generate the board IO signal assignments example in the Window VHDL output folder
+    if config.window_vhdl_output_folder:
+        board_io_example_path = os.path.join(
+            config.window_vhdl_output_folder, "BoardIOSignalAssignmentsExample.vhd"
+        )
+        _generate_board_io_signal_assignments_example(config.custom_io_csv, board_io_example_path)
 
     register_space_warnings, register_space_errors = _generate_target_xml(
         config.lv_target_xml_templates,
-        config.lv_target_plugin_folder,
-        config.include_target_io_ports,
-        config.include_custom_io,
+        config.lv_target_plugin_output_folder,
+        config.include_board_io_on_lv_window,
+        config.include_custom_io_on_lv_window,
         config.boardio_output,
         config.clock_output,
         config.lv_target_name,
@@ -953,15 +951,15 @@ def gen_lv_target_support(config=None):
     _copy_fpgafiles(
         config.hdl_file_lists,
         config.lv_target_constraints,
-        config.lv_target_plugin_folder,
+        config.lv_target_plugin_output_folder,
         config.target_family,
         config.base_target,
         config.lv_target_exclude_files,
     )
 
-    _copy_menu_files(config.lv_target_plugin_folder, config.lv_target_menus_folder)
+    _copy_menu_files(config.lv_target_plugin_output_folder, config.lv_target_menus_folder)
 
-    _copy_targetinfo_ini(config.lv_target_plugin_folder, config.lv_target_info_ini)
+    _copy_targetinfo_ini(config.lv_target_plugin_output_folder, config.lv_target_info_ini)
 
     if register_space_warnings:
         print("\n" + "!" * 80)

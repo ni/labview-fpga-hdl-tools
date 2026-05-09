@@ -80,27 +80,32 @@ class CommandConfiguration:
     custom_constraints: Optional[str] = None  # Path to custom constraints XDC file
     lv_window_netlist_folder: Optional[str] = None  # Input folder for generated Window files
     # ----- LV WINDOW NETLIST SETTINGS -----
-    lv_window_vivado_project_export_xpr: Optional[str] = None  # Path to exported Vivado project (.xpr file)
-    lv_window_netlist_output_folder: Optional[str] = None  # Destination folder for generated Window files
+    lv_window_vivado_project_export_xpr: Optional[str] = (
+        None  # Path to exported Vivado project (.xpr file)
+    )
+    lv_window_netlist_output_folder: Optional[str] = (
+        None  # Destination folder for generated Window files
+    )
     # ----- LVFPGA TARGET SETTINGS -----
-    custom_signals_csv: Optional[str] = None  # Path to CSV containing signal definitions
+    custom_io_csv: Optional[str] = None  # Path to CSV containing custom I/O signal definitions
     boardio_output: Optional[str] = None  # Path where BoardIO XML will be written
     clock_output: Optional[str] = None  # Path where Clock XML will be written
     window_vhdl_templates: List[str] = field(
         default_factory=list
     )  # Template for TheWindow.vhd generation
     window_vhdl_output_folder: Optional[str] = None  # Output folder for TheWindow.vhd
-    board_io_signal_assignments_example: Optional[str] = None  # Path for example output
     lv_target_xml_templates: List[str] = field(
         default_factory=list
     )  # Templates for target XML generation
     lv_target_constraints: List[str] = field(
         default_factory=list
     )  # List of LabVIEW target constraint file paths
-    include_target_io_ports: Optional[bool] = (
-        None  # Whether to include CLIP socket ports in generated files
+    include_board_io_on_lv_window: Optional[bool] = (
+        None  # Whether to include standard board I/O ports on the LV Window
     )
-    include_custom_io: Optional[bool] = None  # Whether to include custom I/O in generated files
+    include_custom_io_on_lv_window: Optional[bool] = (
+        None  # Whether to include custom I/O ports on the LV Window
+    )
     lv_target_plugin_output_folder: Optional[str] = None  # Destination folder for plugin generation
     lv_target_name: Optional[str] = None  # Name of the LabVIEW FPGA target (e.g., "PXIe-7903")
     lv_target_guid: Optional[str] = None  # GUID for the LabVIEW FPGA target
@@ -117,10 +122,10 @@ class CommandConfiguration:
     clip_output_csv: Optional[str] = None  # Path where CSV signals will be written
     clip_top_hdl: Optional[str] = None  # Path to top-level CLIP HDL file
     clip_inst_example: Optional[str] = None  # Path where instantiation example will be written
-    clip_entity_path: Optional[str] = (
-        None  # HDL hierarchy path for CLIP instance (not a file path)
-    )
-    clip_constraints: List[str] = field(default_factory=list)  # List of paths to XDC constraint files
+    clip_entity_path: Optional[str] = None  # HDL hierarchy path for CLIP instance (not a file path)
+    clip_constraints: List[str] = field(
+        default_factory=list
+    )  # List of paths to XDC constraint files
     clip_output_xdc_folder: Optional[str] = None  # Folder where updated XDC files will be written
     clip_to_window_signal_definitions: Optional[str] = (
         None  # Path for CLIP-to-Window signal definitions file
@@ -226,9 +231,9 @@ class CommandConfiguration:
 
     # --- LVFPGA Target Settings setters ---
 
-    def set_custom_signals_csv(self, value):
-        """Set the custom signals CSV path (resolved to absolute)."""
-        self.custom_signals_csv = resolve_path(value)
+    def set_custom_io_csv(self, value):
+        """Set the custom I/O CSV path (resolved to absolute)."""
+        self.custom_io_csv = resolve_path(value)
 
     def set_boardio_output(self, value):
         """Set the BoardIO XML output path (resolved to absolute)."""
@@ -241,10 +246,6 @@ class CommandConfiguration:
     def set_window_vhdl_output_folder(self, value):
         """Set the Window VHDL output folder (resolved to absolute)."""
         self.window_vhdl_output_folder = resolve_path(value)
-
-    def set_board_io_signal_assignments_example(self, value):
-        """Set the Board IO signal assignments example path (resolved to absolute)."""
-        self.board_io_signal_assignments_example = resolve_path(value)
 
     def add_window_vhdl_template(self, value):
         """Append a Window VHDL template path (resolved to absolute)."""
@@ -264,19 +265,19 @@ class CommandConfiguration:
         if resolved is not None:
             self.lv_target_constraints.append(resolved)
 
-    def set_include_target_io_ports(self, value):
-        """Set whether to include CLIP socket ports (bool or string)."""
+    def set_include_board_io_on_lv_window(self, value):
+        """Set whether to include standard board I/O ports on the LV Window (bool or string)."""
         if isinstance(value, str):
-            self.include_target_io_ports = _parse_bool(value, True)
+            self.include_board_io_on_lv_window = _parse_bool(value, True)
         else:
-            self.include_target_io_ports = value
+            self.include_board_io_on_lv_window = value
 
-    def set_include_custom_io(self, value):
-        """Set whether to include custom I/O (bool or string)."""
+    def set_include_custom_io_on_lv_window(self, value):
+        """Set whether to include custom I/O ports on the LV Window (bool or string)."""
         if isinstance(value, str):
-            self.include_custom_io = _parse_bool(value, True)
+            self.include_custom_io_on_lv_window = _parse_bool(value, True)
         else:
-            self.include_custom_io = value
+            self.include_custom_io_on_lv_window = value
 
     def set_lv_target_plugin_output_folder(self, value):
         """Set the LV target plugin folder (resolved to absolute)."""

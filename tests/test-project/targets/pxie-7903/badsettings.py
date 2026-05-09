@@ -32,9 +32,9 @@ def pre_all(context):
     config.set_lv_window_netlist_folder("lvWindowNetlist")
 
     # --- LVFPGA Target Settings ---
-    config.set_custom_signals_csv("lvFpgaTarget/LVTargetBoardIO.csv")
-    config.set_include_target_io_ports(True)
-    config.set_include_custom_io(True)
+    config.set_custom_io_csv("lvFpgaTarget/LVTargetBoardIO.csv")
+    config.set_include_board_io_on_lv_window(True)
+    config.set_include_custom_io_on_lv_window(True)
     config.set_lv_target_name("PXIe-7903Aurora")
     config.set_lv_target_guid("8943868e-fc0c-4e48-a2e9-1ebce7779d5c")
     config.set_lv_target_install_folder("../../../bad_test_plugin_install_dir")
@@ -73,7 +73,7 @@ def pre_all(context):
     )
     config.set_clip_entity_path("UserRTL_PXIe7903_Aurora64b66b_Framing_Crcx4_28p0GHz_inst")
 
-    config.set_output_csv_path("lvFpgaTarget/LVTargetBoardIO.csv")
+    config.set_clip_output_csv("lvFpgaTarget/LVTargetBoardIO.csv")
     config.set_clip_inst_example("objects/CLIPMigration/CLIPInstantiationExample.vhd")
     config.set_clip_to_window_signal_definitions(
         "objects/CLIPMigration/CLIPtoWindowSignalDefinitions.vhd"

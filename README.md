@@ -151,13 +151,12 @@ def pre_create_project(context):
 
 | Setter | Description |
 | --- | --- |
-| `set_custom_signals_csv(value)` | Board-I/O CSV definition path. |
+| `set_custom_io_csv(value)` | Custom I/O CSV definition path. |
 | `set_boardio_output(value)` | Output boardio.xml path. |
 | `set_clock_output(value)` | Output clock XML path. |
-| `set_window_vhdl_output_folder(value)` | Output folder for generated Window HDL files. |
-| `set_board_io_signal_assignments_example(value)` | Output example signal assignments file. |
-| `set_include_target_io_ports(flag)` | Include CLIP socket interfaces in generated artifacts. |
-| `set_include_custom_io(flag)` | Include custom board I/O interfaces. |
+| `set_window_vhdl_output_folder(value)` | Output folder for generated Window HDL files. Also used for BoardIOSignalAssignmentsExample.vhd. |
+| `set_include_board_io_on_lv_window(flag)` | Include standard board I/O ports on the LV Window. |
+| `set_include_custom_io_on_lv_window(flag)` | Include custom I/O ports on the LV Window. |
 | `set_lv_target_plugin_folder(value)` | Output folder for generated target plugin. |
 | `set_lv_target_name(value)` | Display name for custom target. |
 | `set_lv_target_guid(value)` | GUID for custom LabVIEW FPGA target plugin. |
@@ -243,8 +242,8 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | migrate-clip | `clip_input_xml_path`, `output_csv_path`, `clip_hdl_path`, `clip_inst_example_path`, `clip_to_window_signal_definitions` | If `clip_xdc_paths` is set, `clip_instance_path` and `updated_xdc_folder` are also required. |
 | install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_folder` | Install folder and plugin folder must exist. |
 | get-window | `vivado_project_export_xpr`, `the_window_folder_output`, `vivado_tools_path` | When skip_vivado is set, Vivado is not launched. |
-| gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `board_io_signal_assignments_example`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_signals_csv` required when include_custom_io=True. |
-| gen-hdl | `window_vhdl_templates`, `window_vhdl_output_folder` | `custom_signals_csv` required when include_custom_io=True. |
+| gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
+| gen-hdl | `window_vhdl_templates`, `window_vhdl_output_folder` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
 | gen-xdc | None enforced by a dedicated validator | For useful output, set `constraints_templates`. |
 | create-project | `vivado_project_path`, `top_level_entity`, `fpga_part`, `hdl_file_lists` | Non-skip adds `vivado_tools_path`. If `the_window_folder_input` is set, Window files are integrated. |
 | check-syntax | `vivado_project_path`, `top_level_entity`, `fpga_part`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
