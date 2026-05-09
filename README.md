@@ -51,7 +51,7 @@ Every hook receives a `CommandContext` with these attributes:
 
 | Attribute | Description |
 | --- | --- |
-| `context.config` | `FileConfiguration` object — configure it in `pre_all` via setters. |
+| `context.config` | `CommandConfiguration` object — configure it in `pre_all` via setters. |
 | `context.command_name` | Underscore-separated command name (for example, `"create_project"`). |
 | `context.command_kwargs` | Dict of CLI arguments forwarded to the command function. |
 | `context.result` | Return value of the command (available in post hooks only). |
@@ -127,9 +127,7 @@ def pre_create_project(context):
 | `set_fpga_part(value)` | FPGA part string (for example, "xcku040-ffva1156-2-e"). |
 | `set_vivado_project_path(value)` | Relative path to Vivado .xpr file. |
 | `set_custom_constraints_file(value)` | Optional custom XDC file path. |
-| `set_use_gen_lv_window_files(flag)` | Use extracted/generated TheWindow content. |
-| `set_the_window_folder_input(value)` | TheWindow input folder path. |
-| `set_code_generation_results_stub(value)` | Stub CodeGenerationResults file path. |
+| `set_the_window_folder_input(value)` | TheWindow input folder path. Optional — when unset, Window files are not integrated into the Vivado project. |
 | `add_hdl_file_list(path)` | Append an HDL file list for Vivado project sources. |
 | `add_vhdl2008_file_list(path)` | Append a VHDL-2008 file list (compiled with -2008 flag). |
 | `add_constraints_template(path)` | Append a constraints template path. |
@@ -153,13 +151,12 @@ def pre_create_project(context):
 
 | Setter | Description |
 | --- | --- |
-| `set_custom_signals_csv(value)` | Board-I/O CSV definition path. |
+| `set_custom_io_csv(value)` | Custom I/O CSV definition path. |
 | `set_boardio_output(value)` | Output boardio.xml path. |
 | `set_clock_output(value)` | Output clock XML path. |
-| `set_window_vhdl_output_folder(value)` | Output folder for generated Window HDL files. |
-| `set_board_io_signal_assignments_example(value)` | Output example signal assignments file. |
-| `set_include_target_io_ports(flag)` | Include CLIP socket interfaces in generated artifacts. |
-| `set_include_custom_io(flag)` | Include custom board I/O interfaces. |
+| `set_window_vhdl_output_folder(value)` | Output folder for generated Window HDL files. Also used for BoardIOSignalAssignmentsExample.vhd. |
+| `set_include_board_io_on_lv_window(flag)` | Include standard board I/O ports on the LV Window. |
+| `set_include_custom_io_on_lv_window(flag)` | Include custom I/O ports on the LV Window. |
 | `set_lv_target_plugin_folder(value)` | Output folder for generated target plugin. |
 | `set_lv_target_name(value)` | Display name for custom target. |
 | `set_lv_target_guid(value)` | GUID for custom LabVIEW FPGA target plugin. |
@@ -170,14 +167,14 @@ def pre_create_project(context):
 | `set_num_hdl_registers(value)` | Number of HDL registers. |
 | `set_max_hdl_reg_offset(value)` | Maximum HDL register byte offset. |
 | `add_window_vhdl_template(path)` | Append a Window VHDL Mako template. |
-| `add_target_xml_template(path)` | Append a target resource XML Mako template. |
+| `add_lv_target_xml_template(path)` | Append a target resource XML Mako template. |
 | `add_lv_target_constraints_file(path)` | Append a LV target constraints file. |
 
 **CLIP Migration**
 
 | Setter | Description |
 | --- | --- |
-| `set_input_xml_path(value)` | Input CLIP XML path. |
+| `set_clip_input_xml_path(value)` | Input CLIP XML path. |
 | `set_output_csv_path(value)` | Output CSV path for CLIP signals. |
 | `set_clip_hdl_path(value)` | Input CLIP top-level HDL path. |
 | `set_clip_inst_example_path(value)` | Output HDL instantiation example file. |
@@ -242,13 +239,13 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 
 | Command | Required Settings (normal run) | Notes |
 | --- | --- | --- |
-| migrate-clip | `input_xml_path`, `output_csv_path`, `clip_hdl_path`, `clip_inst_example_path`, `clip_to_window_signal_definitions` | If `clip_xdc_paths` is set, `clip_instance_path` and `updated_xdc_folder` are also required. |
+| migrate-clip | `clip_input_xml_path`, `output_csv_path`, `clip_hdl_path`, `clip_inst_example_path`, `clip_to_window_signal_definitions` | If `clip_xdc_paths` is set, `clip_instance_path` and `updated_xdc_folder` are also required. |
 | install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_folder` | Install folder and plugin folder must exist. |
 | get-window | `vivado_project_export_xpr`, `the_window_folder_output`, `vivado_tools_path` | When skip_vivado is set, Vivado is not launched. |
-| gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `board_io_signal_assignments_example`, `target_xml_templates`, `hdl_file_lists` | `custom_signals_csv` required when include_custom_io=True. |
-| gen-hdl | `window_vhdl_templates`, `window_vhdl_output_folder` | `custom_signals_csv` required when include_custom_io=True. |
+| gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
+| gen-hdl | `window_vhdl_templates`, `window_vhdl_output_folder` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
 | gen-xdc | None enforced by a dedicated validator | For useful output, set `constraints_templates`. |
-| create-project | `vivado_project_path`, `top_level_entity`, `fpga_part`, `hdl_file_lists` | Non-skip adds `vivado_tools_path`. If use_gen_lv_window_files=True, `the_window_folder_input` is required. |
+| create-project | `vivado_project_path`, `top_level_entity`, `fpga_part`, `hdl_file_lists` | Non-skip adds `vivado_tools_path`. If `the_window_folder_input` is set, Window files are integrated. |
 | check-syntax | `vivado_project_path`, `top_level_entity`, `fpga_part`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
 | compile-project | `vivado_project_path`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_path` and existing project .xpr file. |
 | launch-vivado | `vivado_tools_path`, `vivado_project_path` | Also requires existing project .xpr file. |

@@ -113,22 +113,21 @@ def process_constraints_template(config):
     2. Inserts extracted content between NETLIST markers in template files
 
     Args:
-        config (FileConfiguration): Configuration settings object with path information
+        config (CommandConfiguration): Configuration settings object with path information
     """
     # Define output directory
     output_folder = os.path.join(os.getcwd(), "objects", "xdc")
+    os.makedirs(output_folder, exist_ok=True)
     period_content = ""
     clip_content = ""
     from_to_content = ""
 
-    if config.the_window_folder_input is None:
-        print("TheWindowFolder input is not specified in the configuration.")
+    if not config.lv_window_netlist_folder:
+        print("TheWindowFolder input is not specified - skipping Window constraint extraction.")
     else:
         window_constraints_path = os.path.join(
-            config.the_window_folder_input, "TheWindowConstraints.xdc"
+            config.lv_window_netlist_folder, "TheWindowConstraints.xdc"
         )
-        # Create output directory if it doesn't exist
-        os.makedirs(output_folder, exist_ok=True)
 
         # Check if the window constraints file exists
         if os.path.exists(window_constraints_path):
@@ -164,7 +163,7 @@ def process_constraints_template(config):
                 clip_content = clip_match.group(1)
                 from_to_content = (
                     "\nset TopInstance0 [current_instance .]\n"
-                    "current_instance TheLvWindowWrapper"
+                    f"current_instance {config.entity_path_to_window_wrapper}"
                     + from_to_match.group(1)
                     + "current_instance -quiet\n"
                     "current_instance $TopInstance0\n"
@@ -177,10 +176,10 @@ def process_constraints_template(config):
 
     # Read custom constraints file if specified
     custom_constraints_content = ""
-    if config.custom_constraints_file and os.path.exists(config.custom_constraints_file):
-        with open(config.custom_constraints_file, "r", encoding="utf-8") as f:
+    if config.custom_constraints and os.path.exists(config.custom_constraints):
+        with open(config.custom_constraints, "r", encoding="utf-8") as f:
             custom_constraints_content = f.read()
-        print(f"Loaded custom constraints from {config.custom_constraints_file}")
+        print(f"Loaded custom constraints from {config.custom_constraints}")
     else:
         print("No custom constraints file specified or file not found")
 
@@ -274,6 +273,6 @@ def process_constraints(config=None):
         int: 0 on success.
     """
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
     process_constraints_template(config)
     return 0

@@ -18,14 +18,14 @@ def _validate_ini(config):
     missing_settings = []
     invalid_paths = []
 
-    if not config.modelsim_tools_path:
-        missing_settings.append("ModelSimSettings.ModelSimToolsPath")
+    if not config.modelsim_tools_folder:
+        missing_settings.append("ModelSimSettings.ModelSimToolsFolder")
     else:
-        vsim_exe = _get_vsim_executable(config.modelsim_tools_path)
+        vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
         if not vsim_exe or not os.path.exists(vsim_exe):
             invalid_paths.append(
-                f"ModelSimSettings.ModelSimToolsPath - vsim not found under: "
-                f"{config.modelsim_tools_path}"
+                f"ModelSimSettings.ModelSimToolsFolder - vsim not found under: "
+                f"{config.modelsim_tools_folder}"
             )
 
     if not config.top_level_entity:
@@ -49,7 +49,7 @@ def _validate_ini(config):
 def launch_modelsim(batch=False, config=None):
     """Launch ModelSim using settings from nihdlsettings.py."""
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     try:
         _validate_ini(config)
@@ -57,7 +57,7 @@ def launch_modelsim(batch=False, config=None):
         print(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir or "")
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
 
     if not os.path.isdir(project_dir):
         print(
@@ -81,7 +81,7 @@ def launch_modelsim(batch=False, config=None):
         )
         return 1
 
-    vsim_exe = _get_vsim_executable(config.modelsim_tools_path)
+    vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
     if not vsim_exe or not os.path.exists(vsim_exe):
         print(f"Error: vsim executable not found at {vsim_exe}")
         return 1

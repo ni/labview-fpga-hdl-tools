@@ -18,7 +18,7 @@ def _generate_compile_project_tcl(config, output_path):
     common.render_mako_template(
         template_tcl_path,
         output_path,
-        project_file_name=f"{config.vivado_project_name}.xpr",
+        project_file_name=f"{config.top_level_entity}.xpr",
     )
 
 
@@ -27,8 +27,8 @@ def _validate_ini(config):
     missing_settings = []
     invalid_paths = []
 
-    if not config.vivado_project_path:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectPath")
+    if not config.vivado_project_folder:
+        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
 
     if not config.vivado_tcl_scripts_folder:
         missing_settings.append("VivadoProjectSettings.VivadoTclScriptsFolder")
@@ -53,18 +53,20 @@ def _validate_ini(config):
             invalid_paths.append(invalid_path)
 
     if not config.skip_vivado:
-        if not config.vivado_tools_path:
-            missing_settings.append("VivadoProjectSettings.VivadoToolsPath")
+        if not config.vivado_tools_folder:
+            missing_settings.append("VivadoProjectSettings.VivadoToolsFolder")
         else:
             invalid_path = common.validate_vivado_setting(
-                config.vivado_tools_path,
-                "VivadoProjectSettings.VivadoToolsPath",
+                config.vivado_tools_folder,
+                "VivadoProjectSettings.VivadoToolsFolder",
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
-        if config.vivado_project_path:
-            project_file_path = os.path.join(os.getcwd(), config.vivado_project_path)
+        if config.vivado_project_folder:
+            project_file_path = os.path.join(
+                os.getcwd(), config.vivado_project_folder, f"{config.top_level_entity}.xpr"
+            )
             invalid_path = common.validate_path(project_file_path, "Vivado project file", "file")
             if invalid_path:
                 invalid_paths.append(invalid_path)
@@ -79,21 +81,21 @@ def _validate_ini(config):
 
 def _run_compile_project(config, generated_tcl_path):
     """Run the generated compile-project TCL script in Vivado batch mode."""
-    vivado_executable = common.get_vivado_executable(config.vivado_tools_path)
+    vivado_executable = common.get_vivado_executable(config.vivado_tools_folder)
     if not vivado_executable:
-        raise ValueError("VivadoToolsPath setting is missing from configuration")
+        raise ValueError("VivadoToolsFolder setting is missing from configuration")
 
     vivado_abs = os.path.abspath(vivado_executable)
     if not os.path.exists(vivado_abs):
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your --vivado argument or VivadoToolsPath setting in nihdlsettings.py"
+            f"Please check your --vivado argument or VivadoToolsFolder setting in nihdlsettings.py"
         )
 
     current_dir = os.getcwd()
-    vivado_project_path = os.path.join(current_dir, "VivadoProject")
-    log_path = os.path.join(vivado_project_path, "compile_project.log")
-    journal_path = os.path.join(vivado_project_path, "compile_project.jou")
+    vivado_project_dir = os.path.join(current_dir, config.vivado_project_folder)
+    log_path = os.path.join(vivado_project_dir, "compile_project.log")
+    journal_path = os.path.join(vivado_project_dir, "compile_project.jou")
 
     for path in [log_path, journal_path]:
         if os.path.exists(path):
@@ -107,10 +109,10 @@ def _run_compile_project(config, generated_tcl_path):
     )
 
     print(f"Vivado executable: {vivado_abs}")
-    print(f"Working directory: {vivado_project_path}")
+    print(f"Working directory: {vivado_project_dir}")
     print(f"Running command: {command}")
 
-    result = subprocess.run(command, cwd=vivado_project_path, shell=True, check=False)
+    result = subprocess.run(command, cwd=vivado_project_dir, shell=True, check=False)
 
     if not os.path.exists(log_path):
         raise RuntimeError("Vivado compile-project log file was not created.")
@@ -173,13 +175,13 @@ def compile_project(config=None):
     """Compile Vivado project by running a TCL script generated from CompileProject.tcl.mako.
 
     Args:
-        config (FileConfiguration | None): Configuration object.
+        config (CommandConfiguration | None): Configuration object.
 
     Returns:
         int: 0 for success, 1 for error
     """
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     try:
         _validate_ini(config)

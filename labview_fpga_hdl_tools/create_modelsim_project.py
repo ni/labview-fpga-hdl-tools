@@ -43,14 +43,14 @@ def _validate_ini(config):
             invalid_paths.append(invalid_path)
 
     if not config.skip_modelsim:
-        if not config.modelsim_tools_path:
-            missing_settings.append("ModelSimSettings.ModelSimToolsPath")
+        if not config.modelsim_tools_folder:
+            missing_settings.append("ModelSimSettings.ModelSimToolsFolder")
         else:
-            modelsim_exe = _get_vsim_executable(config.modelsim_tools_path)
+            modelsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
             if not modelsim_exe or not os.path.exists(modelsim_exe):
                 invalid_paths.append(
-                    f"ModelSimSettings.ModelSimToolsPath - vsim not found under: "
-                    f"{config.modelsim_tools_path}"
+                    f"ModelSimSettings.ModelSimToolsFolder - vsim not found under: "
+                    f"{config.modelsim_tools_folder}"
                 )
 
     error_msg = common.get_missing_settings_error(missing_settings)
@@ -123,7 +123,7 @@ def _create_modelsim_ini(modelsim_install_path, project_dir):
 
     if not os.path.exists(src_ini):
         raise FileNotFoundError(
-            f"modelsim.ini not found at {src_ini}\n" f"Check your ModelSimToolsPath setting."
+            f"modelsim.ini not found at {src_ini}\n" f"Check your ModelSimToolsFolder setting."
         )
 
     shutil.copy2(src_ini, dst_ini)
@@ -165,26 +165,26 @@ def _create_modelsim_ini(modelsim_install_path, project_dir):
     return dst_ini
 
 
-def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_path):
+def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_folder):
     """Add Xilinx simulation library mappings to modelsim.ini."""
-    if not xilinx_sim_lib_path or not os.path.isdir(xilinx_sim_lib_path):
-        print(f"  WARNING: Xilinx simulation library path not found: {xilinx_sim_lib_path}")
+    if not xilinx_sim_lib_folder or not os.path.isdir(xilinx_sim_lib_folder):
+        print(f"  WARNING: Xilinx simulation library path not found: {xilinx_sim_lib_folder}")
         print("  Skipping Xilinx library mappings. Simulation of Xilinx primitives may fail.")
         return
 
     # Enumerate the compiled library directories
     lib_dirs = []
-    for entry in os.listdir(xilinx_sim_lib_path):
-        lib_path = os.path.join(xilinx_sim_lib_path, entry)
+    for entry in os.listdir(xilinx_sim_lib_folder):
+        lib_path = os.path.join(xilinx_sim_lib_folder, entry)
         if os.path.isdir(lib_path) and not entry.startswith("."):
             lib_dirs.append(entry)
 
     if not lib_dirs:
-        print(f"  WARNING: No library directories found in {xilinx_sim_lib_path}")
+        print(f"  WARNING: No library directories found in {xilinx_sim_lib_folder}")
         return
 
     # Use forward slashes for ModelSim paths
-    sim_lib_fwd = common.fix_file_slashes(xilinx_sim_lib_path)
+    sim_lib_fwd = common.fix_file_slashes(xilinx_sim_lib_folder)
 
     with open(ini_path, "r") as f:
         content = f.read()
@@ -351,7 +351,7 @@ def create_modelsim_project(overwrite=False, config=None):
     - .do files for GUI and batch simulation
     """
     if config is None:
-        config = common.FileConfiguration()
+        config = common.CommandConfiguration()
 
     try:
         _validate_ini(config)
@@ -359,7 +359,7 @@ def create_modelsim_project(overwrite=False, config=None):
         print(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_dir or "")
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
     entity_name = config.top_level_entity
 
     # Check for existing project
@@ -398,7 +398,7 @@ def create_modelsim_project(overwrite=False, config=None):
         print("\nSKIP MODELSIM: Validation successful, skipping ModelSim project creation")
         return 0
 
-    modelsim_install = config.modelsim_tools_path
+    modelsim_install = config.modelsim_tools_folder
     vlib_path = _get_modelsim_tool(modelsim_install, "vlib")
     vcom_path = _get_modelsim_tool(modelsim_install, "vcom")
 
@@ -407,12 +407,12 @@ def create_modelsim_project(overwrite=False, config=None):
     ini_path = _create_modelsim_ini(modelsim_install, project_dir)
 
     # Step 2: Add Xilinx simulation library mappings
-    xilinx_sim_lib = config.xilinx_sim_lib_path
+    xilinx_sim_lib = config.xilinx_sim_lib_folder
     if xilinx_sim_lib:
         print("\nStep 2: Adding Xilinx simulation library mappings...")
         _add_xilinx_library_mappings(ini_path, xilinx_sim_lib)
     else:
-        print("\nStep 2: Skipping Xilinx library mappings (XilinxSimLibPath not configured)")
+        print("\nStep 2: Skipping Xilinx library mappings (XilinxSimLibFolder not configured)")
 
     # Step 3: Create work library
     print("\nStep 3: Creating work library...")

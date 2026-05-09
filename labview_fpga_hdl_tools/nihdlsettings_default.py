@@ -10,7 +10,7 @@ Hook execution order for each command:
     pre_all  →  pre_{command}  →  command  →  post_{command}  →  post_all
 
 The context object passed to every hook has these attributes:
-    context.config         - FileConfiguration (configure it in pre_all)
+    context.config         - CommandConfiguration (configure it in pre_all)
     context.command_name   - e.g. "create_project"
     context.command_kwargs - dict of CLI arguments forwarded to the command
     context.result         - return value of the command (available in post hooks)
@@ -31,45 +31,47 @@ Composing settings files:
             # Load the target's settings from the original invocation directory
             target_settings = os.path.join(context.invocation_dir, "nihdlsettings.py")
             load_settings(target_settings, context)
-            context.config.set_vivado_tools_path(os.environ["XILINX"])
+            context.config.set_vivado_tools_folder(os.environ["XILINX"])
 
 Available setters (grouped by section):
 
     Tools:
-        set_vivado_tools_path, set_vivado_tcl_scripts_folder,
-        set_modelsim_tools_path, set_xilinx_sim_lib_path
+        set_vivado_tools_folder, set_vivado_tcl_scripts_folder,
+        set_modelsim_tools_folder, set_xilinx_sim_lib_folder
 
     General Settings:
         set_target_family, set_base_target, set_dependencies
 
     Vivado Project Settings:
-        set_top_level_entity, set_fpga_part, set_vivado_project_path,
+        set_top_level_entity, set_fpga_part, set_vivado_project_folder,
         add_hdl_file_list, add_vhdl2008_file_list, add_constraints_template,
-        add_vivado_project_constraints_file, set_custom_constraints_file,
-        set_use_gen_lv_window_files, set_the_window_folder_input,
-        set_code_generation_results_stub
+        add_vivado_project_constraints, set_custom_constraints,
+        set_lv_window_netlist_folder
 
     LVFPGA Target Settings:
-        set_custom_signals_csv, set_include_target_io_ports,
-        set_include_custom_io, set_lv_target_name, set_lv_target_guid,
-        set_lv_target_install_folder, add_lv_target_constraints_file,
+        set_custom_io_csv, set_include_board_io_on_lv_window,
+        set_include_custom_io_on_lv_window, set_lv_target_name, set_lv_target_guid,
+        set_lv_target_install_folder, add_lv_target_constraints,
         set_lv_target_menus_folder, set_lv_target_info_ini,
         set_lv_target_exclude_files, set_max_hdl_reg_offset,
-        add_window_vhdl_template, add_target_xml_template,
-        set_window_vhdl_output_folder, set_board_io_signal_assignments_example,
-        set_lv_target_plugin_folder, set_boardio_output, set_clock_output
+        add_window_vhdl_template, add_lv_target_xml_template,
+        set_window_vhdl_output_folder,
+        set_lv_target_plugin_output_folder, set_boardio_output, set_clock_output
 
     CLIP Migration Settings:
-        set_input_xml_path, set_output_csv_path, set_clip_hdl_path,
-        set_clip_inst_example_path, set_clip_instance_path,
-        add_clip_xdc_path, set_updated_xdc_folder,
+        set_clip_input_xml, set_clip_output_csv, set_clip_top_hdl,
+        set_clip_inst_example, set_clip_entity_path,
+        add_clip_constraints, set_clip_output_xdc_folder,
         set_clip_to_window_signal_definitions
 
     LV Window Netlist Settings:
-        set_vivado_project_export_xpr, set_the_window_folder_output
+        set_lv_window_vivado_project_export_xpr, set_lv_window_netlist_output_folder
+
+    Window Hierarchy Settings:
+        set_entity_path_to_window, set_entity_path_to_window_wrapper
 
     ModelSim Settings:
-        set_modelsim_project_path, add_modelsim_file_list
+        set_modelsim_project_folder, add_modelsim_file_list
 
     Runtime:
         set_skip_vivado, set_skip_modelsim
@@ -85,10 +87,10 @@ def pre_all(context):
     config = context.config
 
     # --- Tools ---
-    config.set_vivado_tools_path("C:/NIFPGA/programs/Vivado2021_1")
+    config.set_vivado_tools_folder("C:/NIFPGA/programs/Vivado2021_1")
     config.set_vivado_tcl_scripts_folder("../common/TCL")
-    # config.set_modelsim_tools_path("")
-    # config.set_xilinx_sim_lib_path("")
+    # config.set_modelsim_tools_folder("")
+    # config.set_xilinx_sim_lib_folder("")
 
     # --- General Settings ---
     config.set_target_family("FlexRIO")
@@ -98,39 +100,33 @@ def pre_all(context):
     # --- Vivado Project Settings ---
     config.set_top_level_entity("SasquatchTopTemplate")
     config.set_fpga_part("xcvu11p-flgb2104-2-e")
-    config.set_vivado_project_path("VivadoProject/MyProj.xpr")
+    config.set_vivado_project_folder("VivadoProject")
 
     config.add_hdl_file_list("../../deps/flexrio/targets/pxie-7903/vivadoprojectdeps.txt")
     config.add_hdl_file_list("vivadoprojectsources.txt")
 
     config.add_constraints_template("../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc")
-    config.set_custom_constraints_file("xdc/custom_constraints.xdc")
+    config.set_custom_constraints("xdc/custom_constraints.xdc")
 
-    config.add_vivado_project_constraints_file(
+    config.add_vivado_project_constraints(
         "../../deps/flexrio/targets/pxie-7903/xdc/constraints_place.xdc"
     )
-    config.add_vivado_project_constraints_file("objects/xdc/constraints.xdc")
+    config.add_vivado_project_constraints("objects/xdc/constraints.xdc")
 
-    config.set_use_gen_lv_window_files(True)
-    config.set_the_window_folder_input("lvWindowNetlist")
-    config.set_code_generation_results_stub(
-        "../../deps/flexrio/targets/pxie-7903/lvFpgaTarget/CodeGenerationResultsStub.lvtxt"
-    )
+    config.set_lv_window_netlist_folder("lvWindowNetlist")
 
     # --- LVFPGA Target Settings ---
-    config.set_custom_signals_csv("lvFpgaTarget/LVTargetBoardIO.csv")
-    config.set_include_target_io_ports(False)
-    config.set_include_custom_io(False)
+    config.set_custom_io_csv("lvFpgaTarget/LVTargetBoardIO.csv")
+    config.set_include_board_io_on_lv_window(False)
+    config.set_include_custom_io_on_lv_window(False)
     config.set_lv_target_name("PXIe-7903Custom")
     config.set_lv_target_guid("00000000-0000-0000-0000-000000000000")
     config.set_lv_target_install_folder(
         "C:/Program Files/NI/LVAddons/flexrioii/1/Targets/NI/FPGA/RIO/79XXR"
     )
 
-    config.add_lv_target_constraints_file(
-        "../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc"
-    )
-    config.add_lv_target_constraints_file(
+    config.add_lv_target_constraints("../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc")
+    config.add_lv_target_constraints(
         "../../deps/flexrio/targets/pxie-7903/xdc/constraints_place.xdc"
     )
 
@@ -152,41 +148,42 @@ def pre_all(context):
     config.add_window_vhdl_template("rtl-lvfpga/TheLvWindowFlatWrapper.vhd.mako")
     config.add_window_vhdl_template("rtl-lvfpga/PkgTheLvWindowFlatWrapper.vhd.mako")
 
-    config.add_target_xml_template(
+    config.add_lv_target_xml_template(
         "../../deps/flexrio/targets/pxie-7903/lvFpgaTarget/Resource.xml.mako"
     )
-    config.add_target_xml_template(
+    config.add_lv_target_xml_template(
         "../../deps/flexrio/targets/pxie-7903/lvFpgaTarget/Sasquatch7903.xml.mako"
     )
 
     # Outputs
     config.set_window_vhdl_output_folder("objects/GeneratedHDL")
-    config.set_board_io_signal_assignments_example(
-        "objects/GeneratedHDL/BoardIOSignalAssignmentsExample.vhd"
-    )
-    config.set_lv_target_plugin_folder("objects/LVTargetPlugin/PXIe-7903Custom")
+    config.set_lv_target_plugin_output_folder("objects/LVTargetPlugin/PXIe-7903Custom")
     config.set_boardio_output("objects/LVTargetPlugin/PXIe-7903Custom/boardio.xml")
     config.set_clock_output("objects/LVTargetPlugin/PXIe-7903Custom/CustomClocks.xml")
 
     # --- CLIP Migration Settings ---
-    # config.set_input_xml_path(...)
-    # config.set_clip_hdl_path(...)
-    # config.set_clip_instance_path(...)
-    # config.add_clip_xdc_path(...)
+    # config.set_clip_input_xml(...)
+    # config.set_clip_top_hdl(...)
+    # config.set_clip_entity_path(...)
+    # config.add_clip_constraints(...)
 
-    config.set_output_csv_path("lvFpgaTarget/LVTargetBoardIO.csv")
-    config.set_clip_inst_example_path("objects/CLIPMigration/CLIPInstantiationExample.vhd")
+    config.set_clip_output_csv("lvFpgaTarget/LVTargetBoardIO.csv")
+    config.set_clip_inst_example("objects/CLIPMigration/CLIPInstantiationExample.vhd")
     config.set_clip_to_window_signal_definitions(
         "objects/CLIPMigration/CLIPtoWindowSignalDefinitions.vhd"
     )
-    config.set_updated_xdc_folder("objects/CLIPMigration/xdc")
+    config.set_clip_output_xdc_folder("objects/CLIPMigration/xdc")
 
     # --- LV Window Netlist Settings ---
-    # config.set_vivado_project_export_xpr("C:/temp/VPE/VivadoProject/Top.xpr")
-    # config.set_the_window_folder_output("objects/TheWindow")
+    # config.set_lv_window_vivado_project_export_xpr("C:/temp/VPE/VivadoProject/Top.xpr")
+    # config.set_lv_window_netlist_output_folder("objects/TheWindow")
+
+    # --- Window Hierarchy Settings ---
+    config.set_entity_path_to_window("TheLvWindowWrapper/TheLvWindow")
+    config.set_entity_path_to_window_wrapper("TheLvWindowWrapper")
 
     # --- ModelSim Settings ---
-    # config.set_modelsim_project_path("ModelSimProject/MyProj.mpf")
+    # config.set_modelsim_project_folder("ModelSimProject")
 
 
 def post_all(context):

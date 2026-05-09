@@ -50,7 +50,7 @@
 
   <!-- CLIPs -->
   <CLIPSocketTypeList>
-% if include_target_io:
+% if include_board_io:
     <:Include what="children">Targets/NI/FPGA/RIO/79XXR/Common/Resource/SasquatchMgtSocket.xml</:Include>
 % endif
     <:Include what="children">Targets/NI/FPGA/RIO/79XXR/Common/Resource/SasquatchDramSocketType.xml</:Include>

@@ -332,7 +332,7 @@ def install_dependencies(
         delete_allowed: If True, automatically delete existing repos without prompting
         allow_prerelease: If True, include pre-release versions (like pip install --pre)
         use_latest: If True, ignore versions in dependencies.toml and use latest for all
-        config: FileConfiguration object with dependencies path
+        config: CommandConfiguration object with dependencies path
 
     Returns:
         0 if successful, 1 if errors occurred

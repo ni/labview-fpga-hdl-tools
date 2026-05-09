@@ -32,6 +32,10 @@ add_files {..\objects\GeneratedHDL\TheWindowFlatWrapper.vhd}
 add_files {..\rtl-lvfpga\SasquatchTopTemplate.vhd}
 add_files {..\xdc\constraints_place.xdc}
 add_files {..\objects\xdc\constraints.xdc}
+add_files {..\lvWindowNetlist\PkgCommIntConfiguration.vhd}
+add_files {..\lvWindowNetlist\PkgDmaPortCommIfcRegs.vhd}
+add_files {..\lvWindowNetlist\PkgLvFpgaConst.vhd}
+add_files {..\lvWindowNetlist\TheLvWindowFlatWrapper.v}
 
 # constraints.xdc is for use for both synthesis and implementation
 set_property used_in_synthesis true [get_files constraints.xdc]

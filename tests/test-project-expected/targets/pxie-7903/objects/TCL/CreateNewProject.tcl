@@ -1,6 +1,6 @@
 # githubvisible=true
 
-set ProjName {MySasquatchProj}
+set ProjName {SasquatchTopTemplate}
 create_project -force $ProjName [pwd] -part xcvu11p-flgb2104-2-e
 set_property target_language VHDL [current_project]
 
@@ -34,6 +34,10 @@ add_files {..\objects\GeneratedHDL\TheWindowFlatWrapper.vhd}
 add_files {..\rtl-lvfpga\SasquatchTopTemplate.vhd}
 add_files {..\xdc\constraints_place.xdc}
 add_files {..\objects\xdc\constraints.xdc}
+add_files {..\lvWindowNetlist\PkgCommIntConfiguration.vhd}
+add_files {..\lvWindowNetlist\PkgDmaPortCommIfcRegs.vhd}
+add_files {..\lvWindowNetlist\PkgLvFpgaConst.vhd}
+add_files {..\lvWindowNetlist\TheLvWindowFlatWrapper.v}
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1

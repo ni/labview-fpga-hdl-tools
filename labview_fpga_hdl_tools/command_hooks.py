@@ -16,14 +16,14 @@ import importlib.util
 import os
 import sys
 
-from labview_fpga_hdl_tools.common import FileConfiguration
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
 
 
 class CommandContext:
     """Shared context passed to all hook functions for a command invocation.
 
     Attributes:
-        config: FileConfiguration loaded from nihdlsettings.py (set by pre_all).
+        config: CommandConfiguration loaded from nihdlsettings.py (set by pre_all).
         command_name: Name of the command being executed (e.g. "create_project").
         command_kwargs: Dict of keyword arguments that will be passed to the command.
         result: Return value from the command function (available in post hooks).
@@ -34,7 +34,7 @@ class CommandContext:
 
     def __init__(self, command_name, command_kwargs):
         """Initialize CommandContext with command name and kwargs."""
-        self.config = FileConfiguration()
+        self.config = CommandConfiguration()
         self.command_name = command_name
         self.command_kwargs = dict(command_kwargs)
         self.result = None
@@ -92,7 +92,7 @@ def load_settings(settings_path, context):
             # Override Vivado path from environment
             xilinx = os.environ.get("XILINX")
             if xilinx:
-                context.config.set_vivado_tools_path(xilinx)
+                context.config.set_vivado_tools_folder(xilinx)
 
     Relative paths are resolved from the loaded file's directory, matching the
     normal nihdlsettings.py behavior.
@@ -117,9 +117,9 @@ def run_with_hooks(command_name, command_func, command_config_path=None, **comma
     """Execute a command wrapped with pre/post hooks from nihdlsettings.py.
 
     If no command_config_path is given, looks for nihdlsettings.py in cwd.
-    Pre hooks run with the working directory set to the settings file's
-    directory so that relative paths in setter calls resolve correctly.
-    The command and post hooks run from the original working directory.
+    All hooks (pre and post) run with the working directory set to the
+    settings file's directory so that relative paths resolve correctly.
+    The command itself runs from the original working directory.
 
     Args:
         command_name: Underscore-separated command name (e.g. "create_project").
@@ -140,8 +140,8 @@ def run_with_hooks(command_name, command_func, command_config_path=None, **comma
     # Build context
     context = CommandContext(command_name, command_kwargs)
 
-    # Pre hooks run from the settings file's directory so relative paths
-    # passed to setters resolve correctly (same as the old INI chdir behavior).
+    # All hooks run from the settings file's directory so relative paths
+    # passed to setters resolve correctly.
     config_dir = os.path.dirname(os.path.abspath(command_config_path))
     original_dir = os.getcwd()
     os.chdir(config_dir)
@@ -154,11 +154,15 @@ def run_with_hooks(command_name, command_func, command_config_path=None, **comma
     # Inject pre-loaded config into command kwargs
     command_kwargs["config"] = context.config
 
-    # Execute the command
+    # Execute the command from the original working directory
     context.result = command_func(**command_kwargs)
 
-    # Post hooks
-    _call_hook(module, f"post_{command_name}", context)
-    _call_hook(module, "post_all", context)
+    # Post hooks run from the settings file's directory
+    os.chdir(config_dir)
+    try:
+        _call_hook(module, f"post_{command_name}", context)
+        _call_hook(module, "post_all", context)
+    finally:
+        os.chdir(original_dir)
 
     return context.result
