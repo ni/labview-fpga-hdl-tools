@@ -97,7 +97,7 @@ def _create_lv_bitfile(config=None):
             "* When called from that folder, use --config to\n"
             "* point back to the target's nihdlsettings.py:\n"
             "*\n"
-            "*   nihdl create-lvbitx --config=../../../nihdlsettings.py\n"
+            "*   nihdl gen-lvbitx --config=../../../nihdlsettings.py\n"
             "*\n"
             "************************************************************\n"
         )
@@ -115,7 +115,7 @@ def _create_lv_bitfile(config=None):
     if not config.lv_window_netlist_folder:
         print(
             "Error: lv_window_netlist_folder is not set. "
-            "create-lvbitx requires a Window netlist folder containing CodeGenerationResults.lvtxt."
+            "gen-lvbitx requires a Window netlist folder containing CodeGenerationResults.lvtxt."
         )
         return 1
 
