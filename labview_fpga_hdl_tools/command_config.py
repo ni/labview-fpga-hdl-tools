@@ -112,9 +112,9 @@ class CommandConfiguration:
     lv_target_install_folder: Optional[str] = None  # Installation folder for target plugins
     lv_target_menus_folder: Optional[str] = None  # Folder containing target plugin menu files
     lv_target_info_ini: Optional[str] = None  # Path to TargetInfo.ini file
-    lv_target_exclude_files: Optional[str] = (
-        None  # Path to Python script with file exclusion patterns
-    )
+    lv_target_exclude_files: List[str] = field(
+        default_factory=list
+    )  # List of paths to exclude file lists
     num_hdl_registers: Optional[int] = None  # Number of HDL registers
     max_hdl_reg_offset: Optional[int] = None  # Maximum HDL register byte offset
     # ----- CLIP MIGRATION SETTINGS -----
@@ -304,8 +304,19 @@ class CommandConfiguration:
         self.lv_target_info_ini = resolve_path(value)
 
     def set_lv_target_exclude_files(self, value):
-        """Set the target exclude files path (resolved to absolute)."""
-        self.lv_target_exclude_files = resolve_path(value)
+        """Set the target exclude files path (resolved to absolute).
+
+        For backward compatibility.  Clears the list then appends.
+        Prefer add_lv_target_exclude_files for multiple sources.
+        """
+        self.lv_target_exclude_files.clear()
+        self.add_lv_target_exclude_files(value)
+
+    def add_lv_target_exclude_files(self, value):
+        """Append a target exclude files path (resolved to absolute)."""
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.lv_target_exclude_files.append(resolved)
 
     def set_num_hdl_registers(self, value):
         """Set the number of HDL registers."""

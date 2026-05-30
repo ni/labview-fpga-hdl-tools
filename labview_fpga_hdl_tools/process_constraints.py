@@ -105,6 +105,59 @@ def _convert_tg_quoted_lines(content):
     return "".join(converted_lines)
 
 
+def load_custom_constraints(custom_constraints_path):
+    """Load custom constraints content from a file.
+
+    Args:
+        custom_constraints_path (str | None): Path to the custom constraints XDC file.
+
+    Returns:
+        str: The file content, or empty string if not specified or not found.
+    """
+    if custom_constraints_path and os.path.exists(custom_constraints_path):
+        with open(custom_constraints_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        print(f"Loaded custom constraints from {custom_constraints_path}")
+        return content
+    print("No custom constraints file specified or file not found")
+    return ""
+
+
+_CUSTOM_CONSTRAINTS_RE = re.compile(
+    r"#LabVIEWFPGAHdlTools_Macro\s+macro_GitHubCustomConstraints",
+    re.IGNORECASE,
+)
+
+
+def replace_custom_constraints_in_xdc_folder(folder, custom_constraints_path):
+    """Replace the custom constraints macro in all XDC files in a folder.
+
+    Scans every ``.xdc`` file in *folder* and replaces
+    ``#LabVIEWFPGAHDLTools_Macro macro_GitHubCustomConstraints`` with the
+    content of *custom_constraints_path*.
+
+    Args:
+        folder (str): Directory containing XDC files to process.
+        custom_constraints_path (str | None): Path to the custom constraints file.
+    """
+    if not os.path.isdir(folder):
+        return
+
+    custom_constraints_content = load_custom_constraints(custom_constraints_path)
+
+    for filename in os.listdir(folder):
+        if not filename.lower().endswith(".xdc"):
+            continue
+        filepath = os.path.join(folder, filename)
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+        new_content, count = _CUSTOM_CONSTRAINTS_RE.subn(custom_constraints_content, content)
+        if count > 0:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            print(f"Replaced macro_GitHubCustomConstraints in {filename}")
+
+
 def process_constraints_template(config):
     """Process XDC constraint template files.
 
@@ -175,13 +228,7 @@ def process_constraints_template(config):
             from_to_content = ""
 
     # Read custom constraints file if specified
-    custom_constraints_content = ""
-    if config.custom_constraints and os.path.exists(config.custom_constraints):
-        with open(config.custom_constraints, "r", encoding="utf-8") as f:
-            custom_constraints_content = f.read()
-        print(f"Loaded custom constraints from {config.custom_constraints}")
-    else:
-        print("No custom constraints file specified or file not found")
+    custom_constraints_content = load_custom_constraints(config.custom_constraints)
 
     # Get template files from configuration
     template_files = config.constraints_templates
@@ -245,11 +292,9 @@ def process_constraints_template(config):
             )
 
         # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
-        final_content, count = re.subn(
-            r"#LabVIEWFPGAHdlTools_Macro\s+macro_GitHubCustomConstraints",
+        final_content, count = _CUSTOM_CONSTRAINTS_RE.subn(
             custom_constraints_content,
             final_content,
-            flags=re.IGNORECASE,
         )
         if count == 0:
             raise ValueError(

@@ -53,7 +53,7 @@ Available setters (grouped by section):
         set_include_custom_io_on_lv_window, set_lv_target_name, set_lv_target_guid,
         set_lv_target_install_folder, add_lv_target_constraints,
         set_lv_target_menus_folder, set_lv_target_info_ini,
-        set_lv_target_exclude_files, set_max_hdl_reg_offset,
+        set_lv_target_exclude_files, add_lv_target_exclude_files, set_max_hdl_reg_offset,
         add_window_vhdl_template, add_lv_target_xml_template,
         set_window_vhdl_output_folder,
         set_lv_target_plugin_output_folder, set_boardio_output, set_clock_output

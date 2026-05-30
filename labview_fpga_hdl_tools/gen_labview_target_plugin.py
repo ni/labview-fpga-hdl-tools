@@ -27,6 +27,7 @@ from xml.dom.minidom import parseString  # For pretty-formatted XML output
 from mako.template import Template  # For template-based file generation  # type: ignore
 
 from . import common  # For shared utilities across tools
+from . import process_constraints  # For shared constraint macro replacement
 
 # Constants
 BOARDIO_WRAPPER_NAME = "BoardIO"  # Top-level wrapper name in the BoardIO XML hierarchy
@@ -670,15 +671,26 @@ def _copy_fpgafiles(
     dest_deps_folder = os.path.join(plugin_folder, "FpgaFiles")
     os.makedirs(dest_deps_folder, exist_ok=True)
 
-    # Read the list of files to exclude from the file
-    exclude_file_list = []
-    if lv_target_exclude_files and os.path.exists(lv_target_exclude_files):
-        with open(lv_target_exclude_files, "r", encoding="utf-8") as f:
-            # Read each line, strip whitespace, and filter out empty lines
-            exclude_file_list = [line.strip() for line in f if line.strip()]
-        print(f"Loaded {len(exclude_file_list)} files to exclude from {lv_target_exclude_files}")
+    # Read the list of files to exclude, merging all provided exclude file lists
+    exclude_file_set = set()
+    exclude_sources = (
+        lv_target_exclude_files
+        if isinstance(lv_target_exclude_files, list)
+        else ([lv_target_exclude_files] if lv_target_exclude_files else [])
+    )
+    for exclude_path in exclude_sources:
+        if exclude_path and os.path.exists(exclude_path):
+            with open(exclude_path, "r", encoding="utf-8") as f:
+                entries = [line.strip() for line in f if line.strip()]
+            exclude_file_set.update(entries)
+            print(f"Loaded {len(entries)} files to exclude from {exclude_path}")
+        else:
+            print(f"Exclude file list not found: {exclude_path}")
+    exclude_file_list = exclude_file_set
+    if not exclude_file_list:
+        print("No exclude file lists provided or none found")
     else:
-        print("No exclude file list provided or file does not exist")
+        print(f"Total unique files to exclude: {len(exclude_file_list)}")
 
     for file in file_list:
         # Get the base filename
@@ -820,7 +832,9 @@ def _validate_ini(config, gen_window_only=False):
             # Validate each file list path
             for i, file_list_path in enumerate(config.hdl_file_lists):
                 invalid_path = common.validate_path(
-                    file_list_path, f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]", "file"
+                    file_list_path,
+                    f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]",
+                    "file",
                 )
                 if invalid_path:
                     invalid_paths.append(invalid_path)
@@ -831,7 +845,9 @@ def _validate_ini(config, gen_window_only=False):
             # Validate each template file path
             for i, template_path in enumerate(config.lv_target_xml_templates):
                 invalid_path = common.validate_path(
-                    template_path, f"LVFPGATargetSettings.TargetXMLTemplates[{i}]", "file"
+                    template_path,
+                    f"LVFPGATargetSettings.TargetXMLTemplates[{i}]",
+                    "file",
                 )
                 if invalid_path:
                     invalid_paths.append(invalid_path)
@@ -840,7 +856,9 @@ def _validate_ini(config, gen_window_only=False):
         if config.lv_target_constraints:
             for i, constraint_path in enumerate(config.lv_target_constraints):
                 invalid_path = common.validate_path(
-                    constraint_path, f"LVFPGATargetSettings.LVTargetConstraints[{i}]", "file"
+                    constraint_path,
+                    f"LVFPGATargetSettings.LVTargetConstraints[{i}]",
+                    "file",
                 )
                 if invalid_path:
                     invalid_paths.append(invalid_path)
@@ -955,6 +973,12 @@ def gen_lv_target_support(config=None):
         config.target_family,
         config.base_target,
         config.lv_target_exclude_files,
+    )
+
+    fpga_files_folder = os.path.join(config.lv_target_plugin_output_folder or "", "FpgaFiles")
+    process_constraints.replace_custom_constraints_in_xdc_folder(
+        fpga_files_folder,
+        config.custom_constraints,
     )
 
     _copy_menu_files(config.lv_target_plugin_output_folder, config.lv_target_menus_folder)
