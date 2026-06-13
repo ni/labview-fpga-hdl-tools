@@ -2,7 +2,7 @@
 
 remove_files [get_files]
 
-add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlop.vhd}
+add_files {..\..\..\deps\flexrio-deps\flexrio-deps-usp\DFlop.vhd}
 add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlopBoolVec.vhd}
 add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlopSLV.vhd}
 add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlopUnsigned.vhd}

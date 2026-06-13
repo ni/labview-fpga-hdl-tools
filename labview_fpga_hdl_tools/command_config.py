@@ -64,6 +64,9 @@ class CommandConfiguration:
     hdl_file_lists: List[str] = field(
         default_factory=list
     )  # List of HDL file list paths for Vivado project generation
+    exclude_hdl_file_lists: List[str] = field(
+        default_factory=list
+    )  # List of file lists naming HDL files to exclude from the assembled file list
     vhdl2008_file_lists: List[str] = field(
         default_factory=list
     )  # List of VHDL 2008 file list paths for Vivado project generation
@@ -187,6 +190,23 @@ class CommandConfiguration:
         resolved = resolve_path(value)
         if resolved is not None:
             self.hdl_file_lists.append(resolved)
+
+    def add_exclude_hdl_file_list(self, value):
+        """Append a file list naming HDL files to exclude (resolved to absolute).
+
+        Each non-comment line in the referenced file is a relative path to a
+        single HDL file (forward slashes, same form as the HDL file lists). Any
+        file in the assembled HDL file list whose absolute path matches an
+        excluded entry is removed before the Vivado/ModelSim projects are built.
+
+        This is used when a shared dependency file list pulls in a file that
+        collides by name with a target-specific copy (for example, the
+        UltraScale PkgNiDmaConfig.vhd vs the UltraScale+ copy). The target that
+        owns the correct copy lists the wrong one here to drop it.
+        """
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.exclude_hdl_file_lists.append(resolved)
 
     def add_vhdl2008_file_list(self, value):
         """Append a VHDL 2008 file list path (resolved to absolute)."""

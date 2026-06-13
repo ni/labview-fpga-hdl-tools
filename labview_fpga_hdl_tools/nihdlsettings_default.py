@@ -47,6 +47,7 @@ Available setters (grouped by section):
         add_hdl_file_list, add_vhdl2008_file_list, add_constraints_template,
         add_vivado_project_constraints, set_custom_constraints,
         set_lv_window_netlist_folder
+        add_exclude_hdl_file_list,
 
     LVFPGA Target Settings:
         set_custom_io_csv, set_include_board_io_on_lv_window,

@@ -1,0 +1,5 @@
+# Files to exclude from the assembled HDL file list.
+# Drop the US copy of DFlop.vhd; the USP list provides the correct copy for
+# this UltraScale+ target. Entry is a relative path, identical in form to the
+# entry in vivadoprojectdeps.txt, so both resolve to the same absolute path.
+../../deps/flexrio-deps/flexrio-deps/DFlop.vhd

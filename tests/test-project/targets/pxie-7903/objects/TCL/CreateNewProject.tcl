@@ -4,7 +4,7 @@ set ProjName {SasquatchTopTemplate}
 create_project -force $ProjName [pwd] -part xcvu11p-flgb2104-2-e
 set_property target_language VHDL [current_project]
 
-add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlop.vhd}
+add_files {..\..\..\deps\flexrio-deps\flexrio-deps-usp\DFlop.vhd}
 add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlopBoolVec.vhd}
 add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlopSLV.vhd}
 add_files {..\..\..\deps\flexrio-deps\flexrio-deps\DFlopUnsigned.vhd}

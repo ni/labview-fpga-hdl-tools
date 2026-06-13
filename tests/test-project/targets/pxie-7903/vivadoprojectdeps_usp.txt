@@ -1,0 +1,3 @@
+# UltraScale+ variant dependency list. Provides the USP copy of DFlop.vhd
+# whose basename collides with the US copy in vivadoprojectdeps.txt.
+../../deps/flexrio-deps/flexrio-deps-usp/DFlop.vhd

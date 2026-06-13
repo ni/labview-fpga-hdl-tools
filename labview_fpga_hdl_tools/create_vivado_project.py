@@ -573,6 +573,11 @@ def _create_project(mode: ProjectMode, config):
     # Get the lists of Vivado project files from the configuration
     file_list = common.get_vivado_project_files(config.hdl_file_lists)
 
+    # Remove any files named in the exclude lists (e.g. a wrong-FPGA-variant copy
+    # of a same-named file supplied by a shared dependency list)
+    excluded_paths = common.read_exclude_file_paths(config.exclude_hdl_file_lists)
+    file_list = common.apply_hdl_excludes(file_list, excluded_paths)
+
     # Add constriants XDC files listed in the config file
     file_list = file_list + [
         common.fix_file_slashes(file) for file in config.vivado_project_constraints

@@ -402,6 +402,36 @@ def get_test_set_no_window():
     ]
 
 
+def get_test_set_exclude():
+    """Tests for add_exclude_hdl_file_list duplicate-resolution behavior."""
+    paths = get_standard_test_paths()
+    nihdl_cmd = get_nihdl_command()
+
+    return [
+        {
+            "name": "gen-vivado with duplicate file and no exclude - should fail",
+            "command": f"{nihdl_cmd} gen-vivado --config=dupsettings.py",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 1,  # Duplicate DFlop.vhd must raise an error
+        },
+        {
+            "name": "gen-vivado with exclude resolves duplicate - should succeed",
+            "command": f"{nihdl_cmd} gen-vivado --config=excludesettings.py",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 0,  # Exclude drops the US copy, leaving one DFlop.vhd
+        },
+        {
+            "name": "gen-modelsim with exclude resolves duplicate - should succeed",
+            "command": f"{nihdl_cmd} gen-modelsim --config=excludesettings.py",
+            "working_dir": paths["target_dir"],
+            "disable_test": False,
+            "expected_exit_code": 0,  # skip_modelsim is set; validates the file list assembles
+        },
+    ]
+
+
 def test_set_no_errors():
     """Validate the no-error test set structure."""
     tests = get_test_set_no_errors()
@@ -417,6 +447,17 @@ def test_set_errors():
     assert len(tests) > 0
     assert any(test.get("expected_exit_code") == 1 for test in tests)
     assert any("--config=badsettings.py" in test["command"] for test in tests)
+
+
+def test_set_exclude():
+    """Validate the exclude test set structure."""
+    tests = get_test_set_exclude()
+    assert isinstance(tests, list)
+    assert len(tests) > 0
+    # Must cover both the failing duplicate case and the resolved case
+    assert any(test.get("expected_exit_code") == 1 for test in tests)
+    assert any(test.get("expected_exit_code") == 0 for test in tests)
+    assert any("--config=excludesettings.py" in test["command"] for test in tests)
 
 
 def run_test_cases(tests, test_name="Unnamed Test Set"):
@@ -684,6 +725,12 @@ if __name__ == "__main__":
 
     # Run no-window tests
     results.append(run_test_cases(get_test_set_no_window(), "No Window Folder Tests"))
+
+    # Re-clean target directories
+    clean_target_directories(paths["target_dir"])
+
+    # Run exclude (duplicate-resolution) tests
+    results.append(run_test_cases(get_test_set_exclude(), "Exclude HDL File Tests"))
 
     # Exit with appropriate status code
     success = all(results) and validation_success

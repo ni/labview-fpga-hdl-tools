@@ -1,0 +1,5 @@
+----------------------------------------------
+-- IMPLEMENTATION NOT NEEDED FOR TESTING
+-- UltraScale+ variant copy (same basename as the US copy) used to
+-- exercise the add_exclude_hdl_file_list duplicate-resolution feature.
+----------------------------------------------

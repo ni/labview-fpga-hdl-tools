@@ -336,6 +336,57 @@ def get_vivado_project_files(lists_of_files):
     return file_list
 
 
+def read_exclude_file_paths(exclude_list_paths):
+    """Read file lists naming HDL files to exclude and resolve them to absolute paths.
+
+    Each non-comment line is a relative path to a single HDL file, resolved the
+    same way get_vivado_project_files resolves its entries (relative to the
+    current working directory). This guarantees an excluded entry and the
+    matching file-list entry normalize to the same absolute path.
+
+    Args:
+        exclude_list_paths (list): Paths to exclude-list files
+
+    Returns:
+        set: Normalized absolute paths of files to exclude
+
+    Raises:
+        FileNotFoundError: If a specified exclude-list path doesn't exist
+    """
+    excluded = set()
+    for list_path in exclude_list_paths:
+        if not os.path.exists(list_path):
+            raise FileNotFoundError(f"Exclude file list path '{list_path}' does not exist.")
+        # Use UTF-8-sig encoding to handle potential BOM in files created on Windows
+        with open(list_path, "r", encoding="utf-8-sig") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):  # Skip empty lines and comments
+                    excluded.add(os.path.normpath(os.path.abspath(fix_file_slashes(line))))
+    return excluded
+
+
+def apply_hdl_excludes(file_list, excluded_abspaths):
+    """Remove files from file_list whose absolute path is in excluded_abspaths.
+
+    Args:
+        file_list (list): List of file paths
+        excluded_abspaths (set): Normalized absolute paths to exclude
+
+    Returns:
+        list: file_list with excluded files removed
+    """
+    if not excluded_abspaths:
+        return file_list
+    kept = []
+    for f in file_list:
+        if os.path.normpath(os.path.abspath(f)) in excluded_abspaths:
+            print(f"Excluding from HDL file list: {f}")
+        else:
+            kept.append(f)
+    return kept
+
+
 def run_command(cmd, cwd=None, capture_output=True):
     """Run a shell command and return its output."""
     print(f"Running command: {cmd}")

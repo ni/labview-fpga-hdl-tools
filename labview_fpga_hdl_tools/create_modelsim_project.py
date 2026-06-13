@@ -427,6 +427,12 @@ def create_modelsim_project(overwrite=False, config=None):
     all_files = _get_vhdl_files_from_lists(file_lists)
     vhdl2008_files = _get_vhdl_files_from_lists(config.vhdl2008_file_lists)
 
+    # Remove any files named in the exclude lists (e.g. a wrong-FPGA-variant copy
+    # of a same-named file supplied by a shared dependency list)
+    excluded_paths = common.read_exclude_file_paths(config.exclude_hdl_file_lists)
+    all_files = common.apply_hdl_excludes(all_files, excluded_paths)
+    vhdl2008_files = common.apply_hdl_excludes(vhdl2008_files, excluded_paths)
+
     # Remove VHDL-2008 files from the standard list (they'll be compiled separately)
     vhdl2008_set = set(os.path.normpath(f) for f in vhdl2008_files)
     std_files = [f for f in all_files if os.path.normpath(f) not in vhdl2008_set]
