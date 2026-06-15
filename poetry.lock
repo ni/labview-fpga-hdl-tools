@@ -684,22 +684,6 @@ pycodestyle = [
 toml = ">=0.10.1"
 
 [[package]]
-name = "nisyscfg"
-version = "0.2.1"
-description = "NI System Configuration Python API"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-markers = "python_version >= \"3.9\""
-files = [
-    {file = "nisyscfg-0.2.1-py3-none-any.whl", hash = "sha256:47e95ae72e4265407a145ede09099e3b1dbbb62be232c2f59d92ff1288a49184"},
-]
-
-[package.dependencies]
-hightime = "*"
-six = "*"
-
-[[package]]
 name = "nodeenv"
 version = "1.9.1"
 description = "Node.js virtual environment builder"

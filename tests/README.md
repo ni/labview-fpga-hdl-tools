@@ -11,7 +11,9 @@ are required.
 
 ```
 tests/
-├── test_workflow.py              # Test runner (the only file you execute)
+├── test_workflow.py              # Test runner (the only file you execute; also runs the unit tests below)
+├── test_create_lvbitx.py         # Unit tests for createBitfile.exe discovery
+├── test_process_constraints.py   # Unit tests for constraint processing helpers
 ├── test-project/                 # Input: sample project mimicking a real FlexRIO target
 │   ├── deps/                     # Mock dependency tree (CLIP XML, HDL sources)
 │   └── targets/
@@ -33,6 +35,7 @@ tests/
 ├── test-plugin-install-dir-expected/  # Reference: expected install-target output
 ├── test-vivado/                  # Stub: fake vivado.bat (prints nothing, exits 0)
 ├── test-modelsim/                # Stub: fake vsim.exe
+├── test-LabVIEW/                 # Stub: fake LabVIEW install with createBitfile.exe
 └── test-labview-vpe/             # Stub: fake LabVIEW VPE export (for get-window)
 ```
 
@@ -54,6 +57,11 @@ Real Vivado, ModelSim, and LabVIEW are not available in CI. The settings files
 point to stub directories (`test-vivado/`, `test-modelsim/`) that contain minimal
 executables. Commands detect `skip_vivado=True` and skip the actual tool invocation,
 but still validate settings, generate TCL scripts, and produce mock outputs.
+
+gen-lvbitx locates createBitfile.exe from the LabVIEW install (the configured
+`labview_path`, or auto-discovery of LabVIEW 2023–2030 under Program Files).
+`test_create_lvbitx.py` covers this discovery using the `test-LabVIEW/` stub and
+monkeypatched temp installs, so no real LabVIEW is needed.
 
 ### Settings Files
 
