@@ -55,6 +55,27 @@ Every hook receives a `CommandContext` with these attributes:
 | `context.command_name` | Underscore-separated command name (for example, `"gen_vivado"`). |
 | `context.command_kwargs` | Dict of CLI arguments forwarded to the command function. |
 | `context.result` | Return value of the command (available in post hooks only). |
+| `context.settings` | Dict of generic overrides passed on the command line via repeated `--set KEY=VALUE` options. Values are strings; the settings file decides how to interpret them. |
+
+### Passing Overrides from the Command Line (`--set`)
+
+Every command accepts a repeatable `--set KEY=VALUE` option that surfaces to hooks as `context.settings`. This lets CI/CD pipelines and wrapper settings files pivot behavior without editing `nihdlsettings.py` or relying on environment variables:
+
+```bash
+nihdl gen-window --set output=shipping
+nihdl gen-vivado --set input=objects --set verbose=1
+```
+
+A bare `--set KEY` (no `=`) is treated as `KEY=true`. Values are always strings, so the settings file owns any interpretation:
+
+```python
+def pre_all(context):
+    config = context.config
+    if context.settings.get("output") == "shipping":
+        config.set_lv_window_netlist_output_folder("netlist")  # checked-in folder
+    else:
+        config.set_lv_window_netlist_output_folder("objects/testLvWindowNetlist")
+```
 
 ### Minimal Example
 
