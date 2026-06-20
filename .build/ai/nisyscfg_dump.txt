@@ -1,0 +1,1725 @@
+==============================================================================
+nisyscfg installed-software dump
+Generated: 2026-06-14T21:23:26
+ProgramFiles: C:\Program Files
+==============================================================================
+
+Total installed-software components: 143
+
+------------------------------------------------------------------------------
+[1]
+    title           = Eyescan IDL Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {D60E2E30-3551-31C5-BA6C-243B12D75A3E}
+    version         = 23.00.49177
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[2]
+    title           = FlexRIO with Integrated I/O Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {5E1E2498-08C0-41E0-B5F9-C1508286D43E}
+    version         = 24.50.49288
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[3]
+    title           = LabVIEW Project Dependency Support Software
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {4EB0564D-3558-3E9A-86DE-4D196C0EE4BD}
+    version         = 24.30.49311
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[4]
+    title           = LabVIEW64
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {67181D1D-9F79-4B77-9400-134CB01EB914}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[5]
+    title           = Microsoft Silverlight 5.1
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {26A28F6B-2A51-4D57-91A7-87407133BC53}
+    version         = 5.18.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[6]
+    title           = NI 985x Development Support 24.5 (32-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {61540668-A841-47EA-A64B-E4ECCFDEBF16}
+    version         = 24.50.49287
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[7]
+    title           = NI CEIP Common (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {BC0E4FC1-66AE-456C-A6D2-2D540225EDD2}
+    version         = 24.50.49244
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[8]
+    title           = NI Command Line Interface for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {23A2A7A1-F468-488A-BCE6-16C44C5B1A57}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[9]
+    title           = NI Common Runtime 19.0 for .NET Framework 4.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {E4AA78AB-71C8-46B6-B42B-587FEC128CEA}
+    version         = 19.00.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[10]
+    title           = NI CompactRIO 24.5 Store Product
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {D5D5D4F1-E729-4100-84E9-3A8787CBBC9A}
+    version         = 24.50.49295
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[11]
+    title           = NI CompactRIO common files 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {6D48E7E9-ABBA-4BA4-8819-554AD5693913}
+    version         = 24.50.49288
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[12]
+    title           = NI CompactRIO Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {6AA7BA52-BA7D-4348-9626-5952910E0E22}
+    version         = 24.50.49297
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[13]
+    title           = NI CompactRIO Software Configuration Support 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {E412B41D-2FA9-4F2C-BBEB-3CDA0A015539}
+    version         = 24.50.49297
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[14]
+    title           = NI CompactRIO Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {3ED849AF-B211-3E94-9F34-BF360C630DE0}
+    version         = 24.50.49298
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[15]
+    title           = NI Customer Experience Improvement Program (32-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {44804CE2-2845-445E-823F-41F34C35971A}
+    version         = 24.50.49244
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[16]
+    title           = NI Customer Experience Improvement Program (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {46983A1F-E836-4F8A-BFE1-CC41BD7D365D}
+    version         = 24.50.49244
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[17]
+    title           = NI DataSocket 19.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {DFF23744-E06E-4984-8160-7439424B9145}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[18]
+    title           = NI Device Monitor 22.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {16C2871F-5D1D-41B3-9229-51885B9F306E}
+    version         = 22.50.49218
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[19]
+    title           = NI Distributed System Manager 2024
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {2EA04F3F-C366-47B0-A801-9618AEE33AEE}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[20]
+    title           = NI Error Reporting Common
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {74EE8BA2-84E5-30AA-B8C8-FED367FFF1B6}
+    version         = 24.50.49705
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[21]
+    title           = NI Error Reporting Native (32-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {10F467DF-7246-31E9-AABF-2D47CD13F97F}
+    version         = 24.50.49231
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[22]
+    title           = NI Error Reporting Native (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {9F72395F-F718-3B81-8292-C3D771737101}
+    version         = 24.50.49231
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[23]
+    title           = NI Expat XML Windows Installer
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {C212785F-3C2F-3C3D-AB11-15B813F488FE}
+    version         = 26.00.49173
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[24]
+    title           = NI Farm Server 2024 Q1
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {C5AB4CD2-1B9E-415D-A8BE-436FD4665B18}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[25]
+    title           = NI FlexRIO 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {D4610D5C-C14C-4DA0-AF7A-C1D9D8ADEF7A}
+    version         = 24.50.49290
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[26]
+    title           = NI FlexRIO Configuration Installer
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {51756AB9-846E-42EA-9FA7-3996A5BF2ACC}
+    version         = 24.5
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[27]
+    title           = NI FlexRIO Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {AEDDE952-8C38-44E6-B7EA-732EC3058471}
+    version         = 24.5
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[28]
+    title           = NI I/O Trace 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {51293DA6-9A24-4C26-9EB9-3641E29048F3}
+    version         = 24.50.49276
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[29]
+    title           = NI LabVIEW (32-bit) DataFinder Connectivity Runtime
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {204C4F6B-415D-4E5E-A18C-BF59F8C6B621}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[30]
+    title           = NI LabVIEW (64-bit) DataFinder Connectivity Runtime
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {CEC8BF32-EA78-44AE-BC86-27DE80AE25FF}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[31]
+    title           = NI LabVIEW 2024 (64-bit) Real-Time Module
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {7B62E887-3D79-4E1F-BF73-896304D7CDD2}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[32]
+    title           = NI LabVIEW 2024 Desktop Execution Trace Toolkit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {B02B7CBB-E77D-2D86-9D5E-1A2FC49EB2BD}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[33]
+    title           = NI LabVIEW 2024 Q1 FPGA Module (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {03E71FB3-AB9B-4D39-B29B-CF8E4FD4F799}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[34]
+    title           = NI LabVIEW Advanced Signal Processing Toolkit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {B7B138B3-B5E1-3A53-BA90-BB77E41EB4E3}
+    version         = 24.10.49446
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[35]
+    title           = NI LabVIEW Database Connectivity Toolkit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {CC9551E0-1B06-3C01-8C23-80CCDE09978D}
+    version         = 24.10.49444
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[36]
+    title           = NI LabVIEW DataFinder Connectivity VIs
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {88EE56E8-101D-369A-A834-DECC55D7AC67}
+    version         = 24.10.49448
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[37]
+    title           = NI LabVIEW Desktop Execution Trace Toolkit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {A620679F-1680-3B3C-9D28-7ACF3CD950E4}
+    version         = 24.10.49444
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[38]
+    title           = NI LabVIEW Digital Filter Design Toolkit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {F2E071D9-66F3-3D46-97AC-433B9F54D45E}
+    version         = 24.10.49446
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[39]
+    title           = NI LabVIEW DotNet Core Interface
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {723E4D4D-E01A-3ACC-9C12-ECB3B67D4468}
+    version         = 24.33.49156
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[40]
+    title           = NI LabVIEW FPGA Advanced Session Resources
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {7231867F-CA16-3668-A1BA-BC82365C668F}
+    version         = 24.50.49309
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[41]
+    title           = NI LabVIEW FPGA Project Templates cRio Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {B2507CE4-7262-3DDA-AC71-34E503EDBFE4}
+    version         = 24.10.49209
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[42]
+    title           = NI LabVIEW Report Generation Toolkit Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {9A7A9DE9-529D-318E-B26E-76D3EA836912}
+    version         = 24.10.49444
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[43]
+    title           = NI LabVIEW Runtime 2023 Q3 (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {466691E9-412A-4824-A373-A5D88C67DC0F}
+    version         = 23.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[44]
+    title           = NI LabVIEW Runtime 2023 Q3 Patch 2
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {99D796C3-2E53-4839-A25B-22C26B029103}
+    version         = 23.3.2
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[45]
+    title           = NI LabVIEW Runtime 2024 Q3
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {99D796C3-2E53-4839-A25B-22C26B029103}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[46]
+    title           = NI LabVIEW Runtime 2024 Q3 Patch 5 (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {466691E9-412A-4824-A373-A5D88C67DC0F}
+    version         = 24.3.5
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[47]
+    title           = NI LabVIEW Unit Test Framework Toolkit Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {AA89791B-6A3C-3381-8940-C8AD4DFD5923}
+    version         = 24.10.49444
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[48]
+    title           = NI LabVIEW VI Analyzer Toolkit Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {E38C0B22-D989-3540-A684-58F2BC7641FB}
+    version         = 24.10.49444
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[49]
+    title           = NI LabVIEW Watchdog Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {8C66DD53-DBD0-39BE-9C73-C7E00E73F9FB}
+    version         = 23.50.49243
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[50]
+    title           = NI LabWindows/CVI 2020 ActiveX Library
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {AC15FC56-28F5-4DE7-830F-8DD97292B9BC}
+    version         = 20.00.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[51]
+    title           = NI LabWindows/CVI 2020 DataSocket Library
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {C59CA73B-E582-493E-8630-004C1BF334D7}
+    version         = 20.00.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[52]
+    title           = NI LabWindows/CVI 2020 Internet Library
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {F5D72A60-8813-4807-9A7E-B71D82362463}
+    version         = 20.00.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[53]
+    title           = NI LabWindows/CVI Diadem Connectivity Support
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {CC1CE792-C871-41DD-BA47-F8802FA78D48}
+    version         = 20.00.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[54]
+    title           = NI LabWindows/CVI Instrument Driver Run-Time Engine 2020
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {37B20E12-87E1-4DF9-8E00-0F0603DAB116}
+    version         = 20.01.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[55]
+    title           = NI LabWindows/CVI OpenGL Library 2020
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {C45F8F0F-9998-46D0-B134-279E93CE68D3}
+    version         = 20.00.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[56]
+    title           = NI LabWindows/CVI Real-Time Run-Time Engine 2020
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {F858387D-3903-4CB7-8CFC-BFD4DA842D4C}
+    version         = 20.00.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[57]
+    title           = NI LabWindows/CVI Run-Time Engine Core 2020
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {CD882145-38E4-4E59-8A68-55654FC6D8C8}
+    version         = 20.03.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[58]
+    title           = NI LabWindows/CVI Shared Runtime 2020 f3
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {CA021939-E0DC-4919-9C72-265568997B6E}
+    version         = 20.03.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[59]
+    title           = NI LabWindows/CVI Shared Runtime Full 2020 f1
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {BAC5E961-EF2F-4AB5-AAC6-838A2B84AD7A}
+    version         = 20.01.49154
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[60]
+    title           = NI Launcher
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {11DB38BB-D297-46A8-AE8A-89926768EBCD}
+    version         = 19.00.49156
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[61]
+    title           = NI License Manager
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {CBA7EDB3-A142-43B6-B68B-A723624F1375}
+    version         = 24.0
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[62]
+    title           = NI License Manager Compatibility Server
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {E734FCEF-9978-3580-8837-BDC94BB2A8D7}
+    version         = 24.00.49776
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[63]
+    title           = NI Measurement & Automation Explorer 24.3
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {769BB00F-977B-4908-8724-4E61A447D3A0}
+    version         = 24.30.49263
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[64]
+    title           = NI Measurement Studio Common Runtime 19.1 for .NET Framework 4.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {E4AA78AB-71C8-46B6-B42B-587FEC128CEA}
+    version         = 19.10.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[65]
+    title           = NI OpenSSL3
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {ECC01911-E1D2-3A23-A947-60FB3C9D3026}
+    version         = 26.00.49226
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[66]
+    title           = NI OpenSSL3 32-bit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {EE82CDC8-E536-3689-B082-7E09F65E5550}
+    version         = 24.50.49169
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[67]
+    title           = NI Package Building Support for LabVIEW 2024 (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {33DEC4CC-AA85-4348-8AFA-6DC842A8C2BD}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[68]
+    title           = NI Package Manager 26.0.1.
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {551F8C5C-69FF-4ED3-9DA7-E1656CBBEF8D}
+    version         = 26.01.49156
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[69]
+    title           = NI Package Manager Deployment Support 26.3.
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {4F1DAFA9-35B6-4BCC-98FB-CDA7643EE419}
+    version         = 26.30.49300
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[70]
+    title           = NI PXI Firmware
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {10DD6F9C-E0A3-3935-B8A1-CA15D16F45A7}
+    version         = 24.50.49285
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[71]
+    title           = NI PXI Platform Services .NET Support
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {D76D1205-A5E1-4740-899F-AE8E2078AF58}
+    version         = 24.50.49308
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[72]
+    title           = NI PXI Platform Services C Language Support
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {5352C8FA-E8FA-4BD2-929A-0018F9C48999}
+    version         = 24.50.49313
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[73]
+    title           = NI PXI Platform Services Configuration 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {971AD3BA-55C2-440E-BC5C-15549F9B826E}
+    version         = 24.50.49313
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[74]
+    title           = NI PXI Platform Services Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {A2B4145C-29E8-4D61-8BD1-B6C6C949BD73}
+    version         = 24.50.49313
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[75]
+    title           = NI Real-Time Trace Viewer 2024 Q1 LabVIEW Support Files (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {EDE9732A-B014-41A2-BE33-474B9FB4350B}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[76]
+    title           = NI SLCP Common (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {BE01018C-7B00-4916-AB19-368D70C33B53}
+    version         = 24.50.49244
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[77]
+    title           = NI Software License Compliance Program (32-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {77E8E609-803B-46F0-9851-211D0A7DA362}
+    version         = 24.30.49190
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[78]
+    title           = NI Software License Compliance Program (64-bit)
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {A81A7F85-722A-4B0D-B058-BE087EF7730E}
+    version         = 24.50.49244
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[79]
+    title           = NI System Configuration .NET Runtime for .NET Framework 4.6
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {1144D641-E681-4C7D-BEB9-65B7E6AD87FA}
+    version         = 24.50.49275
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[80]
+    title           = NI System Configuration Runtime 24.5.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {F0D3423D-BA79-409E-8C35-E7E3EA18E0DF}
+    version         = 24.5
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[81]
+    title           = NI System Web Server 2024 Q3
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {FCF64B73-B7D4-4971-8F11-24BAF7CC3E6C}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[82]
+    title           = NI TDM Excel Add-In 2021
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {F54E3C58-BDE8-49D1-9E78-B815B7B4749C}
+    version         = 21.51.49163
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[83]
+    title           = NI TEDS VI Library Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {5F184D89-F1B7-38D8-A02E-837DE5258741}
+    version         = 24.50.49309
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[84]
+    title           = NI Update Service
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {11D580A9-CAA9-4FAE-ACCE-008751A7AE9F}
+    version         = 21.0.0.49243
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[85]
+    title           = NI USI AOP5 DataPlugin
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {B011B3E8-94CC-C9BA-E008-A7FEAA3400A2}
+    version         = 21.50.49290
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[86]
+    title           = NI UsiCore 21.5.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {506779B6-4610-496B-8FC0-B4416840309D}
+    version         = 21.50.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[87]
+    title           = NI Variable Engine 2024
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {535BF539-F251-468B-9F11-BB4072773D70}
+    version         = 24.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[88]
+    title           = NI VIPM Helper 2024
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {F7538062-9811-43C4-7A8C-3E2012650341}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[89]
+    title           = NI Web Server Deployment Support for LabVIEW 2024 32-bit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {67D607FC-E259-4CC4-899D-EF5DB6C3F494}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[90]
+    title           = NI Web Server Deployment Support for LabVIEW 2024 64-bit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {AA28FC46-64D0-47D5-9E17-86337D0686EC}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[91]
+    title           = NI Web-Based Configuration and Monitoring 20.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {9965C2A7-1464-4476-B183-C9AF8DC95231}
+    version         = 20.5.1
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[92]
+    title           = NI Xerces Software
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {B7240AA3-00B1-3A2E-AA70-DF8F95F89EF0}
+    version         = 3.25.49161
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[93]
+    title           = NI Xerces Software
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {63419DF4-CC8E-3436-87DA-AB4022125587}
+    version         = 26.00.49200
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[94]
+    title           = NI-488.2 .NET Language Development Support 17.0 for .NET Framework
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {29484051-113A-4D07-B1CD-43A5FECC7277}
+    version         = 17.01.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[95]
+    title           = NI-488.2 .NET Language Development Support 17.0 for .NET Framework
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {71B78A68-E85F-43F5-B010-252D5FBD30A8}
+    version         = 17.01.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[96]
+    title           = NI-488.2 .NET Language Development Support 17.0 for .NET Framework
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {E98F20FD-E631-4AD8-8539-B771EAE2D971}
+    version         = 17.01.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[97]
+    title           = NI-488.2 .NET Language Runtime 17.0.1 for .NET Framework 4.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {AE98421A-C1F9-4F44-BAD0-80A65FA513AF}
+    version         = 17.01.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[98]
+    title           = NI-488.2 .NET Language Runtime 17.0.1 for .NET Framework 4.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {96E1DC44-23E7-46CD-9E4B-2D05625296FE}
+    version         = 17.01.49152
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[99]
+    title           = NI-488.2 Configuration Support 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {458DC9C2-46A5-41D6-A56C-BCF9D99680B6}
+    version         = 24.50.49290
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[100]
+    title           = NI-488.2 Development Support
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {029186AF-A8CA-4C43-A41C-3ADD6C1EAE9E}
+    version         = 24.50.49280
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[101]
+    title           = NI-488.2 Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {1E744B6B-1A32-4DE5-94CA-B009A8B8CF6B}
+    version         = 24.50.49290
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[102]
+    title           = NI-Common Instrument Design Libraries Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {52E34976-8298-3B1F-ADCD-CB0A03046D2F}
+    version         = 24.50.49286
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[103]
+    title           = NI-DAQmx .NET Language Runtime  for .NET Framework 4.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {6A7825FF-AFA4-4834-A520-9DB7AA59A662}
+    version         = 24.50.49564
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[104]
+    title           = NI-DAQmx .NET Language Runtime  for .NET Framework 4.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {43866D96-AEC4-46DC-A752-2C208806E097}
+    version         = 24.50.49564
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[105]
+    title           = NI-DAQmx C Support
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {8756FEE6-C15F-45BF-A015-6135555C15E9}
+    version         = 24.50.49574
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[106]
+    title           = NI-DAQmx Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {000056C0-A9B8-4A59-A457-1A2DEED287C7}
+    version         = 24.50.49588
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[107]
+    title           = NI-DAQmx Runtime with Configuration Support 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {0000C52B-5914-4016-B079-252044B36331}
+    version         = 24.50.49578
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[108]
+    title           = NI-DAQmx Support for .NET Framework 4.0 Languages
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {A8FE3233-6915-4F59-89C0-757B4D012958}
+    version         = 24.50.49569
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[109]
+    title           = NI-DAQmx Support for .NET Framework 4.5 Languages
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {0EBDD50A-8729-4A62-ACFF-0C32B565BD1E}
+    version         = 24.50.49569
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[110]
+    title           = NI-DAQmx Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {056B407B-79A9-32F3-9FAB-0F26DB52DD24}
+    version         = 24.50.49578
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[111]
+    title           = NI-Embedded CAN for RIO 23.3.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {B5E6B0C4-F7E7-CA38-487F-0F2517550B76}
+    version         = 23.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[112]
+    title           = NI-Embedded CAN for RIO Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {8EF8B006-1BBD-3A44-8D40-C05F6EC36543}
+    version         = 23.30.49236
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[113]
+    title           = NI-FlexRIO Adapter Module RF Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {5822633F-132D-309E-B66D-61EB859384A7}
+    version         = 24.50.49296
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[114]
+    title           = NI-FlexRIO Adapter Module Shared Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {49DB59C2-BEE1-3DFC-9F4E-64D883A6D9E4}
+    version         = 24.50.49285
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[115]
+    title           = NI-FlexRIO Analog Adapter Module Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {F1D47FF8-4581-37F1-81CA-5CFC1C5C4F87}
+    version         = 24.50.49296
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[116]
+    title           = NI-FlexRIO Digital Adapter Module Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {E4699553-4531-34AC-AF55-FE708E15EBEE}
+    version         = 24.50.49296
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[117]
+    title           = NI-FlexRIO Integrated I/O API Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {A6F2BDB0-219D-3189-A0E0-6FEDAF28BC95}
+    version         = 24.50.49297
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[118]
+    title           = NI-FlexRIO Integrated I/O Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {7B642254-37C1-3AFF-A9A8-BF3C585ECE6B}
+    version         = 24.50.49298
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[119]
+    title           = NI-FlexRIO Modular I/O Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {1C52D511-4680-3F72-A72F-37C955FFC5BA}
+    version         = 24.50.49296
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[120]
+    title           = NI-FlexRIO Shared Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {96D036B1-E4BF-3833-81B9-480E6579DFC8}
+    version         = 24.50.49296
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[121]
+    title           = NI-FlexRIO with Integrated I/O
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {FCDA1883-8663-4EC1-ACFF-DC01C48425F1}
+    version         = 24.50.49288
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[122]
+    title           = NILM Client 25.5 32-bit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {19EFE71B-64EC-3DEE-BA5C-EDAF5DFE38B3}
+    version         = 25.30.49512
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[123]
+    title           = NILM Client 26.0
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {202CB36B-CB89-3064-8AC1-28A68D255348}
+    version         = 26.10.49905
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[124]
+    title           = NILM Client 26.0 32-bit
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {845B75FB-8BC9-329D-B330-2C57EBBD7068}
+    version         = 26.10.49905
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[125]
+    title           = NI-MXLC LabVIEW Development Support 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {CF055804-9911-3D4F-B464-2D15D8183B0D}
+    version         = 24.50.49330
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[126]
+    title           = NI-RIO 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {C2057F52-205A-484D-B321-FD91BADE5F4D}
+    version         = 24.50.49322
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[127]
+    title           = NI-RIO Software Configuration Support 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {6EB827BB-4EC5-43C6-8E33-E0499E80864F}
+    version         = 24.50.49321
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[128]
+    title           = NI-RIO Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {11EB5870-E408-3F31-80C9-E7C17189C725}
+    version         = 24.50.49322
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[129]
+    title           = NI-Sync 24.3 C Language Support
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {BB4667D7-707F-47C1-A9EE-D112BE806CA0}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[130]
+    title           = NI-Sync API Support 24.3
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {D9A6D6AE-E99A-4203-8A56-45B00A550D54}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[131]
+    title           = NI-Sync Runtime 24.3
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {413ACFA1-90A0-4CE1-B4A9-AD3F5734BD6F}
+    version         = 24.3
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[132]
+    title           = NI-Sync Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {976483F3-44CB-35CD-8FF6-0B5BE175FB31}
+    version         = 24.30.49293
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[133]
+    title           = NI-TClk 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {52DF9E06-A392-43E1-9C6A-A48519E1AFBE}
+    version         = 24.50.49291
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[134]
+    title           = NI-TClk Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {75D14726-836A-4AD3-A307-191C286AE415}
+    version         = 24.50.49291
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[135]
+    title           = NI-TClk Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {FD2C8B2D-890C-44D2-8B56-59D8E62D94D6}
+    version         = 24.50.49291
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[136]
+    title           = NI-VISA .NET Development Support
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {7F202BED-BB19-4744-ACE0-3AAD8204FD84}
+    version         = 24.50.49310
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[137]
+    title           = NI-VISA .NET Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {671F6EC0-CDB7-4520-8865-07426BA5CC77}
+    version         = 24.50.49310
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[138]
+    title           = NI-VISA C Examples
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {49359BB6-49F8-4FD6-88BC-9E6639FA78FB}
+    version         = 24.50.49310
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[139]
+    title           = NI-VISA Configuration Support 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {093EECCF-DE2B-4226-B7E5-B1FD4028A783}
+    version         = 24.50.49310
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[140]
+    title           = NI-VISA Driver Development Wizard
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {0968E7F9-38F5-492C-9A64-B141D57F3E72}
+    version         = 24.50.49310
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[141]
+    title           = NI-VISA Meta Package
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {FCFF21C3-7329-4713-AB3C-93A3E0D6AA4F}
+    version         = 24.50.49311
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[142]
+    title           = NI-VISA Runtime 24.5
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {8627993A-3F66-483C-A562-0D3BA3F267B1}
+    version         = 24.50.49310
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
+[143]
+    title           = NI-VISA Support for LabVIEW
+    display_name    = <error: 'ComponentInfo' object has no attribute 'display_name'>
+    name            = <error: 'ComponentInfo' object has no attribute 'name'>
+    product_name    = <error: 'ComponentInfo' object has no attribute 'product_name'>
+    id              = {C8EEEC75-76A2-340D-8E63-8869C7E5ED85}
+    version         = 24.50.49310
+    product_version = <error: 'ComponentInfo' object has no attribute 'product_version'>
+    directory       = <error: 'ComponentInfo' object has no attribute 'directory'>
+    install_path    = <error: 'ComponentInfo' object has no attribute 'install_path'>
+    type            = 0
+------------------------------------------------------------------------------
