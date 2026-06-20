@@ -29,8 +29,10 @@ def _validate_ini(config):
                 f"{config.modelsim_tools_folder}"
             )
 
-    if not config.top_level_entity:
-        missing_settings.append("VivadoProjectSettings.TopLevelEntity")
+    if not common.get_modelsim_entity(config):
+        missing_settings.append(
+            "ModelSimSettings.ModelSimEntity (or VivadoProjectSettings.TopLevelEntity)"
+        )
 
     error_msg = common.get_missing_settings_error(missing_settings)
     error_msg += common.get_invalid_paths_error(invalid_paths)
@@ -67,7 +69,7 @@ def sim_modelsim(do_file=None, config=None):
         )
         return 1
 
-    entity_name = config.top_level_entity
+    entity_name = common.get_modelsim_entity(config)
 
     # Determine which .do file to use
     if do_file:

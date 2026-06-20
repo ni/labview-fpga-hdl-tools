@@ -137,6 +137,7 @@ class CommandConfiguration:
     modelsim_tools_folder: Optional[str] = None  # Path to ModelSim installation directory
     xilinx_sim_lib_folder: Optional[str] = None  # Path to compiled Xilinx simulation libraries
     modelsim_project_folder: Optional[str] = None  # Relative path to ModelSim project folder
+    modelsim_entity: Optional[str] = None  # Top-level entity name for ModelSim simulation
     modelsim_file_lists: List[str] = field(
         default_factory=list
     )  # Ordered file lists for ModelSim compilation (deps before sources)
@@ -175,7 +176,7 @@ class CommandConfiguration:
 
     # --- Vivado Project Settings setters ---
 
-    def set_top_level_entity(self, value):
+    def set_vivado_top_entity(self, value):
         """Set the top-level entity name for the Vivado project."""
         self.top_level_entity = value
 
@@ -410,6 +411,10 @@ class CommandConfiguration:
     def set_modelsim_project_folder(self, value):
         """Set the ModelSim project folder (e.g., 'ModelSimProject')."""
         self.modelsim_project_folder = value
+
+    def set_modelsim_top_entity(self, value):
+        """Set the top-level entity name used by ModelSim simulation."""
+        self.modelsim_entity = value
 
     # --- Window Hierarchy Settings setters ---
 

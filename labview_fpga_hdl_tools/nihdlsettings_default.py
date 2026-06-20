@@ -43,7 +43,7 @@ Available setters (grouped by section):
         set_target_family, set_base_target, set_dependencies
 
     Vivado Project Settings:
-        set_top_level_entity, set_fpga_part, set_vivado_project_folder,
+        set_vivado_top_entity, set_fpga_part, set_vivado_project_folder,
         add_hdl_file_list, add_vhdl2008_file_list, add_constraints_template,
         add_vivado_project_constraints, set_custom_constraints,
         set_lv_window_netlist_folder
@@ -72,7 +72,7 @@ Available setters (grouped by section):
         set_entity_path_to_window, set_entity_path_to_window_wrapper
 
     ModelSim Settings:
-        set_modelsim_project_folder, add_modelsim_file_list
+        set_modelsim_project_folder, set_modelsim_top_entity, add_modelsim_file_list
 
     Runtime:
         set_skip_vivado, set_skip_modelsim
@@ -99,7 +99,7 @@ def pre_all(context):
     config.set_dependencies("../../dependencies.toml")
 
     # --- Vivado Project Settings ---
-    config.set_top_level_entity("SasquatchTopTemplate")
+    config.set_vivado_top_entity("SasquatchTopTemplate")
     config.set_fpga_part("xcvu11p-flgb2104-2-e")
     config.set_vivado_project_folder("VivadoProject")
 
@@ -185,6 +185,7 @@ def pre_all(context):
 
     # --- ModelSim Settings ---
     # config.set_modelsim_project_folder("ModelSimProject")
+    # config.set_modelsim_top_entity("tb_YourTop")
 
 
 def post_all(context):

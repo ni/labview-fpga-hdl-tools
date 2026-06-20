@@ -16,7 +16,7 @@ def pre_all(context):
     config.set_base_target("PXIe-7903")
 
     # --- Vivado Project Settings ---
-    config.set_top_level_entity("SasquatchTopTemplate")
+    config.set_vivado_top_entity("SasquatchTopTemplate")
     # VivadoProjectFolder intentionally empty for error testing
     # config.set_vivado_project_folder("")
 

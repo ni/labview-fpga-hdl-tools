@@ -18,8 +18,12 @@ def _validate_ini(config):
     missing_settings = []
     invalid_paths = []
 
-    if not config.top_level_entity:
-        missing_settings.append("VivadoProjectSettings.TopLevelEntity")
+    modelsim_entity = common.get_modelsim_entity(config)
+
+    if not modelsim_entity:
+        missing_settings.append(
+            "ModelSimSettings.ModelSimEntity (or VivadoProjectSettings.TopLevelEntity)"
+        )
 
     if not config.hdl_file_lists:
         missing_settings.append("VivadoProjectSettings.VivadoProjectFilesLists")
@@ -360,7 +364,7 @@ def create_modelsim_project(overwrite=False, config=None):
         return 1
 
     project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
-    entity_name = config.top_level_entity
+    entity_name = common.get_modelsim_entity(config)
 
     # Check for existing project
     if os.path.exists(project_dir):

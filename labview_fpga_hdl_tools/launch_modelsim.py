@@ -28,8 +28,10 @@ def _validate_ini(config):
                 f"{config.modelsim_tools_folder}"
             )
 
-    if not config.top_level_entity:
-        missing_settings.append("VivadoProjectSettings.TopLevelEntity")
+    if not common.get_modelsim_entity(config):
+        missing_settings.append(
+            "ModelSimSettings.ModelSimEntity (or VivadoProjectSettings.TopLevelEntity)"
+        )
 
     if missing_settings:
         error_msg = "Missing required configuration settings:\n"
@@ -66,7 +68,7 @@ def launch_modelsim(batch=False, config=None):
         )
         return 1
 
-    entity_name = config.top_level_entity
+    entity_name = common.get_modelsim_entity(config)
 
     if batch:
         do_file = f"sim_{entity_name}.do"

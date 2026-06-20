@@ -94,7 +94,7 @@ def pre_all(context):
     config.set_dependencies("../../dependencies.toml")
 
     # Vivado Project Settings
-    config.set_top_level_entity("SasquatchTopTemplate")
+    config.set_vivado_top_entity("SasquatchTopTemplate")
     config.set_fpga_part("xcvu11p-flgb2104-2-e")
     config.set_vivado_project_path("VivadoProject/MyProj.xpr")
 
@@ -145,7 +145,7 @@ def pre_gen_vivado(context):
 
 | Setter | Description |
 | --- | --- |
-| `set_top_level_entity(value)` | HDL top-level entity/module name. |
+| `set_vivado_top_entity(value)` | HDL top-level entity/module name. |
 | `set_fpga_part(value)` | FPGA part string (for example, "xcku040-ffva1156-2-e"). |
 | `set_vivado_project_path(value)` | Relative path to Vivado .xpr file. |
 | `set_custom_constraints_file(value)` | Optional custom XDC file path. |

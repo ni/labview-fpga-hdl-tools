@@ -71,6 +71,23 @@ def _normalize_fs_path(path: Optional[str]) -> Optional[str]:
     return os.path.abspath(normalized)
 
 
+def get_modelsim_entity(config) -> Optional[str]:
+    """Resolve the top entity for ModelSim commands.
+
+    Prefers the dedicated ModelSim entity when configured, and falls back to
+    the synthesis top-level entity for backward compatibility.
+    """
+    modelsim_entity = getattr(config, "modelsim_entity", None)
+    if modelsim_entity is not None and str(modelsim_entity).strip() != "":
+        return str(modelsim_entity).strip()
+
+    top_entity = getattr(config, "top_level_entity", None)
+    if top_entity is not None and str(top_entity).strip() != "":
+        return str(top_entity).strip()
+
+    return None
+
+
 def get_vivado_executable(vivado_path: Optional[str]) -> Optional[str]:
     """Resolve a Vivado executable path from either directory or executable input.
 
