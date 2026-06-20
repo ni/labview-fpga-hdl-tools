@@ -701,6 +701,42 @@ def run_output_validations():
     return overall_success
 
 
+def run_unit_tests():
+    """Run the pytest-based unit tests (createBitfile discovery, constraint helpers).
+
+    The main workflow runner exercises the nihdl CLI end to end, but the pure-Python
+    unit tests live in separate ``test_*.py`` modules. Invoke pytest on them here so
+    that ``python tests/test_workflow.py`` (the command CI runs) covers them too.
+
+    Returns:
+        bool: True if all unit tests passed, False otherwise.
+    """
+    print(f"\n{BLUE}{'=' * 80}{RESET}")
+    print(f"{BLUE}Running Test Set: Unit Tests (pytest){RESET}")
+    print(f"{BLUE}{'=' * 80}{RESET}")
+
+    unit_test_files = [
+        os.path.join(TEST_DIR, name)
+        for name in sorted(os.listdir(TEST_DIR))
+        if name.startswith("test_") and name.endswith(".py") and name != "test_workflow.py"
+    ]
+
+    if not unit_test_files:
+        print(f"{YELLOW}No unit test files found.{RESET}")
+        return True
+
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", *unit_test_files],
+        cwd=REPO_ROOT,
+        text=True,
+    )
+
+    success = result.returncode == 0
+    status = f"{GREEN}PASSED{RESET}" if success else f"{RED}FAILED{RESET}"
+    print(f"\nUnit Tests: {status} (Exit Code: {result.returncode})")
+    return success
+
+
 if __name__ == "__main__":
     # Clean test directories before starting
     paths = get_standard_test_paths()
@@ -708,6 +744,9 @@ if __name__ == "__main__":
 
     # Run different test sets
     results = []
+
+    # Run pure-Python unit tests first (fast, no external tools needed)
+    results.append(run_unit_tests())
 
     # Run test cases - no expected errors
     results.append(run_test_cases(get_test_set_no_errors(), "No Error Tests"))

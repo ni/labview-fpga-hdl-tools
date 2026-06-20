@@ -97,6 +97,53 @@ def cli(ctx):
 
 
 # ---------------------------------------------------------------------------
+# Shared command options
+# ---------------------------------------------------------------------------
+
+
+def _parse_set(pairs):
+    """Parse repeated ``--set KEY=VALUE`` options into a dict of overrides.
+
+    A bare ``KEY`` (no ``=``) is treated as ``KEY=true`` so flag-style overrides
+    work. Values stay strings; the settings file decides how to interpret them.
+    """
+    overrides = {}
+    for item in pairs:
+        key, sep, value = item.partition("=")
+        key = key.strip()
+        if not key:
+            continue
+        overrides[key] = value if sep else "true"
+    return overrides
+
+
+def hook_options(func):
+    """Attach the standard nihdlsettings hook options to a command.
+
+    Adds ``--config`` (path to nihdlsettings.py) and the generic, repeatable
+    ``--set KEY=VALUE`` override, which surfaces to hooks as ``context.settings``.
+    Centralizing these keeps every command consistent and makes the tool
+    extensible for CI/CD and custom scenarios without editing the settings file
+    or relying on environment variables.
+    """
+    func = click.option(
+        "--set",
+        "settings_args",
+        multiple=True,
+        metavar="KEY=VALUE",
+        help=(
+            "Pass a generic override into nihdlsettings.py hooks "
+            "(context.settings). Repeatable, e.g. --set output=shipping. "
+            "A bare --set KEY means KEY=true."
+        ),
+    )(func)
+    func = click.option(
+        "--config", default=None, help="Path to nihdlsettings.py"
+    )(func)
+    return func
+
+
+# ---------------------------------------------------------------------------
 # Workspace Setup
 # ---------------------------------------------------------------------------
 
@@ -105,15 +152,16 @@ def cli(ctx):
 @click.option("--delete", is_flag=True, help="Automatically delete and re-clone without prompting")
 @click.option("--pre", is_flag=True, help="Include pre-release versions when resolving versions")
 @click.option("--latest", is_flag=True, help="Use latest version for all dependencies")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def install_deps_cmd(ctx, delete, pre, latest, config):
+def install_deps_cmd(ctx, delete, pre, latest, config, settings_args):
     """Install GitHub dependencies from dependencies.toml."""
     try:
         result = command_hooks.run_with_hooks(
             "install_deps",
             install_dependencies.install_dependencies,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
             delete_allowed=delete,
             allow_prerelease=pre,
             use_latest=latest,
@@ -132,15 +180,16 @@ def install_deps_cmd(ctx, delete, pre, latest, config):
 @cli.command("gen-vivado", help="Generate Vivado project")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite and create a new project")
 @click.option("--update", "-u", is_flag=True, help="Update files in the existing project")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_vivado_cmd(ctx, overwrite, update, config):
+def gen_vivado_cmd(ctx, overwrite, update, config, settings_args):
     """Generate Vivado project."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_vivado",
             create_vivado_project.create_project,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
             overwrite=overwrite,
             update=update,
         )
@@ -151,15 +200,16 @@ def gen_vivado_cmd(ctx, overwrite, update, config):
 
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def launch_vivado_cmd(ctx, config):
+def launch_vivado_cmd(ctx, config, settings_args):
     """Launch Vivado with the current project."""
     try:
         result = command_hooks.run_with_hooks(
             "launch_vivado",
             launch_vivado.launch_vivado,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -168,15 +218,16 @@ def launch_vivado_cmd(ctx, config):
 
 
 @cli.command("check-vivado", help="Check Vivado RTL syntax and hierarchy quickly")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def check_vivado_cmd(ctx, config):
+def check_vivado_cmd(ctx, config, settings_args):
     """Check Vivado RTL syntax and hierarchy using RTL elaboration."""
     try:
         result = command_hooks.run_with_hooks(
             "check_vivado",
             check_syntax.check_syntax,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -185,15 +236,16 @@ def check_vivado_cmd(ctx, config):
 
 
 @cli.command("compile-vivado", help="Compile Vivado project and generate a LabVIEW FPGA bitfile")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def compile_vivado_cmd(ctx, config):
+def compile_vivado_cmd(ctx, config, settings_args):
     """Compile Vivado project and generate a LabVIEW FPGA bitfile."""
     try:
         result = command_hooks.run_with_hooks(
             "compile_vivado",
             compile_project.compile_project,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -207,15 +259,16 @@ def compile_vivado_cmd(ctx, config):
 
 
 @cli.command("gen-window", help="Generate LabVIEW window netlist from Vivado project export")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_window_cmd(ctx, config):
+def gen_window_cmd(ctx, config, settings_args):
     """Generate LabVIEW window netlist from Vivado project export."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_window",
             get_window_netlist.get_window,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -227,15 +280,16 @@ def gen_window_cmd(ctx, config):
     "gen-hdl",
     help="Generate Window VHDL files from CSV/templates (automatically run in gen-vivado)",
 )
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_hdl_cmd(ctx, config):
+def gen_hdl_cmd(ctx, config, settings_args):
     """Generate Window VHDL files only."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_hdl",
             gen_labview_target_plugin.gen_window_vhdl,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -247,15 +301,16 @@ def gen_hdl_cmd(ctx, config):
     "gen-xdc",
     help="Generate XDC constraint files from templates (automatically run in gen-vivado)",
 )
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_xdc_cmd(ctx, config):
+def gen_xdc_cmd(ctx, config, settings_args):
     """Generate XDC constraint files from templates."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_xdc",
             process_constraints.process_constraints,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -267,15 +322,16 @@ def gen_xdc_cmd(ctx, config):
     "gen-lvbitx",
     help="Generate LabVIEW FPGA bitfile from Vivado output (automatically run in compile)",
 )
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_lvbitx_cmd(ctx, config):
+def gen_lvbitx_cmd(ctx, config, settings_args):
     """Generate LabVIEW FPGA bitfile from Vivado output."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_lvbitx",
             create_lvbitx.create_lv_bitx,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -289,9 +345,9 @@ def gen_lvbitx_cmd(ctx, config):
 
 
 @cli.command("gen-guid", help="Generate new GUID for a LabVIEW FPGA target plugin")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_guid_cmd(ctx, config):
+def gen_guid_cmd(ctx, config, settings_args):
     """Generate a new GUID for LabVIEW FPGA target plugins."""
 
     def _gen_guid(**kwargs):
@@ -305,6 +361,7 @@ def gen_guid_cmd(ctx, config):
             "gen_guid",
             _gen_guid,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -313,15 +370,16 @@ def gen_guid_cmd(ctx, config):
 
 
 @cli.command("gen-target", help="Generate LabVIEW FPGA target support files")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_target_cmd(ctx, config):
+def gen_target_cmd(ctx, config, settings_args):
     """Generate LabVIEW FPGA target support files."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_target",
             gen_labview_target_plugin.gen_lv_target_support,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -330,15 +388,16 @@ def gen_target_cmd(ctx, config):
 
 
 @cli.command("install-target", help="Install LabVIEW FPGA target support files")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def install_target_cmd(ctx, config):
+def install_target_cmd(ctx, config, settings_args):
     """Install LabVIEW FPGA target support files."""
     try:
         result = command_hooks.run_with_hooks(
             "install_target",
             install_labview_target_plugin.install_lv_target_support,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:
@@ -353,15 +412,16 @@ def install_target_cmd(ctx, config):
 
 @cli.command("gen-modelsim", help="Generate a ModelSim project for simulation")
 @click.option("--overwrite", "-o", is_flag=True, help="Overwrite existing ModelSim project")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def gen_modelsim_cmd(ctx, overwrite, config):
+def gen_modelsim_cmd(ctx, overwrite, config, settings_args):
     """Generate a ModelSim project for HDL simulation."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_modelsim",
             create_modelsim_project.create_modelsim_project,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
             overwrite=overwrite,
         )
         return result
@@ -372,15 +432,16 @@ def gen_modelsim_cmd(ctx, overwrite, config):
 
 @cli.command("launch-modelsim", help="Launch ModelSim with the current project")
 @click.option("--batch", is_flag=True, help="Run simulation in batch mode (no GUI)")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def launch_modelsim_cmd(ctx, batch, config):
+def launch_modelsim_cmd(ctx, batch, config, settings_args):
     """Launch ModelSim with the current project."""
     try:
         result = command_hooks.run_with_hooks(
             "launch_modelsim",
             launch_modelsim.launch_modelsim,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
             batch=batch,
         )
         return result
@@ -391,15 +452,16 @@ def launch_modelsim_cmd(ctx, batch, config):
 
 @cli.command("sim-modelsim", help="Run ModelSim simulation in batch mode")
 @click.option("--do-file", default=None, help="Custom .do file to run instead of default")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def sim_modelsim_cmd(ctx, do_file, config):
+def sim_modelsim_cmd(ctx, do_file, config, settings_args):
     """Run ModelSim simulation in batch mode and report results."""
     try:
         result = command_hooks.run_with_hooks(
             "sim_modelsim",
             sim_modelsim.sim_modelsim,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
             do_file=do_file,
         )
         return result
@@ -414,15 +476,16 @@ def sim_modelsim_cmd(ctx, do_file, config):
 
 
 @cli.command("migrate-clip", help="Migrate CLIP files for FlexRIO custom devices")
-@click.option("--config", default=None, help="Path to nihdlsettings.py")
+@hook_options
 @click.pass_context
-def migrate_clip_cmd(ctx, config):
+def migrate_clip_cmd(ctx, config, settings_args):
     """Migrate CLIP files for FlexRIO custom devices."""
     try:
         result = command_hooks.run_with_hooks(
             "migrate_clip",
             migrate_clip.migrate_clip,
             command_config_path=config,
+            settings_args=_parse_set(settings_args),
         )
         return result
     except Exception as e:

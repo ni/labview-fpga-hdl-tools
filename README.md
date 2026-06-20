@@ -55,6 +55,27 @@ Every hook receives a `CommandContext` with these attributes:
 | `context.command_name` | Underscore-separated command name (for example, `"gen_vivado"`). |
 | `context.command_kwargs` | Dict of CLI arguments forwarded to the command function. |
 | `context.result` | Return value of the command (available in post hooks only). |
+| `context.settings` | Dict of generic overrides passed on the command line via repeated `--set KEY=VALUE` options. Values are strings; the settings file decides how to interpret them. |
+
+### Passing Overrides from the Command Line (`--set`)
+
+Every command accepts a repeatable `--set KEY=VALUE` option that surfaces to hooks as `context.settings`. This lets CI/CD pipelines and wrapper settings files pivot behavior without editing `nihdlsettings.py` or relying on environment variables:
+
+```bash
+nihdl gen-window --set output=shipping
+nihdl gen-vivado --set input=objects --set verbose=1
+```
+
+A bare `--set KEY` (no `=`) is treated as `KEY=true`. Values are always strings, so the settings file owns any interpretation:
+
+```python
+def pre_all(context):
+    config = context.config
+    if context.settings.get("output") == "shipping":
+        config.set_lv_window_netlist_output_folder("netlist")  # checked-in folder
+    else:
+        config.set_lv_window_netlist_output_folder("objects/testLvWindowNetlist")
+```
 
 ### Minimal Example
 
@@ -118,6 +139,7 @@ def pre_gen_vivado(context):
 | `set_vivado_tcl_scripts_folder(value)` | Folder with Vivado TCL Mako templates/scripts. |
 | `set_modelsim_tools_path(value)` | ModelSim installation root directory. |
 | `set_xilinx_sim_lib_path(value)` | Pre-compiled Xilinx simulation libraries path. |
+| `set_labview_path(value)` | LabVIEW install folder used to locate createBitfile.exe for gen-lvbitx (for example, "C:\Program Files\National Instruments\LabVIEW 2023"). Optional — when unset, the latest installed LabVIEW (2023–2030) is auto-discovered under Program Files. |
 
 **Vivado Project**
 
@@ -258,6 +280,7 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 - install-deps and gen-guid do not need most settings (but still require `nihdlsettings.py`).
 - install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.
 - gen-lvbitx is intended to run from VivadoProject/<project>.runs/impl_1 (it warns if run elsewhere).
+- gen-lvbitx locates createBitfile.exe from the LabVIEW install. By default it auto-discovers the latest installed LabVIEW (2023–2030) under Program Files; set `set_labview_path` in `nihdlsettings.py` to override (for example, "C:\Program Files\National Instruments\LabVIEW 2023").
 - gen-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
 - launch-modelsim defaults to GUI mode; use --batch for headless simulation.
 
@@ -273,7 +296,7 @@ The current CLI surface is defined in labview_fpga_hdl_tools/__main__.py.
 | gen-window | `vivado_project_export_xpr`, `the_window_folder_output`, `vivado_tools_path` | When skip_vivado is set, Vivado is not launched. |
 | gen-hdl | `window_vhdl_templates`, `window_vhdl_output_folder` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
 | gen-xdc | None enforced by a dedicated validator | For useful output, set `constraints_templates`. |
-| gen-lvbitx | `top_level_entity` | Auto-discovers LabVIEW via nisyscfg. Uses `top_level_entity` to derive filenames. |
+| gen-lvbitx | `top_level_entity` | Locates createBitfile.exe from `labview_path` when set, otherwise auto-discovers the latest installed LabVIEW (2023–2030) under Program Files. Uses `top_level_entity` to derive filenames. |
 | gen-guid | None | Does not use any settings. |
 | gen-target | `target_family`, `base_target`, `window_vhdl_templates`, `window_vhdl_output_folder`, `lv_target_plugin_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` required when include_custom_io_on_lv_window=True. |
 | install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_folder` | Install folder and plugin folder must exist. |

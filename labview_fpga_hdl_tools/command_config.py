@@ -141,6 +141,12 @@ class CommandConfiguration:
         default_factory=list
     )  # Ordered file lists for ModelSim compilation (deps before sources)
 
+    # ----- LABVIEW SETTINGS -----
+    labview_path: Optional[str] = None  # LabVIEW install root (e.g.
+    # "C:\\Program Files\\National Instruments\\LabVIEW 2023") used to locate
+    # createBitfile.exe for gen-lvbitx. When unset, the latest installed LabVIEW
+    # is auto-discovered from the standard install path.
+
     # ----- WINDOW HIERARCHY SETTINGS -----
     entity_path_to_window: Optional[str] = None  # HDL instance path to TheWindow
     entity_path_to_window_wrapper: Optional[str] = (
@@ -414,6 +420,16 @@ class CommandConfiguration:
     def set_entity_path_to_window_wrapper(self, value):
         """Set the HDL instance path to the flat wrapper (e.g., 'TheLvWindowWrapper')."""
         self.entity_path_to_window_wrapper = value
+
+    # --- LabVIEW Settings setters ---
+
+    def set_labview_path(self, value):
+        """Set the LabVIEW install root used to locate createBitfile.exe.
+
+        Example: "C:\\Program Files\\National Instruments\\LabVIEW 2023".
+        When unset, gen-lvbitx auto-discovers the latest installed LabVIEW.
+        """
+        self.labview_path = resolve_path(value)
 
     # --- Runtime Settings setters ---
 

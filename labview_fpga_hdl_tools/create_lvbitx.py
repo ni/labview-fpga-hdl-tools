@@ -5,101 +5,74 @@
 # SPDX-License-Identifier: MIT
 #
 import os  # For file and directory operations
-import re
 import subprocess  # For executing external programs
 
 from . import common  # For shared utilities across tools
 
+# createBitfile.exe lives at this path relative to a LabVIEW install root.
+_CREATEBITFILE_RELPATH = os.path.join("vi.lib", "rvi", "CDR", "createBitfile.exe")
 
-def _find_installed_labview_years():
-    """Return the set of installed LabVIEW years discovered via nisyscfg.
-
-    The LabVIEW year is NOT in the component title (e.g. the core component is
-    titled "LabVIEW (64-bit) English"); it is encoded in the component id, e.g.
-    ``ni-labview-2023-core-en`` or ``ni-labview-2023-fpga-module``. So parse the
-    year out of the id rather than the title.
-    """
-    try:
-        import nisyscfg
-    except ImportError:
-        print("Warning: nisyscfg package not available, cannot auto-discover LabVIEW")
-        return set()
-
-    labview_years = set()
-    try:
-        with nisyscfg.Session() as session:
-            for sw in session.get_installed_software_components():
-                component_id = str(getattr(sw, "id", "") or "")
-                match = re.search(r"ni-labview-(\d{4})-", component_id, re.IGNORECASE)
-                if match:
-                    labview_years.add(int(match.group(1)))
-    except Exception as exc:
-        print(f"Warning: Failed to query NI System Configuration: {exc}")
-        return set()
-
-    return labview_years
+# LabVIEW release years to search when auto-discovering an install (newest first).
+_LABVIEW_SEARCH_YEARS = range(2030, 2022, -1)
 
 
-def _find_createbitfile_exe():
-    """Auto-discover createBitfile.exe from the latest installed LabVIEW.
+def _example_labview_path():
+    """Return an example LabVIEW install path for error messages."""
+    base = os.environ.get("ProgramFiles", r"C:\Program Files")
+    return os.path.join(base, "National Instruments", "LabVIEW 2023")
 
-    Uses nisyscfg to discover installed LabVIEW versions, then checks the
-    standard ``<LabVIEW year>\\vi.lib\\rvi\\CDR\\createBitfile.exe`` path under
-    each LabVIEW install (newest year first). The NIHDL_CREATEBITFILE_EXE
-    environment variable, if it points at a file, overrides auto-discovery.
+
+def _find_createbitfile_exe(config=None):
+    """Locate createBitfile.exe for the configured or latest installed LabVIEW.
+
+    If ``config.labview_path`` is set, createBitfile.exe is expected at
+    ``<labview_path>\\vi.lib\\rvi\\CDR\\createBitfile.exe``. Otherwise the
+    standard install location is searched for LabVIEW 2030 down to 2023
+    (newest first) under the Program Files folder.
+
+    Args:
+        config: Optional CommandConfiguration; uses ``config.labview_path``
+            when set to override auto-discovery.
 
     Returns:
         str or None: Absolute path to createBitfile.exe, or None if not found.
     """
-    # 1. Explicit override always wins.
-    override = os.environ.get("NIHDL_CREATEBITFILE_EXE")
-    if override:
-        if os.path.isfile(override):
-            print(f"Using createBitfile.exe from NIHDL_CREATEBITFILE_EXE: {override}")
-            return override
-        print(f"Warning: NIHDL_CREATEBITFILE_EXE is set but not a file: {override}")
-
-    # 2. Discover installed LabVIEW versions via nisyscfg.
-    labview_years = _find_installed_labview_years()
-    if not labview_years:
+    # 1. Explicit LabVIEW install path from settings always wins.
+    labview_path = getattr(config, "labview_path", None) if config is not None else None
+    if labview_path:
+        candidate = os.path.join(labview_path, _CREATEBITFILE_RELPATH)
+        if os.path.isfile(candidate):
+            print(f"Using createBitfile.exe from set_labview_path: {candidate}")
+            return candidate
         print(
-            "Error: nisyscfg found no installed LabVIEW versions. "
-            "Set NIHDL_CREATEBITFILE_EXE to the full path of createBitfile.exe "
-            "to override auto-discovery."
+            f"Error: set_labview_path is set to '{labview_path}' but "
+            f"createBitfile.exe was not found at:\n  {candidate}\n"
+            "Verify the set_labview_path setting points at a LabVIEW install "
+            'folder, e.g. "C:\\Program Files\\National Instruments\\LabVIEW 2023".'
         )
         return None
 
-    # 3. Check the standard install path for each year (newest first), in both
-    # the 64-bit and 32-bit Program Files roots.
-    program_files_roots = []
-    for env_var in ("ProgramW6432", "ProgramFiles", "ProgramFiles(x86)"):
-        base = os.environ.get(env_var)
-        if base and base not in program_files_roots:
-            program_files_roots.append(base)
+    # 2. Auto-discover the latest installed LabVIEW under Program Files.
+    program_files = os.environ.get("ProgramFiles", r"C:\Program Files")
 
     checked = []
-    for year in sorted(labview_years, reverse=True):
-        for base in program_files_roots:
-            candidate = os.path.join(
-                base,
-                "National Instruments",
-                f"LabVIEW {year}",
-                "vi.lib",
-                "rvi",
-                "CDR",
-                "createBitfile.exe",
-            )
-            if candidate in checked:
-                continue
-            checked.append(candidate)
-            if os.path.isfile(candidate):
-                print(f"Found createBitfile.exe from LabVIEW {year}: {candidate}")
-                return candidate
+    for year in _LABVIEW_SEARCH_YEARS:
+        candidate = os.path.join(
+            program_files,
+            "National Instruments",
+            f"LabVIEW {year}",
+            _CREATEBITFILE_RELPATH,
+        )
+        checked.append(candidate)
+        if os.path.isfile(candidate):
+            print(f"Found createBitfile.exe from LabVIEW {year}: {candidate}")
+            return candidate
 
     print(
-        "Error: nisyscfg reported LabVIEW version(s) "
-        f"{sorted(labview_years, reverse=True)} but createBitfile.exe was not "
-        "found. Checked:\n  " + "\n  ".join(checked)
+        "Error: Could not auto-discover a LabVIEW install containing "
+        "createBitfile.exe. Checked:\n  " + "\n  ".join(checked) + "\n"
+        "Set the set_labview_path setting in nihdlsettings.py to your LabVIEW "
+        f'install folder, e.g. "{_example_labview_path()}".'
     )
     return None
 
@@ -176,8 +149,8 @@ def _create_lv_bitfile(config=None):
         print(f"Created mock LVBITX file at: {lvbitx_output_path}")
         return 0
 
-    # Auto-discover createBitfile.exe from the latest installed LabVIEW
-    createbitfile_exe = _find_createbitfile_exe()
+    # Locate createBitfile.exe from the configured or latest installed LabVIEW
+    createbitfile_exe = _find_createbitfile_exe(config)
     if createbitfile_exe is None:
         print("Error: Could not find createBitfile.exe. Is LabVIEW installed?")
         return 1

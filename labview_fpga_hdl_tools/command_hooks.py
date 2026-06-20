@@ -30,15 +30,22 @@ class CommandContext:
         invocation_dir: The working directory from which the nihdl command was
             invoked. Useful in wrapper settings files that need to load another
             nihdlsettings.py from the original target directory.
+        settings: Dict of generic key/value overrides passed on the command line
+            via repeated ``--set KEY=VALUE`` options. Values are strings (a bare
+            ``--set KEY`` becomes ``KEY="true"``); the settings file decides how
+            to interpret them. Lets CI/CD and wrapper configs pivot behavior
+            without editing the settings file or relying on environment
+            variables.
     """
 
-    def __init__(self, command_name, command_kwargs):
-        """Initialize CommandContext with command name and kwargs."""
+    def __init__(self, command_name, command_kwargs, settings_args=None):
+        """Initialize CommandContext with command name, kwargs, and CLI settings."""
         self.config = CommandConfiguration()
         self.command_name = command_name
         self.command_kwargs = dict(command_kwargs)
         self.result = None
         self.invocation_dir = os.getcwd()
+        self.settings = dict(settings_args or {})
 
 
 def _load_config_module(command_config_path):
@@ -113,7 +120,13 @@ def load_settings(settings_path, context):
         os.chdir(original_dir)
 
 
-def run_with_hooks(command_name, command_func, command_config_path=None, **command_kwargs):
+def run_with_hooks(
+    command_name,
+    command_func,
+    command_config_path=None,
+    settings_args=None,
+    **command_kwargs,
+):
     """Execute a command wrapped with pre/post hooks from nihdlsettings.py.
 
     If no command_config_path is given, looks for nihdlsettings.py in cwd.
@@ -125,6 +138,10 @@ def run_with_hooks(command_name, command_func, command_config_path=None, **comma
         command_name: Underscore-separated command name (e.g. "gen_vivado").
         command_func: The callable command function to execute.
         command_config_path: Optional path to nihdlsettings.py.
+        settings_args: Optional dict of generic CLI overrides (from repeated
+            ``--set KEY=VALUE`` options), exposed to hooks as ``context.settings``.
+            Kept separate from command_kwargs so it is never forwarded to the
+            command function.
         **command_kwargs: Keyword arguments to pass to the command function.
 
     Returns:
@@ -138,7 +155,7 @@ def run_with_hooks(command_name, command_func, command_config_path=None, **comma
     module = _load_config_module(command_config_path)
 
     # Build context
-    context = CommandContext(command_name, command_kwargs)
+    context = CommandContext(command_name, command_kwargs, settings_args=settings_args)
 
     # All hooks run from the settings file's directory so relative paths
     # passed to setters resolve correctly.
