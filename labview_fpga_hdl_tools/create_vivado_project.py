@@ -794,14 +794,16 @@ def create_project(overwrite=False, update=False, config=None):
         print(f"Error: {e}")
         return 1
 
-    if len(config.window_vhdl_templates) > 0:
-        # Run (or rerun) generate LV Window VHDL - this is needed to generate TheWindow.vhd that
-        # goes into the objects directory and which gets used in the Vivado project
-        try:
-            gen_labview_target_plugin.gen_window_vhdl(config=config)
-        except Exception as e:
-            print(f"Error: {e}")
+    # Generate all configured VHDL from Mako templates (window VHDL, the
+    # PkgNiHdlSettings single-source-of-truth package, etc.). This is the same
+    # batch the ModelSim flow generates, so synthesis and simulation stay
+    # consistent.
+    try:
+        if gen_labview_target_plugin.gen_generated_vhdl(config=config) != 0:
             return 1
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
 
     # Create or update the Vivado project based on the determined mode
     try:

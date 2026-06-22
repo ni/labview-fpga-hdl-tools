@@ -11,6 +11,7 @@ import shutil
 import subprocess
 
 from . import common
+from . import gen_labview_target_plugin
 
 
 def _validate_ini(config):
@@ -401,6 +402,14 @@ def create_modelsim_project(overwrite=False, config=None):
     if config.skip_modelsim:
         print("\nSKIP MODELSIM: Validation successful, skipping ModelSim project creation")
         return 0
+
+    # Step 0: Generate all configured VHDL from Mako templates (the
+    # PkgNiHdlSettings single-source-of-truth package and any other generated
+    # design sources). The simulation flow validates that every listed source
+    # file exists, so this must run before gathering source files.
+    print("\nStep 0: Generating VHDL from templates...")
+    if gen_labview_target_plugin.gen_generated_vhdl(config=config) != 0:
+        return 1
 
     modelsim_install = config.modelsim_tools_folder
     vlib_path = _get_modelsim_tool(modelsim_install, "vlib")

@@ -55,8 +55,9 @@ Available setters (grouped by section):
         set_lv_target_install_folder, add_lv_target_constraints,
         set_lv_target_menus_folder, set_lv_target_info_ini,
         set_lv_target_exclude_files, add_lv_target_exclude_files, set_max_hdl_reg_offset,
-        add_window_vhdl_template, add_lv_target_xml_template,
-        set_window_vhdl_output_folder,
+        set_num_hdl_fifos,
+        add_generated_vhdl_template, add_lv_target_xml_template,
+        set_generated_vhdl_output_folder,
         set_lv_target_plugin_output_folder, set_boardio_output, set_clock_output
 
     CLIP Migration Settings:
@@ -141,13 +142,18 @@ def pre_all(context):
         "../../deps/flexrio/targets/pxie-7903/lvtargetexcludefiles.txt"
     )
     config.set_max_hdl_reg_offset(16)
+    config.set_num_hdl_fifos(2)
 
-    # Templates
-    config.add_window_vhdl_template(
+    # Templates - all generated VHDL is rendered into the generated VHDL output
+    # folder in both the Vivado and ModelSim flows. PkgNiHdlSettings.vhd pushes
+    # set_max_hdl_reg_offset / set_num_hdl_fifos into the HDL so the UserHdl
+    # block can self-check them at elaboration (synthesis and simulation).
+    config.add_generated_vhdl_template(
         "../../deps/flexrio/targets/pxie-7903/rtl-lvfpga/lvgen/TheWindow.vhd.mako"
     )
-    config.add_window_vhdl_template("rtl-lvfpga/TheLvWindowFlatWrapper.vhd.mako")
-    config.add_window_vhdl_template("rtl-lvfpga/PkgTheLvWindowFlatWrapper.vhd.mako")
+    config.add_generated_vhdl_template("rtl-lvfpga/TheLvWindowFlatWrapper.vhd.mako")
+    config.add_generated_vhdl_template("rtl-lvfpga/PkgTheLvWindowFlatWrapper.vhd.mako")
+    config.add_generated_vhdl_template("../common/rtl-lvfpga/PkgNiHdlSettings.vhd.mako")
 
     config.add_lv_target_xml_template(
         "../../deps/flexrio/targets/pxie-7903/lvFpgaTarget/Resource.xml.mako"
@@ -157,7 +163,7 @@ def pre_all(context):
     )
 
     # Outputs
-    config.set_window_vhdl_output_folder("objects/GeneratedHDL")
+    config.set_generated_vhdl_output_folder("objects/GeneratedHDL")
     config.set_lv_target_plugin_output_folder("objects/LVTargetPlugin/PXIe-7903Custom")
     config.set_boardio_output("objects/LVTargetPlugin/PXIe-7903Custom/boardio.xml")
     config.set_clock_output("objects/LVTargetPlugin/PXIe-7903Custom/CustomClocks.xml")

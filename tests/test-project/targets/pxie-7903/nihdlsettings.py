@@ -54,15 +54,15 @@ def pre_all(context):
     config.set_max_hdl_reg_offset(0)
 
     # Templates
-    config.add_window_vhdl_template("rtl-lvfpga/lvgen/TheWindow.vhd.mako")
-    config.add_window_vhdl_template("rtl-lvfpga/TheWindowFlatWrapper.vhd.mako")
-    config.add_window_vhdl_template("rtl-lvfpga/PkgTheWindowFlatWrapper.vhd.mako")
+    config.add_generated_vhdl_template("rtl-lvfpga/lvgen/TheWindow.vhd.mako")
+    config.add_generated_vhdl_template("rtl-lvfpga/TheWindowFlatWrapper.vhd.mako")
+    config.add_generated_vhdl_template("rtl-lvfpga/PkgTheWindowFlatWrapper.vhd.mako")
 
     config.add_lv_target_xml_template("lvFpgaTarget/Resource.xml.mako")
     config.add_lv_target_xml_template("lvFpgaTarget/Sasquatch7903.xml.mako")
 
     # Outputs
-    config.set_window_vhdl_output_folder("objects/GeneratedHDL")
+    config.set_generated_vhdl_output_folder("objects/GeneratedHDL")
     config.set_lv_target_plugin_output_folder("objects/LVTargetPlugin/PXIe-7903Aurora")
     config.set_boardio_output("objects/LVTargetPlugin/PXIe-7903Aurora/boardio.xml")
     config.set_clock_output("objects/LVTargetPlugin/PXIe-7903Aurora/CustomClocks.xml")
