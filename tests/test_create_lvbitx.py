@@ -42,6 +42,7 @@ class TestFindCreatebitfileExe:
 
         result = _find_createbitfile_exe(config)
 
+        assert result is not None
         assert result == os.path.join(install, _RELPATH)
         assert os.path.isfile(result)
 
