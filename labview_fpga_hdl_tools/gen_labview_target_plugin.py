@@ -430,68 +430,73 @@ def _get_board_io_signals(csv_path):
     return signals
 
 
-def _generate_window_vhdl_from_csv(
-    csv_path, template_paths, output_folder, include_board_io, include_custom_io
-):
-    """Generate Window VHDL from CSV using Mako templates.
+def _build_generated_vhdl_context(config):
+    """Build the superset Mako render context for generated VHDL templates.
 
-    Creates Window VHDL files that serve as the interface between LabVIEW FPGA
-    and custom hardware. Uses a template-based approach with Mako templates.
-    Processes multiple templates if provided.
-
-    The function:
-    1. Reads signal information from CSV
-    2. Maps data types to VHDL equivalents
-    3. Renders each Mako template with the signal data
-    4. Writes the generated VHDL files to the output folder
+    Every generated VHDL template is rendered with the same context. Mako
+    ignores keys a given template does not reference, so window templates pick
+    up ``custom_signals``/IO flags while the settings package picks up
+    ``max_hdl_reg_offset``/``num_hdl_fifos``.
 
     Args:
-        csv_path (str): Path to the CSV containing signal definitions
-        template_paths (list): List of paths to Mako templates for VHDL generation
-        output_folder (str): Folder where the generated VHDL files will be written
-        include_board_io (bool): Whether to include standard board I/O ports
-        include_custom_io (bool): Whether to include custom I/O
+        config: CommandConfiguration.
+
+    Returns:
+        dict: kwargs passed to ``Template.render``.
+    """
+    signals = []
+    if config.custom_io_csv:
+        signals = _get_board_io_signals(config.custom_io_csv)
+
+    return {
+        "custom_signals": signals,
+        "include_board_io": config.include_board_io_on_lv_window,
+        "include_custom_io": config.include_custom_io_on_lv_window,
+        "max_hdl_reg_offset": (
+            config.max_hdl_reg_offset if config.max_hdl_reg_offset is not None else 0
+        ),
+        "num_hdl_fifos": config.num_hdl_fifos if config.num_hdl_fifos is not None else 0,
+    }
+
+
+def _render_generated_vhdl(template_paths, output_folder, context):
+    """Render generated VHDL Mako templates into an output folder.
+
+    Args:
+        template_paths (list): Absolute paths to ``.vhd.mako`` templates.
+        output_folder (str): Folder where the generated VHDL files are written.
+        context (dict): kwargs passed to ``Template.render``.
 
     Raises:
-        SystemExit: If an error occurs during VHDL generation
+        SystemExit: If an error occurs during VHDL generation.
     """
     try:
-        signals = _get_board_io_signals(csv_path)
+        os.makedirs(output_folder, exist_ok=True)
 
-        # Process each template
         for template_path in template_paths:
-            # Get base filename from template path
             template_basename = os.path.basename(template_path)
 
-            # Remove .mako extension to get output filename
             output_filename = (
-                template_basename[:-5] if template_basename.endswith(".mako") else template_basename
+                template_basename[:-5]
+                if template_basename.endswith(".mako")
+                else template_basename
             )
-
-            # Form full output path
             output_path = os.path.join(output_folder, output_filename)
 
             print(f"Processing template: {template_path} -> {output_path}")
 
-            # Render template
             with open(template_path, "r", encoding="utf-8") as f:
                 template = Template(f.read())
 
-            output_text = template.render(
-                custom_signals=signals,
-                include_board_io=include_board_io,
-                include_custom_io=include_custom_io,
-            )
+            output_text = template.render(**context)
 
-            # Write output file
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(_ensure_text(output_text))
 
             print(f"Generated VHDL file: {output_path}")
 
     except Exception as e:
-        print(f"Error generating VHDL from CSV: {e}")
+        print(f"Error generating VHDL from template: {e}")
         sys.exit(1)
 
 
@@ -785,19 +790,19 @@ def _validate_ini(config, gen_window_only=False):
         missing_settings.append("LVFPGATargetSettings.LVTargetBoardIO")
 
     # Validate Window VHDL template paths (required for both modes)
-    if not config.window_vhdl_templates:
-        missing_settings.append("LVFPGATargetSettings.WindowVhdlTemplates")
+    if not config.generated_vhdl_templates:
+        missing_settings.append("LVFPGATargetSettings.GeneratedVhdlTemplates")
     else:
-        for i, template_path in enumerate(config.window_vhdl_templates):
+        for i, template_path in enumerate(config.generated_vhdl_templates):
             invalid_path = common.validate_path(
-                template_path, f"LVFPGATargetSettings.WindowVhdlTemplates[{i}]", "file"
+                template_path, f"LVFPGATargetSettings.GeneratedVhdlTemplates[{i}]", "file"
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
     # Validate output folder setting (required for both modes)
-    if not config.window_vhdl_output_folder:
-        missing_settings.append("LVFPGATargetSettings.WindowVhdlOutputFolder")
+    if not config.generated_vhdl_output_folder:
+        missing_settings.append("LVFPGATargetSettings.GeneratedVhdlOutputFolder")
 
     # Only validate additional settings if generating full target support
     if not gen_window_only:
@@ -873,12 +878,15 @@ def _validate_ini(config, gen_window_only=False):
         raise ValueError(error_msg)
 
 
-def gen_window_vhdl(config=None):
-    """Generate Window VHDL files only.
+def gen_generated_vhdl(config=None):
+    """Generate all configured VHDL files from Mako templates.
 
-    Standalone entry point for generating Window VHDL files from CSV and templates.
-    This is useful when you only need to regenerate VHDL interface files without
-    rebuilding the entire target plugin.
+    Standalone entry point that renders every template registered with
+    ``add_generated_vhdl_template`` into the generated VHDL output folder. This
+    is the single batch used by both the Vivado (synthesis) and ModelSim
+    (simulation) flows, so window VHDL, the PkgNiHdlSettings package, and any
+    future generated design sources are all produced together and stay
+    consistent between synthesis and simulation.
 
     Returns:
         int: 0 if successful, 1 if errors occurred
@@ -887,23 +895,25 @@ def gen_window_vhdl(config=None):
     if config is None:
         config = common.CommandConfiguration()
 
-    # Validate that required settings for Window VHDL generation are present
+    if not config.generated_vhdl_templates:
+        # Nothing to generate; not an error.
+        return 0
+
+    # Validate that required settings for generation are present
     try:
         _validate_ini(config, gen_window_only=True)
     except Exception as e:
         print(f"Error: {e}")
         return 1
 
-    # Generate Window VHDL files
-    _generate_window_vhdl_from_csv(
-        config.custom_io_csv,
-        config.window_vhdl_templates,
-        config.window_vhdl_output_folder,
-        config.include_board_io_on_lv_window,
-        config.include_custom_io_on_lv_window,
+    context = _build_generated_vhdl_context(config)
+    _render_generated_vhdl(
+        config.generated_vhdl_templates,
+        config.generated_vhdl_output_folder,
+        context,
     )
 
-    print("Window VHDL generation complete.")
+    print("Generated VHDL generation complete.")
     return 0
 
 
@@ -937,18 +947,16 @@ def gen_lv_target_support(config=None):
             has_validation_errors = True
             validation_errors.extend(errors)
 
-    _generate_window_vhdl_from_csv(
-        config.custom_io_csv,
-        config.window_vhdl_templates,
-        config.window_vhdl_output_folder,
-        config.include_board_io_on_lv_window,
-        config.include_custom_io_on_lv_window,
+    _render_generated_vhdl(
+        config.generated_vhdl_templates,
+        config.generated_vhdl_output_folder,
+        _build_generated_vhdl_context(config),
     )
 
-    # Always generate the board IO signal assignments example in the Window VHDL output folder
-    if config.window_vhdl_output_folder:
+    # Always generate the board IO signal assignments example in the generated VHDL output folder
+    if config.generated_vhdl_output_folder:
         board_io_example_path = os.path.join(
-            config.window_vhdl_output_folder, "BoardIOSignalAssignmentsExample.vhd"
+            config.generated_vhdl_output_folder, "BoardIOSignalAssignmentsExample.vhd"
         )
         _generate_board_io_signal_assignments_example(config.custom_io_csv, board_io_example_path)
 

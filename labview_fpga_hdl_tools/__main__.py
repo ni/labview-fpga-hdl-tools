@@ -278,16 +278,16 @@ def gen_window_cmd(ctx, config, settings_args):
 
 @cli.command(
     "gen-hdl",
-    help="Generate Window VHDL files from CSV/templates (automatically run in gen-vivado)",
+    help="Generate VHDL files from Mako templates (automatically run in gen-vivado)",
 )
 @hook_options
 @click.pass_context
 def gen_hdl_cmd(ctx, config, settings_args):
-    """Generate Window VHDL files only."""
+    """Generate VHDL files from Mako templates only."""
     try:
         result = command_hooks.run_with_hooks(
             "gen_hdl",
-            gen_labview_target_plugin.gen_window_vhdl,
+            gen_labview_target_plugin.gen_generated_vhdl,
             command_config_path=config,
             settings_args=_parse_set(settings_args),
         )

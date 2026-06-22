@@ -93,10 +93,12 @@ class CommandConfiguration:
     custom_io_csv: Optional[str] = None  # Path to CSV containing custom I/O signal definitions
     boardio_output: Optional[str] = None  # Path where BoardIO XML will be written
     clock_output: Optional[str] = None  # Path where Clock XML will be written
-    window_vhdl_templates: List[str] = field(
+    generated_vhdl_templates: List[str] = field(
         default_factory=list
-    )  # Template for TheWindow.vhd generation
-    window_vhdl_output_folder: Optional[str] = None  # Output folder for TheWindow.vhd
+    )  # Mako templates rendered into the generated VHDL output folder (all flows)
+    generated_vhdl_output_folder: Optional[str] = (
+        None  # Output folder for generated VHDL (window VHDL, PkgNiHdlSettings, etc.)
+    )
     lv_target_xml_templates: List[str] = field(
         default_factory=list
     )  # Templates for target XML generation
@@ -120,6 +122,7 @@ class CommandConfiguration:
     )  # List of paths to exclude file lists
     num_hdl_registers: Optional[int] = None  # Number of HDL registers
     max_hdl_reg_offset: Optional[int] = None  # Maximum HDL register byte offset
+    num_hdl_fifos: Optional[int] = None  # Number of user HDL DMA FIFOs reserved
     # ----- CLIP MIGRATION SETTINGS -----
     clip_input_xml: Optional[str] = None  # Path to source CLIP XML file
     clip_output_csv: Optional[str] = None  # Path where CSV signals will be written
@@ -270,15 +273,21 @@ class CommandConfiguration:
         """Set the Clock XML output path (resolved to absolute)."""
         self.clock_output = resolve_path(value)
 
-    def set_window_vhdl_output_folder(self, value):
-        """Set the Window VHDL output folder (resolved to absolute)."""
-        self.window_vhdl_output_folder = resolve_path(value)
+    def set_generated_vhdl_output_folder(self, value):
+        """Set the generated VHDL output folder (resolved to absolute)."""
+        self.generated_vhdl_output_folder = resolve_path(value)
 
-    def add_window_vhdl_template(self, value):
-        """Append a Window VHDL template path (resolved to absolute)."""
+    def add_generated_vhdl_template(self, value):
+        """Append a generated VHDL Mako template (resolved to absolute).
+
+        All generated VHDL templates are rendered into the generated VHDL output
+        folder in every flow (Vivado synthesis and ModelSim simulation), so any
+        design source the simulation needs (e.g. the PkgNiHdlSettings package) is
+        produced for both.
+        """
         resolved = resolve_path(value)
         if resolved is not None:
-            self.window_vhdl_templates.append(resolved)
+            self.generated_vhdl_templates.append(resolved)
 
     def add_lv_target_xml_template(self, value):
         """Append a target XML template path (resolved to absolute)."""
@@ -355,6 +364,13 @@ class CommandConfiguration:
             self.max_hdl_reg_offset = int(value.strip(), 0)
         else:
             self.max_hdl_reg_offset = value
+
+    def set_num_hdl_fifos(self, value):
+        """Set the number of user HDL DMA FIFOs reserved for the UserHdl block."""
+        if isinstance(value, str):
+            self.num_hdl_fifos = int(value.strip(), 0)
+        else:
+            self.num_hdl_fifos = value
 
     # --- CLIP Migration Settings setters ---
 
