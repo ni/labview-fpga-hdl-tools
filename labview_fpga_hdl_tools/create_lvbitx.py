@@ -23,7 +23,7 @@ def _example_labview_path():
 
 
 def _find_createbitfile_exe(config=None):
-    """Locate createBitfile.exe for the configured or latest installed LabVIEW.
+    r"""Locate createBitfile.exe for the configured or latest installed LabVIEW.
 
     If ``config.labview_path`` is set, createBitfile.exe is expected at
     ``<labview_path>\\vi.lib\\rvi\\CDR\\createBitfile.exe``. Otherwise the

@@ -445,7 +445,7 @@ class CommandConfiguration:
     # --- LabVIEW Settings setters ---
 
     def set_labview_path(self, value):
-        """Set the LabVIEW install root used to locate createBitfile.exe.
+        r"""Set the LabVIEW install root used to locate createBitfile.exe.
 
         Example: "C:\\Program Files\\National Instruments\\LabVIEW 2023".
         When unset, gen-lvbitx auto-discovers the latest installed LabVIEW.

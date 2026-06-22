@@ -138,9 +138,7 @@ def hook_options(func):
             "A bare --set KEY means KEY=true."
         ),
     )(func)
-    func = click.option(
-        "--config", default=None, help="Path to nihdlsettings.py"
-    )(func)
+    func = click.option("--config", default=None, help="Path to nihdlsettings.py")(func)
     return func
 
 
