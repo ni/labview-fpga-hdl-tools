@@ -21,7 +21,7 @@ import shutil
 from collections import defaultdict
 from enum import Enum
 
-from . import common, gen_labview_target_plugin, process_constraints
+from . import common, generate_vhdl, process_constraints
 
 
 def _has_spaces(file_path):
@@ -799,7 +799,7 @@ def create_project(overwrite=False, update=False, config=None):
     # batch the ModelSim flow generates, so synthesis and simulation stay
     # consistent.
     try:
-        if gen_labview_target_plugin.gen_generated_vhdl(config=config) != 0:
+        if generate_vhdl.gen_generated_vhdl(config=config) != 0:
             return 1
     except Exception as e:
         print(f"Error: {e}")
