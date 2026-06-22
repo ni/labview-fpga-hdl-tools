@@ -21,6 +21,7 @@ from . import (
     create_modelsim_project,
     create_vivado_project,
     gen_labview_target_plugin,
+    generate_vhdl,
     get_window_netlist,
     install_dependencies,
     install_labview_target_plugin,
@@ -287,7 +288,7 @@ def gen_hdl_cmd(ctx, config, settings_args):
     try:
         result = command_hooks.run_with_hooks(
             "gen_hdl",
-            gen_labview_target_plugin.gen_generated_vhdl,
+            generate_vhdl.gen_generated_vhdl,
             command_config_path=config,
             settings_args=_parse_set(settings_args),
         )

@@ -11,7 +11,7 @@ import shutil
 import subprocess
 
 from . import common
-from . import gen_labview_target_plugin
+from . import generate_vhdl
 
 
 def _validate_ini(config):
@@ -408,7 +408,7 @@ def create_modelsim_project(overwrite=False, config=None):
     # design sources). The simulation flow validates that every listed source
     # file exists, so this must run before gathering source files.
     print("\nStep 0: Generating VHDL from templates...")
-    if gen_labview_target_plugin.gen_generated_vhdl(config=config) != 0:
+    if generate_vhdl.gen_generated_vhdl(config=config) != 0:
         return 1
 
     modelsim_install = config.modelsim_tools_folder
