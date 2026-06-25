@@ -19,13 +19,13 @@ This CSV is the central signal definition that drives the generation of:
    - Write it by hand for a new custom target, or
    - Generate it automatically from a CLIP XML using `nihdl migrate-clip`
 
-2. **Consumed by `nihdl gen-lv-target-support`** — This command reads the CSV and produces:
+2. **Consumed by `nihdl gen-target`** — This command reads the CSV and produces:
    - `boardio.xml` — resource hierarchy for LabVIEW FPGA
    - `CustomClocks.xml` — clock domain definitions for LabVIEW FPGA
    - Window VHDL files via Mako templates (ports on TheWindow component)
    - Signal assignments example (for wiring signals in your top-level HDL)
 
-3. **Consumed by `nihdl gen-window-vhdl`** — This command reads the CSV to regenerate only the Window VHDL files without rebuilding the full target plugin.
+3. **Consumed by `nihdl gen-hdl`** — This command reads the CSV to regenerate only the Window VHDL files without rebuilding the full target plugin.
 
 ### Signal Processing Rules
 
@@ -370,4 +370,4 @@ This reads the CLIP XML specified in `nihdlsettings.py` (`config.set_clip_input_
 - Automatically sets `OutputReadback=FALSE` for all outputs
 - Extracts clock parameters (duty cycle, accuracy, jitter, frequency) from the CLIP XML
 
-After generation, you can manually edit the CSV to adjust values before running `gen-lv-target-support`.
+After generation, you can manually edit the CSV to adjust values before running `gen-target`.
