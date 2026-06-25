@@ -24,7 +24,7 @@ Create a release branch:
 - Name: releases/2.5.0
 - Source branch: main
 
-Note: If you are doing a pre-release development release, you should skip making the release branch
+Note: If you are doing a development release, you should skip making the release branch
 
 Make the release:
 - Name: 2.5.0
@@ -32,3 +32,10 @@ Make the release:
 - Target: releases/2.5.0
 
 Note: If you are doing a development release, name it 2.5.0.dev0 and set the "Pre-release" label
+
+Run the publish labview-fgpa-hdl-tools action to publish to PyPi:
+- Use workflow from: releases/2.5.0
+- Publish to: pypi
+
+
+
