@@ -11,6 +11,34 @@ All commands require a `nihdlsettings.py` file in the current directory (or one
 specified via `--config`). Run any command with `--help` for its options, and
 `nihdl --help` for the full grouped command list.
 
+## Output and Verbosity
+
+By default, `nihdl` keeps the console quiet: it prints only **results**
+(pass/fail and completion lines), **warnings**, and **errors**. Step-by-step
+status is suppressed so that important messages are not lost in a stream of
+progress output.
+
+Use `-v` / `--verbose` to see the full detailed status. The flag works in either
+position:
+
+```bash
+nihdl -v compile-vivado      # global position
+nihdl compile-vivado -v      # after the command
+```
+
+Regardless of verbosity, every warning and error is **captured and reprinted as
+a grouped summary at the end of the command**, on `stderr`. So even a noisy
+verbose run ends with a clean list of everything that went wrong (or nothing, if
+the run was clean). Because results go to `stdout` and warnings/errors go to
+`stderr`, you can separate them, for example:
+
+```bash
+nihdl compile-vivado 2> errors.log
+```
+
+`-v` / `--verbose` is available on every command, alongside `--config` and
+`--set KEY=VALUE`.
+
 ## Command Flow
 
 Most commands chain into a build flow. Some commands run others automatically:
@@ -90,6 +118,7 @@ flowchart LR
 ## Common Command Notes
 
 - All commands require `nihdlsettings.py` in the current directory (or specified via `--config`).
+- By default only results, warnings, and errors are shown; pass `-v`/`--verbose` for detailed status. Warnings and errors are always summarized at the end (see [Output and Verbosity](#output-and-verbosity)).
 - Use `set_skip_vivado(True)` / `set_skip_modelsim(True)` in `nihdlsettings.py` to validate settings without launching external tools.
 - install-deps and gen-guid do not need most settings (but still require `nihdlsettings.py`).
 - install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.

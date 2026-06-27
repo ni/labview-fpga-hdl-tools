@@ -15,6 +15,7 @@ from typing import Optional
 from mako.template import Template
 
 from .command_config import CommandConfiguration, resolve_path  # noqa: F401
+from .reporting import reporter
 
 
 def handle_long_path(path):
@@ -164,7 +165,7 @@ def _parse_vhdl_entity(vhdl_path):
     long_path = handle_long_path(vhdl_path)
 
     if not os.path.exists(long_path):
-        print(f"Error: VHDL file not found: {vhdl_path}")
+        reporter.error(f"Error: VHDL file not found: {vhdl_path}")
         return None, []
 
     try:
@@ -177,7 +178,7 @@ def _parse_vhdl_entity(vhdl_path):
         entity_pattern = re.compile(r"entity\s+(\w+)\s+is", re.IGNORECASE)
         entity_match = entity_pattern.search(content)
         if not entity_match:
-            print(f"Error: Could not find entity declaration in {vhdl_path}")
+            reporter.error(f"Error: Could not find entity declaration in {vhdl_path}")
             return None, []
 
         entity_name = entity_match.group(1)
@@ -187,7 +188,7 @@ def _parse_vhdl_entity(vhdl_path):
         port_start_pattern = re.compile(r"port\s*\(", re.IGNORECASE)
         port_start_match = port_start_pattern.search(content, entity_match.end())
         if not port_start_match:
-            print(f"Error: Could not find port declaration in {vhdl_path}")
+            reporter.error(f"Error: Could not find port declaration in {vhdl_path}")
             return entity_name, []
 
         port_start = port_start_match.end()
@@ -206,7 +207,7 @@ def _parse_vhdl_entity(vhdl_path):
                     break
 
         if paren_level != 0:
-            print(f"Error: Could not find end of port declaration")
+            reporter.error(f"Error: Could not find end of port declaration")
             return entity_name, []
 
         # Extract port section
@@ -237,7 +238,7 @@ def _parse_vhdl_entity(vhdl_path):
         return entity_name, ports
 
     except Exception as e:
-        print(f"Error parsing VHDL file: {str(e)}")
+        reporter.error(f"Error parsing VHDL file: {str(e)}")
         traceback.print_exc()
         return None, []
 
@@ -290,7 +291,9 @@ def generate_hdl_instantiation_example(
             f.write(",\n".join(port_mappings))
 
         f.write("\n);\n")
-    print(f"Generated {'component' if use_component else 'entity'} instantiation for {entity_name}")
+    reporter.detail(
+        f"Generated {'component' if use_component else 'entity'} instantiation for {entity_name}"
+    )
 
 
 def get_vivado_project_files(lists_of_files):
@@ -323,7 +326,7 @@ def get_vivado_project_files(lists_of_files):
                     line = line.strip()
                     if line and not line.startswith("#"):  # Skip empty lines and comments
                         if os.path.isdir(line):
-                            print(f"Directory found: {line}")
+                            reporter.detail(f"Directory found: {line}")
                             # This is a directory, add all relevant files recursively
                             for root, _, files in os.walk(line):
                                 for file in files:
@@ -398,7 +401,7 @@ def apply_hdl_excludes(file_list, excluded_abspaths):
     kept = []
     for f in file_list:
         if os.path.normpath(os.path.abspath(f)) in excluded_abspaths:
-            print(f"Excluding from HDL file list: {f}")
+            reporter.detail(f"Excluding from HDL file list: {f}")
         else:
             kept.append(f)
     return kept
@@ -406,7 +409,7 @@ def apply_hdl_excludes(file_list, excluded_abspaths):
 
 def run_command(cmd, cwd=None, capture_output=True):
     """Run a shell command and return its output."""
-    print(f"Running command: {cmd}")
+    reporter.detail(f"Running command: {cmd}")
 
     kwargs = {}
     if cwd:

@@ -45,6 +45,11 @@ All `nihdl` commands are run from the target folder unless noted otherwise:
 nihdl --help
 ```
 
+By default `nihdl` prints only results, warnings, and errors. Add `-v`
+(`--verbose`) to any command for full step-by-step status; warnings and errors
+are always summarized at the end either way. See the
+[Command Reference](docs/CommandReference.md#output-and-verbosity) for details.
+
 ## Quickstart: HDL to Bitfile
 
 Run these from your target folder (the one with `nihdlsettings.py`):

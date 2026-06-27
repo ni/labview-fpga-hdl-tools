@@ -9,6 +9,7 @@ import shutil  # For file copying and directory removal
 import sys  # For command-line arguments and error handling
 
 from . import common  # For shared utilities across tools
+from .reporting import reporter
 
 
 def _is_admin():
@@ -31,7 +32,7 @@ def _run_as_admin():
 
     # Skip on non-Windows platforms
     if sys.platform != "win32":
-        print("Admin elevation only supported on Windows")
+        reporter.detail("Admin elevation only supported on Windows")
         return
 
     # When running via pip-installed entry point
@@ -42,7 +43,7 @@ def _run_as_admin():
         command = sys.executable
         arguments = f'"{sys.argv[0]}" {" ".join(sys.argv[1:])}'
 
-    print("Requesting administrator privileges...")
+    reporter.detail("Requesting administrator privileges...")
 
     # Execute with elevation
     result = ctypes.windll.shell32.ShellExecuteW(  # type: ignore
@@ -51,11 +52,11 @@ def _run_as_admin():
 
     # Check if the elevation was successful
     if result <= 32:  # Error codes are 32 or below
-        print(f"Error elevating privileges. Error code: {result}")
+        reporter.error(f"Error elevating privileges. Error code: {result}")
         sys.exit(1)
 
     # The original process should exit after launching the elevated one
-    print("Elevated process launched. This process will now exit.")
+    reporter.detail("Elevated process launched. This process will now exit.")
     sys.exit(0)
 
 
@@ -131,7 +132,7 @@ def install_lv_target_support(config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Validate paths before joining
@@ -148,9 +149,9 @@ def install_lv_target_support(config=None):
         _run_as_admin()
         return  # Exit current instance as the elevated instance will continue
 
-    print(f"Installing LabVIEW Target '{config.lv_target_name}' files...")
-    print(f"From: {config.lv_target_plugin_output_folder}")
-    print(f"To: {install_folder}")
+    reporter.detail(f"Installing LabVIEW Target '{config.lv_target_name}' files...")
+    reporter.detail(f"From: {config.lv_target_plugin_output_folder}")
+    reporter.detail(f"To: {install_folder}")
 
     try:
         # Delete existing installation if it exists
@@ -182,16 +183,16 @@ def install_lv_target_support(config=None):
         # Copy everything from plugin folder to install folder
         _copy_recursively(config.lv_target_plugin_output_folder, install_folder)
 
-        print(
+        reporter.success(
             f"Successfully installed LabVIEW Target '{config.lv_target_name}' to {install_folder}"
         )
 
     except PermissionError:
-        print("Error: Permission denied. Administrator privileges are required.")
-        print("Try running this script as Administrator.")
+        reporter.error("Error: Permission denied. Administrator privileges are required.")
+        reporter.error("Try running this script as Administrator.")
         sys.exit(1)
     except Exception as e:
-        print(f"Error during installation: {e}")
+        reporter.error(f"Error during installation: {e}")
         sys.exit(1)
 
 

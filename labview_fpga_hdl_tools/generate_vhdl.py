@@ -25,6 +25,7 @@ import sys  # For error handling
 from mako.template import Template  # For template-based file generation  # type: ignore
 
 from . import common  # For shared utilities across tools
+from .reporting import reporter
 
 
 def _ensure_text(value):
@@ -70,7 +71,7 @@ def _map_datatype_to_vhdl(data_type):
             total_width = array_size * element_width
             return f"std_logic_vector({total_width - 1} downto 0)"
         except Exception as e:
-            print(f"Error parsing array type: {data_type}, error: {e}")
+            reporter.error(f"Error parsing array type: {data_type}, error: {e}")
             return "INVALID_ARRAY_DATA_TYPE"
 
     else:
@@ -139,10 +140,10 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(assignments))
 
-        print(f"Generated Board IO signal assignments: {output_path}")
+        reporter.detail(f"Generated Board IO signal assignments: {output_path}")
 
     except Exception as e:
-        print(f"Error generating Board IO signal assignments: {e}")
+        reporter.error(f"Error generating Board IO signal assignments: {e}")
         sys.exit(1)
 
 
@@ -234,7 +235,7 @@ def _render_generated_vhdl(template_paths, output_folder, context):
             )
             output_path = os.path.join(output_folder, output_filename)
 
-            print(f"Processing template: {template_path} -> {output_path}")
+            reporter.detail(f"Processing template: {template_path} -> {output_path}")
 
             with open(template_path, "r", encoding="utf-8") as f:
                 template = Template(f.read())
@@ -244,10 +245,10 @@ def _render_generated_vhdl(template_paths, output_folder, context):
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(_ensure_text(output_text))
 
-            print(f"Generated VHDL file: {output_path}")
+            reporter.detail(f"Generated VHDL file: {output_path}")
 
     except Exception as e:
-        print(f"Error generating VHDL from template: {e}")
+        reporter.error(f"Error generating VHDL from template: {e}")
         sys.exit(1)
 
 
@@ -313,7 +314,7 @@ def gen_generated_vhdl(config=None):
         error_msg = common.get_missing_settings_error(missing_settings)
         error_msg += common.get_invalid_paths_error(invalid_paths)
         error_msg += "\nPlease update your configuration file and try again."
-        print(f"Error: {error_msg}")
+        reporter.error(f"Error: {error_msg}")
         return 1
 
     context = _build_generated_vhdl_context(config)
@@ -323,5 +324,5 @@ def gen_generated_vhdl(config=None):
         context,
     )
 
-    print("Generated VHDL generation complete.")
+    reporter.success("Generated VHDL generation complete.")
     return 0

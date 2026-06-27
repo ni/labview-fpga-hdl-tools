@@ -51,6 +51,8 @@ except ModuleNotFoundError:
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 
+from .reporting import reporter
+
 
 def _remove_readonly(func, path, exc_info):
     """Error handler for shutil.rmtree to handle read-only files on Windows."""
@@ -230,16 +232,18 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
     # Resolve version if specifier is used (or if --latest flag forces "latest")
     if specifier or tag_or_spec.lower() == "latest":
         if specifier:
-            print(f"Resolving version {specifier}{version} for {repo}...")
+            reporter.detail(f"Resolving version {specifier}{version} for {repo}...")
             if dependency_allow_prerelease and not allow_prerelease:
-                print("    [INFO] Pre-release version requested; including pre-release tags")
+                reporter.detail(
+                    "    [INFO] Pre-release version requested; including pre-release tags"
+                )
         else:
-            print(f"Resolving latest version for {repo}...")
+            reporter.detail(f"Resolving latest version for {repo}...")
 
         try:
             all_tags = _get_all_tags(repo_url, dependency_allow_prerelease)
             if not all_tags:
-                print(f"  [FAIL] No tags found in repository {repo}")
+                reporter.error(f"  [FAIL] No tags found in repository {repo}")
                 return False
             else:
                 if specifier:
@@ -258,34 +262,38 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
                     matched_tag = valid_tags[0][1] if valid_tags else None
 
                 if matched_tag:
-                    print(f"    [INFO] Resolved to tag: {matched_tag}")
+                    reporter.detail(f"    [INFO] Resolved to tag: {matched_tag}")
                     tag = matched_tag
                 else:
                     if specifier:
-                        print(f"  [FAIL] No tag matches {specifier}{version} in repository {repo}")
+                        reporter.error(
+                            f"  [FAIL] No tag matches {specifier}{version} in repository {repo}"
+                        )
                         if not dependency_allow_prerelease:
-                            print(f"         (Hint: Use --pre to include pre-release versions)")
+                            reporter.error(
+                                f"         (Hint: Use --pre to include pre-release versions)"
+                            )
                     else:
-                        print(f"  [FAIL] No matching tag found in repository {repo}")
+                        reporter.error(f"  [FAIL] No matching tag found in repository {repo}")
                     return False
         except subprocess.CalledProcessError as e:
-            print(f"  [FAIL] Failed to query tags from {repo}: {e}")
+            reporter.error(f"  [FAIL] Failed to query tags from {repo}: {e}")
             return False
 
-    print(f"Cloning {repo} at tag {tag}...")
+    reporter.detail(f"Cloning {repo} at tag {tag}...")
 
     # Check if already exists and prompt user
     if repo_path.exists():
-        print(f"  [INFO] Repository {repo_name} already exists at {repo_path}")
+        reporter.detail(f"  [INFO] Repository {repo_name} already exists at {repo_path}")
 
         if delete_allowed:
             response = "y"
-            print(f"    Auto-deleting and re-cloning (--delete flag set)")
+            reporter.detail(f"    Auto-deleting and re-cloning (--delete flag set)")
         else:
             response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
 
         if response in ["y", "yes"]:
-            print(f"    Deleting {repo_path}...")
+            reporter.detail(f"    Deleting {repo_path}...")
             try:
                 # Use onexc (Python 3.12+) or onerror (older versions) to handle read-only files
                 try:
@@ -293,12 +301,12 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
                 except TypeError:
                     # Fall back to onerror for Python < 3.12
                     shutil.rmtree(repo_path, onerror=_remove_readonly)  # type: ignore[call-arg]
-                print(f"    Deleted successfully")
+                reporter.detail(f"    Deleted successfully")
             except Exception as e:
-                print(f"    [FAIL] Failed to delete: {e}")
+                reporter.error(f"    [FAIL] Failed to delete: {e}")
                 return False
         else:
-            print(f"    Skipping clone")
+            reporter.detail(f"    Skipping clone")
             return True
 
     try:
@@ -309,11 +317,11 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
             text=True,
             check=True,
         )
-        print(f"  [OK] Successfully cloned {repo_name}")
+        reporter.success(f"  [OK] Successfully cloned {repo_name}")
         return True
 
     except subprocess.CalledProcessError as e:
-        print(f"  [FAIL] Failed to clone {repo}: {e.stderr}")
+        reporter.error(f"  [FAIL] Failed to clone {repo}: {e.stderr}")
         return False
 
 
@@ -339,12 +347,14 @@ def install_dependencies(
     """
     # Get dependencies file path from config
     if config is None or not config.dependencies:
-        print("Error: Dependencies not set. Call config.set_dependencies() in nihdlsettings.py")
+        reporter.error(
+            "Error: Dependencies not set. Call config.set_dependencies() in nihdlsettings.py"
+        )
         return 1
 
     dependencies_file = config.dependencies
     if not Path(dependencies_file).exists():
-        print(f"Error: Dependencies file not found: {dependencies_file}")
+        reporter.error(f"Error: Dependencies file not found: {dependencies_file}")
         return 1
 
     # Get the directory containing dependencies.toml
@@ -354,32 +364,32 @@ def install_dependencies(
     deps_dir = deps_base_dir / "deps"
     deps_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Reading dependencies from: {dependencies_file}")
-    print(f"Installing to: {deps_dir}")
-    print()
+    reporter.detail(f"Reading dependencies from: {dependencies_file}")
+    reporter.detail(f"Installing to: {deps_dir}")
+    reporter.detail()
 
     # Read TOML file
     try:
         with open(dependencies_file, "rb") as f:
             data = tomllib.load(f)
     except Exception as e:
-        print(f"Error reading TOML file: {e}")
+        reporter.error(f"Error reading TOML file: {e}")
         return 1
 
     dependencies = data.get("github_dependencies", data.get("dependencies", {}))
 
     if not dependencies:
-        print("No dependencies found in TOML file")
+        reporter.error("No dependencies found in TOML file")
         return 1
 
     # If --latest flag is used, inform the user
     if use_latest:
         version_type = "pre-release" if allow_prerelease else "release"
-        print("=" * 80)
-        print(f"Using --latest flag: Installing latest {version_type} versions")
-        print("Versions in dependencies.toml will be ignored.")
-        print("=" * 80)
-        print()
+        reporter.detail("=" * 80)
+        reporter.detail(f"Using --latest flag: Installing latest {version_type} versions")
+        reporter.detail("Versions in dependencies.toml will be ignored.")
+        reporter.detail("=" * 80)
+        reporter.detail()
 
     # Parse and clone each dependency
     # PEP 440 version specifiers (same as pip install):
@@ -395,12 +405,12 @@ def install_dependencies(
         repo, specifier, version = _parse_dependency(dep_string)
 
         if repo is None:
-            print(f"Warning: Invalid dependency format: {dep_string}")
-            print(f"         Expected format: owner/repo==version or owner/repo>=version")
+            reporter.warn(f"Warning: Invalid dependency format: {dep_string}")
+            reporter.warn(f"         Expected format: owner/repo==version or owner/repo>=version")
             continue
 
         if specifier is None or version is None:
-            print(f"Warning: Invalid dependency version specifier: {dep_string}")
+            reporter.warn(f"Warning: Invalid dependency version specifier: {dep_string}")
             continue
 
         # Build the tag/version string for cloning
@@ -416,8 +426,8 @@ def install_dependencies(
             success_count += 1
 
     # Summary
-    print()
-    print(f"Installed {success_count}/{total_count} dependencies successfully")
+    reporter.detail()
+    reporter.success(f"Installed {success_count}/{total_count} dependencies successfully")
 
     if success_count < total_count:
         return 1

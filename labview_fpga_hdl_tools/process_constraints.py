@@ -14,6 +14,7 @@ import os
 import re
 
 from . import common
+from .reporting import reporter
 
 # ---------------------------------------------------------------------------
 # TG/TNM constraint conversion helpers
@@ -101,7 +102,7 @@ def _convert_tg_quoted_lines(content):
         converted_line, _ = _convert_tg_line(line, line_number, tnm_patterns, warnings)
         converted_lines.append(converted_line)
     for warning in warnings:
-        print(f"  Warning: {warning}")
+        reporter.warn(f"  Warning: {warning}")
     return "".join(converted_lines)
 
 
@@ -117,9 +118,9 @@ def load_custom_constraints(custom_constraints_path):
     if custom_constraints_path and os.path.exists(custom_constraints_path):
         with open(custom_constraints_path, "r", encoding="utf-8") as f:
             content = f.read()
-        print(f"Loaded custom constraints from {custom_constraints_path}")
+        reporter.detail(f"Loaded custom constraints from {custom_constraints_path}")
         return content
-    print("No custom constraints file specified or file not found")
+    reporter.detail("No custom constraints file specified or file not found")
     return ""
 
 
@@ -155,7 +156,7 @@ def replace_custom_constraints_in_xdc_folder(folder, custom_constraints_path):
         if count > 0:
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(new_content)
-            print(f"Replaced macro_GitHubCustomConstraints in {filename}")
+            reporter.detail(f"Replaced macro_GitHubCustomConstraints in {filename}")
 
 
 def process_constraints_template(config):
@@ -176,7 +177,9 @@ def process_constraints_template(config):
     from_to_content = ""
 
     if not config.lv_window_netlist_folder:
-        print("TheWindowFolder input is not specified - skipping Window constraint extraction.")
+        reporter.detail(
+            "TheWindowFolder input is not specified - skipping Window constraint extraction."
+        )
     else:
         window_constraints_path = os.path.join(
             config.lv_window_netlist_folder, "TheWindowConstraints.xdc"
@@ -207,7 +210,7 @@ def process_constraints_template(config):
                 from_to_match = re.search(from_to_pattern, constraints_content, re.DOTALL)
 
                 if not period_match or not clip_match or not from_to_match:
-                    print(
+                    reporter.error(
                         "Error: Could not find one or more marker sections in TheWindowConstraints.xdc"
                     )
                     return
@@ -222,7 +225,7 @@ def process_constraints_template(config):
                     "current_instance $TopInstance0\n"
                 )
         else:
-            print(f"TheWindowConstraints.xdc file not found at {window_constraints_path}")
+            reporter.error(f"TheWindowConstraints.xdc file not found at {window_constraints_path}")
             period_content = ""
             clip_content = ""
             from_to_content = ""
@@ -234,7 +237,7 @@ def process_constraints_template(config):
     template_files = config.constraints_templates
 
     if not template_files:
-        print("No constraint templates specified in configuration.")
+        reporter.detail("No constraint templates specified in configuration.")
         return
 
     # Process each template file
@@ -246,7 +249,7 @@ def process_constraints_template(config):
         output_file = template_basename.replace("_template", "")
         output_path = os.path.join(output_folder, output_file)
 
-        print(f"Processing {template_basename} -> {output_file}")
+        reporter.detail(f"Processing {template_basename} -> {output_file}")
 
         # Read the template file
         with open(template_path, "r", encoding="utf-8") as f:
@@ -305,7 +308,7 @@ def process_constraints_template(config):
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(final_content)
 
-        print(f"Successfully processed and saved: {output_path}")
+        reporter.success(f"Successfully processed and saved: {output_path}")
 
 
 def process_constraints(config=None):

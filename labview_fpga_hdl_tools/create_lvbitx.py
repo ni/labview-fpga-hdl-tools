@@ -8,6 +8,7 @@ import os  # For file and directory operations
 import subprocess  # For executing external programs
 
 from . import common  # For shared utilities across tools
+from .reporting import reporter
 
 # createBitfile.exe lives at this path relative to a LabVIEW install root.
 _CREATEBITFILE_RELPATH = os.path.join("vi.lib", "rvi", "CDR", "createBitfile.exe")
@@ -42,9 +43,9 @@ def _find_createbitfile_exe(config=None):
     if labview_path:
         candidate = os.path.join(labview_path, _CREATEBITFILE_RELPATH)
         if os.path.isfile(candidate):
-            print(f"Using createBitfile.exe from set_labview_path: {candidate}")
+            reporter.detail(f"Using createBitfile.exe from set_labview_path: {candidate}")
             return candidate
-        print(
+        reporter.error(
             f"Error: set_labview_path is set to '{labview_path}' but "
             f"createBitfile.exe was not found at:\n  {candidate}\n"
             "Verify the set_labview_path setting points at a LabVIEW install "
@@ -65,10 +66,10 @@ def _find_createbitfile_exe(config=None):
         )
         checked.append(candidate)
         if os.path.isfile(candidate):
-            print(f"Found createBitfile.exe from LabVIEW {year}: {candidate}")
+            reporter.detail(f"Found createBitfile.exe from LabVIEW {year}: {candidate}")
             return candidate
 
-    print(
+    reporter.error(
         "Error: Could not auto-discover a LabVIEW install containing "
         "createBitfile.exe. Checked:\n  " + "\n  ".join(checked) + "\n"
         "Set the set_labview_path setting in nihdlsettings.py to your LabVIEW "
@@ -80,14 +81,14 @@ def _find_createbitfile_exe(config=None):
 def _create_lv_bitfile(config=None):
     """Create the LabVIEW FPGA .lvbitx file by executing the createBitfile.exe tool."""
     if os.name != "nt":
-        print("Creating .lvbitx files is only supported on Windows")
+        reporter.detail("Creating .lvbitx files is only supported on Windows")
         return 0
 
     vivado_impl_folder = os.getcwd()
 
     path_parts = [part.lower() for part in os.path.normpath(vivado_impl_folder).split(os.sep)]
     if "impl_1" not in path_parts:
-        print(
+        reporter.warn(
             "\n"
             "************************************************************\n"
             "***                     WARNING                          ***\n"
@@ -117,42 +118,42 @@ def _create_lv_bitfile(config=None):
 
     # Determine path to CodeGenerationResults.lvtxt from TheWindow folder
     if not config.lv_window_netlist_folder:
-        print(
+        reporter.error(
             "Error: lv_window_netlist_folder is not set. "
             "gen-lvbitx requires a Window netlist folder containing CodeGenerationResults.lvtxt."
         )
         return 1
 
     window_folder = os.path.abspath(config.lv_window_netlist_folder)
-    print(f"Window folder resolved to: {window_folder}")
+    reporter.detail(f"Window folder resolved to: {window_folder}")
 
     code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")
 
     if config.top_level_entity is None:
-        print("Error: top_level_entity not set in configuration")
+        reporter.error("Error: top_level_entity not set in configuration")
         return 1
 
-    print(f"LabVIEW code generation results path: {code_gen_results_path}")
+    reporter.detail(f"LabVIEW code generation results path: {code_gen_results_path}")
 
     vivado_bitstream_path = os.path.join(vivado_impl_folder, f"{config.top_level_entity}.bin")
-    print(f"Vivado bitstream path: {vivado_bitstream_path}")
+    reporter.detail(f"Vivado bitstream path: {vivado_bitstream_path}")
 
     lvbitx_output_path = os.path.abspath(f"objects/bitfiles/{config.top_level_entity}.lvbitx")
-    print(f"Output .lvbitx path: {lvbitx_output_path}")
+    reporter.detail(f"Output .lvbitx path: {lvbitx_output_path}")
 
     # In skip_vivado mode, create a mock file without needing createBitfile.exe
     if config.skip_vivado:
-        print("SKIP VIVADO: Validation successful, skipping createBitfile.exe launch")
+        reporter.detail("SKIP VIVADO: Validation successful, skipping createBitfile.exe launch")
         os.makedirs(os.path.dirname(lvbitx_output_path), exist_ok=True)
         with open(lvbitx_output_path, "w") as f:
             f.write("# Mock LVBITX file created for testing\n")
-        print(f"Created mock LVBITX file at: {lvbitx_output_path}")
+        reporter.detail(f"Created mock LVBITX file at: {lvbitx_output_path}")
         return 0
 
     # Locate createBitfile.exe from the configured or latest installed LabVIEW
     createbitfile_exe = _find_createbitfile_exe(config)
     if createbitfile_exe is None:
-        print("Error: Could not find createBitfile.exe. Is LabVIEW installed?")
+        reporter.error("Error: Could not find createBitfile.exe. Is LabVIEW installed?")
         return 1
 
     # Create the directory for the new file if it doesn't exist
@@ -166,18 +167,18 @@ def _create_lv_bitfile(config=None):
         vivado_bitstream_path,
     ]
 
-    print(f"Executing: {' '.join(cmd)}")
+    reporter.detail(f"Executing: {' '.join(cmd)}")
 
     # Execute the command
     result = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
     # Log the execution results
     if result.returncode == 0:
-        print("Successfully created LabVIEW bitfile")
+        reporter.success("Successfully created LabVIEW bitfile")
     else:
-        print(f"Error creating LabVIEW bitfile. Return code: {result.returncode}")
-        print(f"STDOUT: {result.stdout}")
-        print(f"STDERR: {result.stderr}")
+        reporter.error(f"Error creating LabVIEW bitfile. Return code: {result.returncode}")
+        reporter.error(f"STDOUT: {result.stdout}")
+        reporter.error(f"STDERR: {result.stderr}")
 
     return 0
 
@@ -195,7 +196,7 @@ def create_lv_bitx(config=None):
         result = _create_lv_bitfile(config=config)
         return result  # Return the result code
     except Exception as e:
-        print(f"Unhandled exception: {str(e)}")
+        reporter.error(f"Unhandled exception: {str(e)}")
         import traceback
 
         traceback.print_exc()

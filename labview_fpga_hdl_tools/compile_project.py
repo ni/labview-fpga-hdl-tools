@@ -9,6 +9,7 @@ import os
 import subprocess
 
 from . import common
+from .reporting import reporter
 
 
 def _generate_compile_project_tcl(config, output_path):
@@ -108,9 +109,9 @@ def _run_compile_project(config, generated_tcl_path):
         f'-journal "{journal_path}"'
     )
 
-    print(f"Vivado executable: {vivado_abs}")
-    print(f"Working directory: {vivado_project_dir}")
-    print(f"Running command: {command}")
+    reporter.detail(f"Vivado executable: {vivado_abs}")
+    reporter.detail(f"Working directory: {vivado_project_dir}")
+    reporter.detail(f"Running command: {command}")
 
     result = subprocess.run(command, cwd=vivado_project_dir, shell=True, check=False)
 
@@ -136,7 +137,7 @@ def _run_compile_project(config, generated_tcl_path):
 
     if compile_status == "PASSED":
         if result.returncode != 0:
-            print(
+            reporter.warn(
                 "Warning: Vivado returned a non-zero exit code "
                 f"({result.returncode}) but NIHDL_COMPILE_PROJECT=PASSED was found."
             )
@@ -160,10 +161,10 @@ def _compile_project(config):
 
     _generate_compile_project_tcl(config, generated_tcl_path)
 
-    print(f"Generated TCL script: {generated_tcl_path}")
+    reporter.detail(f"Generated TCL script: {generated_tcl_path}")
 
     if config.skip_vivado:
-        print("SKIP VIVADO: Validation successful, skipping Vivado launch")
+        reporter.detail("SKIP VIVADO: Validation successful, skipping Vivado launch")
         return 0
 
     _run_compile_project(config, generated_tcl_path)
@@ -186,14 +187,14 @@ def compile_project(config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     try:
         _compile_project(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
-    print("Vivado project compile completed successfully.")
+    reporter.success("Vivado project compile completed successfully.")
     return 0

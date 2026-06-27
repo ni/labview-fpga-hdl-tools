@@ -17,6 +17,7 @@ import os
 import sys
 
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 class CommandContext:
@@ -58,12 +59,12 @@ def _load_config_module(command_config_path):
         The loaded module object.
     """
     if not os.path.exists(command_config_path):
-        print(f"Error: Settings file not found: {command_config_path}", file=sys.stderr)
+        reporter.error(f"Error: Settings file not found: {command_config_path}")
         sys.exit(1)
 
     spec = importlib.util.spec_from_file_location("nihdlsettings", command_config_path)
     if spec is None or spec.loader is None:
-        print(f"Error: Could not load module spec from: {command_config_path}", file=sys.stderr)
+        reporter.error(f"Error: Could not load module spec from: {command_config_path}")
         sys.exit(1)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -125,6 +126,7 @@ def run_with_hooks(
     command_func,
     command_config_path=None,
     settings_args=None,
+    verbose=False,
     **command_kwargs,
 ):
     """Execute a command wrapped with pre/post hooks from nihdlsettings.py.
@@ -142,11 +144,20 @@ def run_with_hooks(
             ``--set KEY=VALUE`` options), exposed to hooks as ``context.settings``.
             Kept separate from command_kwargs so it is never forwarded to the
             command function.
+        verbose: When True, enable detailed reporter output for this command.
+            Only ever turns verbosity on, so a global ``nihdl -v`` flag is not
+            overridden by a command-level default.
         **command_kwargs: Keyword arguments to pass to the command function.
 
     Returns:
         The return value of the command function.
     """
+    if verbose:
+        reporter.set_verbose(True)
+    # Start each command with a clean problem log so the end-of-command summary
+    # reflects only this invocation (matters when commands chain in-process).
+    reporter.reset()
+
     # Resolve the config module path
     if command_config_path is None:
         command_config_path = os.path.join(os.getcwd(), "nihdlsettings.py")
@@ -171,15 +182,20 @@ def run_with_hooks(
     # Inject pre-loaded config into command kwargs
     command_kwargs["config"] = context.config
 
-    # Execute the command from the original working directory
-    context.result = command_func(**command_kwargs)
-
-    # Post hooks run from the settings file's directory
-    os.chdir(config_dir)
     try:
-        _call_hook(module, f"post_{command_name}", context)
-        _call_hook(module, "post_all", context)
+        # Execute the command from the original working directory
+        context.result = command_func(**command_kwargs)
+
+        # Post hooks run from the settings file's directory
+        os.chdir(config_dir)
+        try:
+            _call_hook(module, f"post_{command_name}", context)
+            _call_hook(module, "post_all", context)
+        finally:
+            os.chdir(original_dir)
     finally:
-        os.chdir(original_dir)
+        # Always reprint captured warnings/errors so they are not lost in a
+        # stream of status output, even when the command raised.
+        reporter.summary()
 
     return context.result

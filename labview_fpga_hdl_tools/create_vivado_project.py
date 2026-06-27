@@ -22,6 +22,7 @@ from collections import defaultdict
 from enum import Enum
 
 from . import common, generate_vhdl, process_constraints
+from .reporting import reporter
 
 
 def _has_spaces(file_path):
@@ -264,9 +265,9 @@ def _copy_long_path_files(file_list):
             try:
                 shutil.copy2(file, target_path)
                 new_file_list.append(target_path)
-                print(f"WARNING: Long path file {original_file}")
-                print(f"         was copied into the objects/gatheredfiles folder.")
-                print(
+                reporter.warn(f"WARNING: Long path file {original_file}")
+                reporter.detail(f"         was copied into the objects/gatheredfiles folder.")
+                reporter.detail(
                     f"         You must run 'nihdl create-project --update' to pull in any changes to the source file."
                 )
             except Exception as e:
@@ -311,7 +312,7 @@ def _override_lv_window_files(config, file_list):
 
         if name_without_ext in window_files:
             # Replace with the window folder version
-            print(f"Replacing {file_path} with {window_files[name_without_ext]}")
+            reporter.detail(f"Replacing {file_path} with {window_files[name_without_ext]}")
             updated_list.append(window_files[name_without_ext])
             replaced_files.add(name_without_ext)  # Mark this window file as used
         else:
@@ -325,7 +326,7 @@ def _override_lv_window_files(config, file_list):
             # There is another part of the script that processes the constraints .xdc files
             file_ext = os.path.splitext(file_path)[1].lower()
             if file_ext not in [".lvtxt", ".xdc"]:
-                print(f"Adding window file: {file_path}")
+                reporter.detail(f"Adding window file: {file_path}")
                 updated_list.append(file_path)
 
     return updated_list
@@ -656,9 +657,9 @@ def _create_project(mode: ProjectMode, config):
 
     # Check if the project file exists
     project_file_path = os.path.join(os.getcwd(), project_name + ".xpr")
-    print(f"Project file path: {project_file_path}")
+    reporter.detail(f"Project file path: {project_file_path}")
 
-    print(f"Vivado executable absolute path: {vivado_abs}")
+    reporter.detail(f"Vivado executable absolute path: {vivado_abs}")
     # Check if the Vivado executable exists
     if not config.skip_vivado and not os.path.exists(vivado_abs):
         raise FileNotFoundError(
@@ -675,16 +676,16 @@ def _create_project(mode: ProjectMode, config):
     else:
         raise ValueError(f"Unsupported mode: {mode}")
 
-    print(f"Running command: {command}")
+    reporter.detail(f"Running command: {command}")
 
     # In skip_vivado mode, create a mock project file and skip Vivado execution
     if config.skip_vivado:
-        print("SKIP VIVADO: Validation successful, skipping Vivado launch")
+        reporter.detail("SKIP VIVADO: Validation successful, skipping Vivado launch")
         # Create an empty project file for testing
         mock_project_path = os.path.join(vivado_project_path, f"{project_name}.xpr")
         with open(mock_project_path, "w") as f:
             f.write("# Mock Vivado project file created for testing\n")
-        print(f"Created mock project file: {mock_project_path}")
+        reporter.detail(f"Created mock project file: {mock_project_path}")
         return 0
 
     output = common.run_command(
@@ -695,7 +696,7 @@ def _create_project(mode: ProjectMode, config):
     # Change back to the original directory
     os.chdir(current_dir)
 
-    print(output)
+    reporter.detail(output)
 
 
 def _create_project_handler(config, overwrite=False, update=False):
@@ -727,7 +728,7 @@ def _create_project_handler(config, overwrite=False, update=False):
     project_file_path = os.path.join(
         os.getcwd(), config.vivado_project_folder, f"{config.top_level_entity}.xpr"
     )
-    print(f"Project file path: {project_file_path}")
+    reporter.detail(f"Project file path: {project_file_path}")
 
     if not overwrite and not update:
         # User wants to create a new project
@@ -774,14 +775,14 @@ def create_project(overwrite=False, update=False, config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Execute the project handler with the provided options - handles argument validation
     try:
         project_mode = _create_project_handler(config, overwrite=overwrite, update=update)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Process the xdc_template to ensure that we have one for the Vivado project
@@ -791,7 +792,7 @@ def create_project(overwrite=False, update=False, config=None):
     try:
         _validate_constraints_files(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Generate all configured VHDL from Mako templates (window VHDL, the
@@ -802,16 +803,16 @@ def create_project(overwrite=False, update=False, config=None):
         if generate_vhdl.gen_generated_vhdl(config=config) != 0:
             return 1
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Create or update the Vivado project based on the determined mode
     try:
         _create_project(project_mode, config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
-    print("Vivado project created successfully.")
+    reporter.success("Vivado project created successfully.")
 
     return 0
