@@ -162,9 +162,6 @@ def run_with_hooks(
     if command_config_path is None:
         command_config_path = os.path.join(os.getcwd(), "nihdlsettings.py")
 
-    # Load the config module
-    module = _load_config_module(command_config_path)
-
     # Build context
     context = CommandContext(command_name, command_kwargs, settings_args=settings_args)
 
@@ -172,17 +169,22 @@ def run_with_hooks(
     # passed to setters resolve correctly.
     config_dir = os.path.dirname(os.path.abspath(command_config_path))
     original_dir = os.getcwd()
-    os.chdir(config_dir)
-    try:
-        _call_hook(module, "pre_all", context)
-        _call_hook(module, f"pre_{command_name}", context)
-    finally:
-        os.chdir(original_dir)
-
-    # Inject pre-loaded config into command kwargs
-    command_kwargs["config"] = context.config
 
     try:
+        # Load the config module
+        module = _load_config_module(command_config_path)
+
+        # Pre hooks run from the settings file's directory.
+        os.chdir(config_dir)
+        try:
+            _call_hook(module, "pre_all", context)
+            _call_hook(module, f"pre_{command_name}", context)
+        finally:
+            os.chdir(original_dir)
+
+        # Inject pre-loaded config into command kwargs
+        command_kwargs["config"] = context.config
+
         # Execute the command from the original working directory
         context.result = command_func(**command_kwargs)
 
@@ -193,8 +195,14 @@ def run_with_hooks(
             _call_hook(module, "post_all", context)
         finally:
             os.chdir(original_dir)
+    except Exception as e:
+        # Record the terminal failure so it appears in the same end-of-run
+        # roll-up as any warnings/errors collected during the command, then
+        # re-raise so the CLI still exits non-zero.
+        reporter.error(f"Error: {str(e)}")
+        raise
     finally:
-        # Always reprint captured warnings/errors so they are not lost in a
+        # Always recap captured warnings/errors so they are not lost in a
         # stream of status output, even when the command raised.
         reporter.summary()
 

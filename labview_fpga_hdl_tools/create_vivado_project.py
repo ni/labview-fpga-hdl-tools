@@ -18,6 +18,7 @@ The tool supports:
 import glob
 import os
 import shutil
+import subprocess
 from collections import defaultdict
 from enum import Enum
 
@@ -688,10 +689,19 @@ def _create_project(mode: ProjectMode, config):
         reporter.detail(f"Created mock project file: {mock_project_path}")
         return 0
 
-    output = common.run_command(
-        command,
-        cwd=os.getcwd(),
-    )
+    try:
+        output = common.run_command(
+            command,
+            cwd=os.getcwd(),
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        os.chdir(current_dir)
+        action = "updating" if mode == ProjectMode.UPDATE else "creating"
+        raise RuntimeError(
+            f"Vivado exited with a non-zero status ({e.returncode}) while {action} the "
+            f"project. Review the Vivado output above and vivado.log for details."
+        ) from e
 
     # Change back to the original directory
     os.chdir(current_dir)

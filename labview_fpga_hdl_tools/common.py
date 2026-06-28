@@ -407,8 +407,22 @@ def apply_hdl_excludes(file_list, excluded_abspaths):
     return kept
 
 
-def run_command(cmd, cwd=None, capture_output=True):
-    """Run a shell command and return its output."""
+def run_command(cmd, cwd=None, capture_output=True, check=False):
+    """Run a shell command and return its output.
+
+    Args:
+        cmd: Command string to run through the shell.
+        cwd: Working directory to run the command in, if any.
+        capture_output: When True, capture stdout and return it as a string.
+            When False, let the command's output stream to the console and
+            return an empty string.
+        check: When True, raise ``subprocess.CalledProcessError`` if the command
+            exits with a non-zero status.
+
+    Returns:
+        The captured stdout (stripped) when ``capture_output`` is True, otherwise
+        an empty string.
+    """
     reporter.detail(f"Running command: {cmd}")
 
     kwargs = {}
@@ -417,12 +431,14 @@ def run_command(cmd, cwd=None, capture_output=True):
 
     if capture_output:
         # Capture and return output
-        result = subprocess.run(cmd, shell=True, text=True, capture_output=True, **kwargs)
+        result = subprocess.run(
+            cmd, shell=True, text=True, capture_output=True, check=check, **kwargs
+        )
         # Check if stdout is None before calling strip()
         return result.stdout.strip() if result.stdout is not None else ""
     else:
         # Don't capture output (let it go to console)
-        subprocess.run(cmd, shell=True, **kwargs)
+        subprocess.run(cmd, shell=True, check=check, **kwargs)
         return ""  # Return empty string instead of None
 
 

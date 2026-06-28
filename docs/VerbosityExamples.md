@@ -5,18 +5,25 @@
 
 | Level | How to enable | What you see |
 |-------|---------------|--------------|
-| **Default (normal)** | (nothing — it's the default) | Final results, successes, warnings, and errors only. Routine progress chatter is hidden. |
-| **Verbose** | `-v` / `--verbose` | Everything above **plus** step-by-step progress detail. |
+| **Default (normal)** | (nothing — it's the default) | Final results and successes as they happen. Warnings and errors are **not** shown inline; they appear once in an aggregated summary at the end. Routine progress chatter is hidden. |
+| **Verbose** | `-v` / `--verbose` | Everything above **plus** step-by-step progress detail, with each warning and error also printed **inline** where it occurs. The end summary still appears, so problems may show twice — verbose is *additive*. |
 
 ## Mental model
 
-- **Results, warnings, and errors are *always* shown** — in both levels. Verbose
-  never *hides* anything; it only *adds* progress detail.
-- **stdout vs stderr:** successes/results go to **stdout**; warnings and errors
-  go to **stderr**. So you can still `2>` redirect problems on their own.
-- **End-of-run summary:** whenever a command produced any warnings or errors,
-  they are re-printed in a grouped `Summary:` block at the very end (on stderr),
-  so nothing important scrolls off-screen — even in verbose mode.
+- **"Normal" = default** — what you get when you do *not* pass `-v`. There is
+  no `-q`; "normal" and "default" mean the same thing.
+- **Verbose is additive to the default** — it never *hides* anything; it only
+  *adds* inline progress detail (including inline warnings/errors).
+- **Where warnings/errors appear:**
+  - *Default:* only in the aggregated summary at the end.
+  - *Verbose:* inline where they happen **and** in the end summary (so they may
+    appear twice — that's the cost of asking for everything).
+- **The end summary is always shown** when there were any warnings or errors,
+  in both levels, so nothing important scrolls off-screen.
+- **Results/successes are always shown inline** in both levels.
+- **stdout vs stderr:** successes/results go to **stdout**; warnings, errors,
+  and the summary go to **stderr**. So you can still `2>` redirect problems on
+  their own.
 - **The flag works in either position:**
 
   ```text
@@ -86,12 +93,6 @@ shows up here as ordinary detail (it's an optional input, not a problem).
 ```text
 > nihdl gen-vivado --config=badsettings.py
 
-Error: The following required settings are missing from nihdlsettings.py:
-  - VivadoProjectSettings.VivadoProjectFolder
-  - VivadoProjectSettings.FPGAPart
-
-Please update your configuration file and try again.
-
 ============================================================
   Summary: 1 error(s), 0 warning(s)
 ============================================================
@@ -103,8 +104,8 @@ Please update your configuration file and try again.
 ============================================================
 ```
 
-The error is printed once where it happens, then again in the grouped
-`Summary:` block at the end. The exit code is non-zero (`1`).
+In default mode the error is **not** printed inline; it appears once, in the
+aggregated summary at the end. The exit code is non-zero (`1`).
 
 ## 4. Failing case — verbose (`-v`)
 
@@ -128,20 +129,22 @@ Please update your configuration file and try again.
 ============================================================
 ```
 
-For *this* failure, verbose output is **identical** to default. That's expected:
-the config is validated up front, so the command fails *before* it emits any
-progress detail. There is nothing extra for verbose to show — and because
-errors are always displayed and always summarized, you never miss them
-regardless of the level you choose. (When a command fails *partway* through —
-after doing some work — verbose would show that progress up to the point of
-failure, followed by the same error + summary block.)
+In verbose mode the error is printed **inline** where it occurs **and** recapped
+in the end summary — so it appears twice. That's intentional: verbose is
+additive, so you get the inline stream *plus* the same clean summary the default
+mode gives you. (Because this config is validated up front, the command fails
+before emitting any progress detail. A command that fails *partway* through
+would show its progress detail up to the point of failure, then the inline
+error, then the summary.)
 
 ---
 
 ## Summary
 
-- Default = concise: results + warnings + errors.
-- `-v` = the same, plus progress detail.
-- Warnings and errors are always shown and always re-summarized at the end.
+- **Normal (default)** = concise: results/successes inline, plus one aggregated
+  list of warnings and errors at the end.
+- **`-v` (verbose)** = additive: full progress detail with warnings and errors
+  inline, **and** the same end summary — so problems may appear twice.
+- The end summary is always shown when there were any warnings or errors.
 - Pick `-v` when you want to watch every step or debug *where* something went
   wrong; otherwise the default keeps the console focused on outcomes.

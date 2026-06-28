@@ -172,14 +172,28 @@ def _create_lv_bitfile(config=None):
     # Execute the command
     result = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
-    # Log the execution results
-    if result.returncode == 0:
-        reporter.success("Successfully created LabVIEW bitfile")
-    else:
+    # createBitfile.exe returns a non-zero exit code when it fails, so trust
+    # that signal rather than assuming success. (No need to pre-delete the old
+    # .lvbitx: createBitfile.exe overwrites it on success, and on failure we
+    # report the error and return non-zero.)
+    if result.returncode != 0:
         reporter.error(f"Error creating LabVIEW bitfile. Return code: {result.returncode}")
-        reporter.error(f"STDOUT: {result.stdout}")
-        reporter.error(f"STDERR: {result.stderr}")
+        if result.stdout:
+            reporter.error(f"STDOUT: {result.stdout}")
+        if result.stderr:
+            reporter.error(f"STDERR: {result.stderr}")
+        return 1
 
+    # Defensive check: a zero exit code should always mean the file is present,
+    # but verify so a silent tool failure can never look like success.
+    if not os.path.exists(lvbitx_output_path):
+        reporter.error(
+            "Error: createBitfile.exe reported success but the expected output file "
+            f"was not found:\n  {lvbitx_output_path}"
+        )
+        return 1
+
+    reporter.success(f"Successfully created LabVIEW bitfile: {lvbitx_output_path}")
     return 0
 
 

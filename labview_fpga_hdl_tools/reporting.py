@@ -3,10 +3,19 @@
 Provides a single process-wide :class:`Reporter` that controls how much detail
 reaches the terminal.
 
-By default only pass/fail results, warnings, and errors are shown. Pass
-``--verbose`` (``-v``) to also show step-by-step status. Warnings and errors are
-always captured and reprinted as a grouped summary at the end of every command,
-so they are never lost in a stream of status output.
+By default only pass/fail results plus an aggregated list of any warnings and
+errors (shown once, at the end) reach the terminal. Pass ``--verbose`` (``-v``)
+to also show step-by-step status and to see each warning and error printed
+inline at the moment it occurs.
+
+Warnings and errors are always captured and always recapped in a grouped
+summary at the end of the command. How they appear *during* the run depends on
+the mode:
+
+* **Default (normal):** not printed inline; shown only in the end summary.
+* **Verbose:** printed inline (to stderr) where they occur, *and* recapped in
+  the end summary. Verbose is additive to the default \u2014 you asked for
+  everything, so the inline output and the summary may overlap.
 
 Modules should report through the shared ``reporter`` instance instead of
 calling ``print`` directly::
@@ -15,8 +24,8 @@ calling ``print`` directly::
 
     reporter.detail("Copying files...")   # verbose-only status
     reporter.success("Compile PASSED")    # always shown result
-    reporter.warn("Register space high")  # always shown + summarized
-    reporter.error("File not found")      # always shown + summarized
+    reporter.warn("Register space high")  # inline in verbose, else summarized
+    reporter.error("File not found")      # inline in verbose, else summarized
 """
 
 # Copyright (c) 2025 National Instruments Corporation
@@ -33,8 +42,10 @@ class Reporter:
     """Process-wide console reporter with verbosity control and problem capture.
 
     Attributes:
-        verbose: When True, ``detail`` output is shown. When False (default),
-            only ``success``, ``warn``, and ``error`` output is shown.
+        verbose: When True, ``detail`` output is shown and warnings/errors are
+            printed inline where they occur. When False (default), only
+            ``success`` output is shown inline; warnings and errors are deferred
+            to the aggregated end-of-run summary.
     """
 
     def __init__(self):
@@ -60,14 +71,24 @@ class Reporter:
         print(message)
 
     def warn(self, message):
-        """Print a warning to stderr and capture it for the end summary."""
+        """Capture a warning for the end-of-run summary.
+
+        In verbose mode the warning is also printed inline (to stderr) where it
+        occurs. In default mode it is shown only in the aggregated summary.
+        """
         self._problems.append(("WARNING", message))
-        print(message, file=sys.stderr)
+        if self.verbose:
+            print(message, file=sys.stderr)
 
     def error(self, message):
-        """Print an error to stderr and capture it for the end summary."""
+        """Capture an error for the end-of-run summary.
+
+        In verbose mode the error is also printed inline (to stderr) where it
+        occurs. In default mode it is shown only in the aggregated summary.
+        """
         self._problems.append(("ERROR", message))
-        print(message, file=sys.stderr)
+        if self.verbose:
+            print(message, file=sys.stderr)
 
     @property
     def error_count(self):
@@ -80,11 +101,14 @@ class Reporter:
         return sum(1 for level, _ in self._problems if level == "WARNING")
 
     def summary(self):
-        """Reprint all captured warnings and errors as a grouped summary.
+        """Print captured warnings and errors as a grouped summary.
 
-        Does nothing when no warnings or errors were reported. Always writes to
-        stderr so the summary survives stdout redirection and stands out even in
-        verbose mode, where it follows all other output.
+        Always emitted when any warnings or errors were reported. In default
+        mode this is the only place they appear (they are not shown inline). In
+        verbose mode it is additive: each problem was already shown inline, and
+        this grouped recap follows so nothing important is lost in the stream.
+        Does nothing when there were no problems. Writes to stderr so the
+        summary survives stdout redirection.
         """
         if not self._problems:
             return

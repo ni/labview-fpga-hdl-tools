@@ -44,28 +44,39 @@ class TestReporterSuccess:
 class TestReporterWarnAndError:
     """Tests for Reporter.warn() and Reporter.error()."""
 
-    def test_given_warn__when_called__then_written_to_stderr_and_captured(self, capsys):
+    def test_given_default__when_warn__then_captured_but_not_inline(self, capsys):
         reporter = Reporter()
+        reporter.warn("something looks off")
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert captured.err == ""
+        assert reporter.warning_count == 1
+
+    def test_given_default__when_error__then_captured_but_not_inline(self, capsys):
+        reporter = Reporter()
+        reporter.error("it broke")
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert captured.err == ""
+        assert reporter.error_count == 1
+
+    def test_given_verbose__when_warn__then_printed_inline_to_stderr(self, capsys):
+        reporter = Reporter()
+        reporter.set_verbose(True)
         reporter.warn("something looks off")
         captured = capsys.readouterr()
         assert "something looks off" in captured.err
         assert captured.out == ""
         assert reporter.warning_count == 1
 
-    def test_given_error__when_called__then_written_to_stderr_and_captured(self, capsys):
+    def test_given_verbose__when_error__then_printed_inline_to_stderr(self, capsys):
         reporter = Reporter()
+        reporter.set_verbose(True)
         reporter.error("it broke")
         captured = capsys.readouterr()
         assert "it broke" in captured.err
         assert captured.out == ""
         assert reporter.error_count == 1
-
-    def test_given_errors_shown_quiet__when_called__then_still_visible(self, capsys):
-        reporter = Reporter()
-        reporter.set_verbose(False)
-        reporter.error("critical failure")
-        captured = capsys.readouterr()
-        assert "critical failure" in captured.err
 
 
 class TestReporterSummary:
@@ -83,6 +94,26 @@ class TestReporterSummary:
 
     def test_given_problems__when_summary__then_grouped_at_end_on_stderr(self, capsys):
         reporter = Reporter()
+        reporter.warn("watch out")
+        reporter.error("boom")
+        capsys.readouterr()  # clear
+        reporter.summary()
+        captured = capsys.readouterr()
+        assert "Summary: 1 error(s), 1 warning(s)" in captured.err
+        assert "[ERROR] boom" in captured.err
+        assert "[WARNING] watch out" in captured.err
+
+    def test_given_default__when_summary__then_errors_listed_before_warnings(self, capsys):
+        reporter = Reporter()
+        reporter.warn("w1")
+        reporter.error("e1")
+        capsys.readouterr()
+        reporter.summary()
+        captured = capsys.readouterr()
+        assert captured.err.index("[ERROR] e1") < captured.err.index("[WARNING] w1")
+
+    def test_given_verbose__when_summary__then_still_printed(self, capsys):
+        reporter = Reporter()
         reporter.set_verbose(True)
         reporter.warn("watch out")
         reporter.error("boom")
@@ -92,15 +123,6 @@ class TestReporterSummary:
         assert "Summary: 1 error(s), 1 warning(s)" in captured.err
         assert "[ERROR] boom" in captured.err
         assert "[WARNING] watch out" in captured.err
-
-    def test_given_summary__when_verbose__then_errors_listed_before_warnings(self, capsys):
-        reporter = Reporter()
-        reporter.warn("w1")
-        reporter.error("e1")
-        capsys.readouterr()
-        reporter.summary()
-        captured = capsys.readouterr()
-        assert captured.err.index("[ERROR] e1") < captured.err.index("[WARNING] w1")
 
 
 class TestReporterReset:

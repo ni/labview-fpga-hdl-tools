@@ -8,6 +8,7 @@
 
 import os
 import shutil
+import subprocess
 
 from . import common
 from .reporting import reporter
@@ -64,11 +65,28 @@ def _get_window_netlist(config):
             reporter.detail(f"Created mock Verilog netlist file for testing: {source_file}")
     else:
         reporter.detail(f"Current working directory: {os.getcwd()}")
-        common.run_command(
-            f'"{vivado_abs}" {project_name}.xpr -mode batch -source {get_netlist_tcl_path}',
-            cwd=os.getcwd(),
-            capture_output=False,
-        )
+
+        # Remove any stale netlist from a previous run so that the post-run
+        # existence check below cannot be satisfied by leftover output. Without
+        # this, a failed Vivado run would still look like a success.
+        if os.path.exists(source_file):
+            os.remove(source_file)
+            reporter.detail(f"Removed stale netlist file: {source_file}")
+
+        try:
+            common.run_command(
+                f'"{vivado_abs}" {project_name}.xpr -mode batch -source {get_netlist_tcl_path}',
+                cwd=os.getcwd(),
+                capture_output=False,
+                check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            os.chdir(current_dir)
+            raise RuntimeError(
+                f"Vivado exited with a non-zero status ({e.returncode}) while extracting the "
+                f"Window netlist. Synthesis or netlist generation likely failed; review the "
+                f"Vivado output above and vivado.log for details."
+            ) from e
 
         # Check for success marker in vivado.log file
         vivado_log_path = os.path.join(os.getcwd(), "vivado.log")

@@ -540,8 +540,10 @@ cli.add_section("CLIP Migration", ["migrate-clip"])
 
 def handle_exception(e):
     """Handle exceptions with consistent error output."""
-    reporter.error(f"Error: {str(e)}")
-    # The full traceback is developer-facing noise; show it only in verbose mode.
+    # run_with_hooks has already recorded the failure and emitted it as part of
+    # the end-of-run summary roll-up, so we don't reprint the message here
+    # (that would duplicate it). Show the full traceback only in verbose mode
+    # for debugging.
     if reporter.verbose:
         traceback.print_exc()
 
