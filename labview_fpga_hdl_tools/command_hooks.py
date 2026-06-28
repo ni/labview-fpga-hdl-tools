@@ -14,9 +14,9 @@ The hook execution order for each command is:
 
 import importlib.util
 import os
-import sys
 
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 class CommandContext:
@@ -56,15 +56,17 @@ def _load_config_module(command_config_path):
 
     Returns:
         The loaded module object.
+
+    Raises:
+        FileNotFoundError: If the settings file does not exist.
+        ImportError: If the module spec or loader could not be created.
     """
     if not os.path.exists(command_config_path):
-        print(f"Error: Settings file not found: {command_config_path}", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Settings file not found: {command_config_path}")
 
     spec = importlib.util.spec_from_file_location("nihdlsettings", command_config_path)
     if spec is None or spec.loader is None:
-        print(f"Error: Could not load module spec from: {command_config_path}", file=sys.stderr)
-        sys.exit(1)
+        raise ImportError(f"Could not load module spec from: {command_config_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -125,6 +127,7 @@ def run_with_hooks(
     command_func,
     command_config_path=None,
     settings_args=None,
+    verbose=False,
     **command_kwargs,
 ):
     """Execute a command wrapped with pre/post hooks from nihdlsettings.py.
@@ -142,17 +145,23 @@ def run_with_hooks(
             ``--set KEY=VALUE`` options), exposed to hooks as ``context.settings``.
             Kept separate from command_kwargs so it is never forwarded to the
             command function.
+        verbose: When True, enable detailed reporter output for this command.
+            Only ever turns verbosity on, so a global ``nihdl -v`` flag is not
+            overridden by a command-level default.
         **command_kwargs: Keyword arguments to pass to the command function.
 
     Returns:
         The return value of the command function.
     """
+    if verbose:
+        reporter.set_verbose(True)
+    # Start each command with a clean problem log so the end-of-command summary
+    # reflects only this invocation (matters when commands chain in-process).
+    reporter.reset()
+
     # Resolve the config module path
     if command_config_path is None:
         command_config_path = os.path.join(os.getcwd(), "nihdlsettings.py")
-
-    # Load the config module
-    module = _load_config_module(command_config_path)
 
     # Build context
     context = CommandContext(command_name, command_kwargs, settings_args=settings_args)
@@ -161,25 +170,41 @@ def run_with_hooks(
     # passed to setters resolve correctly.
     config_dir = os.path.dirname(os.path.abspath(command_config_path))
     original_dir = os.getcwd()
-    os.chdir(config_dir)
+
     try:
-        _call_hook(module, "pre_all", context)
-        _call_hook(module, f"pre_{command_name}", context)
+        # Load the config module
+        module = _load_config_module(command_config_path)
+
+        # Pre hooks run from the settings file's directory.
+        os.chdir(config_dir)
+        try:
+            _call_hook(module, "pre_all", context)
+            _call_hook(module, f"pre_{command_name}", context)
+        finally:
+            os.chdir(original_dir)
+
+        # Inject pre-loaded config into command kwargs
+        command_kwargs["config"] = context.config
+
+        # Execute the command from the original working directory
+        context.result = command_func(**command_kwargs)
+
+        # Post hooks run from the settings file's directory
+        os.chdir(config_dir)
+        try:
+            _call_hook(module, f"post_{command_name}", context)
+            _call_hook(module, "post_all", context)
+        finally:
+            os.chdir(original_dir)
+    except Exception as e:
+        # Record the terminal failure so it appears in the same end-of-run
+        # roll-up as any warnings/errors collected during the command, then
+        # re-raise so the CLI still exits non-zero.
+        reporter.error(f"Error: {str(e)}")
+        raise
     finally:
-        os.chdir(original_dir)
-
-    # Inject pre-loaded config into command kwargs
-    command_kwargs["config"] = context.config
-
-    # Execute the command from the original working directory
-    context.result = command_func(**command_kwargs)
-
-    # Post hooks run from the settings file's directory
-    os.chdir(config_dir)
-    try:
-        _call_hook(module, f"post_{command_name}", context)
-        _call_hook(module, "post_all", context)
-    finally:
-        os.chdir(original_dir)
+        # Always recap captured warnings/errors so they are not lost in a
+        # stream of status output, even when the command raised.
+        reporter.summary()
 
     return context.result

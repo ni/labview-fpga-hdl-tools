@@ -22,6 +22,7 @@ import traceback
 import xml.etree.ElementTree as ET  # noqa: N817
 
 from . import common
+from .reporting import reporter
 
 INVALID_LV_DATA_TYPE = "INVALID_LV_DATA_TYPE"
 
@@ -218,14 +219,14 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, clip_output_csv):
             # Find signals
             signals = _findall_case_insensitive(lv_interface, ".//SignalList/Signal")
             if not signals:
-                print("Warning: No signals found in the LabVIEW interface")
+                reporter.warn("Warning: No signals found in the LabVIEW interface")
 
             # Process each signal
             for signal in signals:
                 # Get signal name - try both "Name" and "name" attributes
                 name = _get_attribute_case_insensitive(signal, "Name")
                 if not name:
-                    print("Warning: Signal without a name found, skipping")
+                    reporter.warn("Warning: Signal without a name found, skipping")
                     continue
 
                 # Format LabVIEW name
@@ -284,10 +285,10 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, clip_output_csv):
                     ]
                 )
 
-        print(f"Processed XML file: {input_xml_path}")
+        reporter.detail(f"Processed XML file: {input_xml_path}")
 
     except Exception as e:
-        print(f"Error processing XML: {str(e)}")
+        reporter.error(f"Error processing XML: {str(e)}")
         traceback.print_exc()
 
 
@@ -335,10 +336,10 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
         with open(long_clip_output_csv, "w", encoding="utf-8") as outfile:
             outfile.write(updated_content)
 
-        print(f"Processed XDC file: {file_name}")
+        reporter.detail(f"Processed XDC file: {file_name}")
 
     except Exception as e:
-        print(f"Error processing XDC file {os.path.basename(input_xml_path)}: {str(e)}")
+        reporter.error(f"Error processing XDC file {os.path.basename(input_xml_path)}: {str(e)}")
         traceback.print_exc()
 
 
@@ -369,19 +370,19 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
             tree = ET.parse(input_xml_path)
             root = tree.getroot()
         except ET.ParseError as e:
-            print(f"Error parsing XML file: {e}")
+            reporter.error(f"Error parsing XML file: {e}")
             return False, [f"Critical error: {str(e)}"]
 
         # Find LabVIEW interface
         lv_interface = _find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
         if lv_interface is None:
-            print(f"No LabVIEW interface found in {input_xml_path}")
+            reporter.error(f"No LabVIEW interface found in {input_xml_path}")
             return False, [f"No LabVIEW interface found in {input_xml_path}"]
 
         # Find signals
         signals = _findall_case_insensitive(lv_interface, ".//SignalList/Signal")
         if not signals:
-            print("Warning: No signals found in the LabVIEW interface")
+            reporter.warn("Warning: No signals found in the LabVIEW interface")
             return False, ["No signals found in the LabVIEW interface"]
 
         # Open output file for writing VHDL signal declarations
@@ -424,11 +425,11 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
                 signal_decl = f"signal {hdl_name} : {vhdl_type};"
                 f.write(f"{signal_decl} {signal_comment}\n")
 
-        print(f"Generated VHDL signal declarations: {output_vhdl_path}")
+        reporter.detail(f"Generated VHDL signal declarations: {output_vhdl_path}")
         return True, validation_errors
 
     except Exception as e:
-        print(f"Error generating CLIP to Window signals: {e}")
+        reporter.error(f"Error generating CLIP to Window signals: {e}")
         traceback.print_exc()
         return False, [f"Critical error: {str(e)}"]
 
@@ -644,7 +645,7 @@ def migrate_clip(config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Handle long paths on Windows - fixes path length limitations
@@ -672,14 +673,14 @@ def migrate_clip(config=None):
 
     # Report any validation errors at the end
     if validation_errors:
-        print("\n" + "=" * 80)
-        print("ERRORS: The following validation errors were found:")
+        reporter.detail("\n" + "=" * 80)
+        reporter.error("ERRORS: The following validation errors were found:")
         for error in validation_errors:
-            print(f"  - {error}")
-        print("\nThe migration files were generated but may contain incorrect values.")
-        print("Please correct these errors and run the migration again.")
-        print("=" * 80)
+            reporter.error(f"  - {error}")
+        reporter.error("\nThe migration files were generated but may contain incorrect values.")
+        reporter.error("Please correct these errors and run the migration again.")
+        reporter.detail("=" * 80)
         return 1
 
-    print("CLIP migration completed successfully.")
+    reporter.success("CLIP migration completed successfully.")
     return 0

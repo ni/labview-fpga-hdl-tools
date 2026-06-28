@@ -16,16 +16,42 @@ bitfile — and to build hybrid LabVIEW + HDL targets.
 
 ## Prerequisites
 
-From a target folder that contains `nihdlsettings.py` (for example,
-`c:/dev/github8/flexrio-custom/targets/pxie-7986custom`), install dependencies:
+### External tools
+
+You need the external tools your flow uses:
+
+- **Vivado** — for `gen-vivado`, `check-vivado`, and `compile-vivado` (use the
+  version your FlexRIO release targets).
+- **LabVIEW + LabVIEW FPGA** and the **LabVIEW FPGA Compilation Tool for
+  Vivado** — for `gen-lvbitx` and custom LabVIEW FPGA targets.
+- **ModelSim** — only for simulation (`gen-modelsim`, `sim-modelsim`,
+  `launch-modelsim`).
+- **Git** and **Python** (Python 3.11 is the officially tested version).
+
+### Installing the tools
+
+`nihdl` is published to [PyPI](https://pypi.org/project/labview-fpga-hdl-tools)
+and is normally installed into a per-target Python virtual environment by the
+host repository's setup script. From a target folder that contains
+`nihdlsettings.py` (for example,
+`c:/dev/github/flexrio-custom/targets/pxie-7903custom`), run:
 
 ```bash
-pip install -r requirements.txt
+nisetup
 ```
 
-You will also need the external tools your flow uses — typically Vivado, and
-(for `gen-lvbitx` / custom targets) a LabVIEW FPGA install. ModelSim is only
-needed for simulation.
+This creates and activates a virtual environment and installs the version of
+`labview-fpga-hdl-tools` pinned in the repository's `dependencies.toml`. Re-run
+`nisetup` in every new terminal — the environment is only active for the current
+session, and you'll see the environment name (for example, `(flexrio-custom)`)
+in your prompt when it is active.
+
+To install the package directly instead (for example, outside a flexrio-custom
+checkout):
+
+```bash
+pip install labview-fpga-hdl-tools
+```
 
 ## Required Files
 
@@ -45,9 +71,17 @@ All `nihdl` commands are run from the target folder unless noted otherwise:
 nihdl --help
 ```
 
+By default `nihdl` prints results inline and collects any warnings and errors
+into a single summary at the end. Add `-v` (`--verbose`) to any command for full
+step-by-step status with warnings and errors also shown inline; the end summary
+still appears, so verbose is additive to the default. See the
+[Command Reference](docs/CommandReference.md#output-and-verbosity) for details.
+
 ## Quickstart: HDL to Bitfile
 
-Run these from your target folder (the one with `nihdlsettings.py`):
+Run these from your target folder (the one with `nihdlsettings.py`), with the
+Python environment active (run `nisetup` once per terminal — see
+[Prerequisites](#prerequisites)):
 
 ```bash
 # 1. Pull in GitHub dependencies declared in dependencies.toml

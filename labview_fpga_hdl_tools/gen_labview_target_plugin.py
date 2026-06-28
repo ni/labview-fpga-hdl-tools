@@ -20,7 +20,6 @@ import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
 import re
 import shutil  # For file copying operations
-import sys  # For command-line arguments and error handling
 import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
 from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
@@ -29,6 +28,7 @@ from mako.template import Template  # For template-based file generation  # type
 from . import common  # For shared utilities across tools
 from . import generate_vhdl  # For generated VHDL file generation
 from . import process_constraints  # For shared constraint macro replacement
+from .reporting import reporter
 
 # Constants
 BOARDIO_WRAPPER_NAME = "BoardIO"  # Top-level wrapper name in the BoardIO XML hierarchy
@@ -140,7 +140,7 @@ def _write_tree_to_xml(root, output_file):
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(pretty_xml)
 
-    print(f"XML written to {output_file}")
+    reporter.detail(f"XML written to {output_file}")
 
 
 def _get_or_create_resource_list(parent, name):
@@ -326,7 +326,7 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                                     "true" if "Unsigned" in data_type else "false",
                                 )
                             except Exception as e:
-                                print(f"Error parsing FXP parameters for {lv_name}: {e}")
+                                reporter.error(f"Error parsing FXP parameters for {lv_name}: {e}")
                     else:
                         # Add validation error for invalid signal type
                         error = f"Row {row_count}: Invalid signal type '{data_type}' for signal '{lv_name}'. Valid types: {', '.join(DATA_TYPE_PROTOTYPES.keys())}"
@@ -343,8 +343,7 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
         return None
 
     except Exception as e:
-        print(f"Error generating XML from CSV: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate XML from CSV: {e}") from e
 
 
 def _generate_target_xml(
@@ -419,7 +418,7 @@ def _generate_target_xml(
             template_basename = os.path.basename(template_path)
             # Remove the .mako extension to get the output filename
             output_filename = template_basename[:-5]
-            print(f"Processing template: {template_path} -> {output_filename}")
+            reporter.detail(f"Processing template: {template_path} -> {output_filename}")
 
             # Form full output path
             current_output_path = os.path.join(output_folder, output_filename)
@@ -458,14 +457,14 @@ def _generate_target_xml(
                     elif severity == "warning":
                         register_warnings.append(message)
 
-                print(f"Generated Target XML file: {current_output_path}")
+                reporter.detail(f"Generated Target XML file: {current_output_path}")
 
             except Exception as e:
-                print(f"Error processing template {template_path}: {e}")
+                register_errors.append(f"Error processing template {template_path}: {e}")
+                reporter.error(f"Error processing template {template_path}: {e}")
 
     except Exception as e:
-        print(f"Error generating Target XML: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate Target XML: {e}") from e
 
     return register_warnings, register_errors
 
@@ -480,14 +479,14 @@ def _copy_fpgafiles(
 ):
     """Copy HDL files to the FPGA files destination folder."""
     # Get all HDL files from file lists
-    print(f"Reading HDL file lists from: {hdl_file_lists}")
+    reporter.detail(f"Reading HDL file lists from: {hdl_file_lists}")
     file_list = common.get_vivado_project_files(hdl_file_lists)
 
     # Add constraints XDC files listed in the config file
     if lv_target_constraints:
         file_list = file_list + [common.fix_file_slashes(file) for file in lv_target_constraints]
 
-    print(f"Found {len(file_list)} files in HDL file lists")
+    reporter.detail(f"Found {len(file_list)} files in HDL file lists")
 
     # Verify required parameters are not None
     if plugin_folder is None:
@@ -512,14 +511,14 @@ def _copy_fpgafiles(
             with open(exclude_path, "r", encoding="utf-8") as f:
                 entries = [line.strip() for line in f if line.strip()]
             exclude_file_set.update(entries)
-            print(f"Loaded {len(entries)} files to exclude from {exclude_path}")
+            reporter.detail(f"Loaded {len(entries)} files to exclude from {exclude_path}")
         else:
-            print(f"Exclude file list not found: {exclude_path}")
+            reporter.warn(f"Exclude file list not found: {exclude_path}")
     exclude_file_list = exclude_file_set
     if not exclude_file_list:
-        print("No exclude file lists provided or none found")
+        reporter.detail("No exclude file lists provided or none found")
     else:
-        print(f"Total unique files to exclude: {len(exclude_file_list)}")
+        reporter.detail(f"Total unique files to exclude: {len(exclude_file_list)}")
 
     for file in file_list:
         # Get the base filename
@@ -542,7 +541,7 @@ def _copy_fpgafiles(
             if file and target_path:
                 shutil.copy2(file, target_path)
             else:
-                print(
+                reporter.warn(
                     f"Warning: Cannot copy file, path is None: file_path={file}, target_path={target_path}"
                 )
 
@@ -551,7 +550,7 @@ def _copy_menu_files(plugin_folder, menus_folder):
     """Copy other files needed to make the plugin folder work."""
     common_plugin_src = menus_folder
 
-    print(f"Copying common plugin files from {common_plugin_src} to {plugin_folder}")
+    reporter.detail(f"Copying common plugin files from {common_plugin_src} to {plugin_folder}")
 
     # Add check before os.walk
     if common_plugin_src:
@@ -572,7 +571,7 @@ def _copy_menu_files(plugin_folder, menus_folder):
                 if src_file is not None and dst_file is not None:
                     shutil.copy2(src_file, dst_file)
                 else:
-                    print(
+                    reporter.warn(
                         f"Warning: Cannot copy file, path is None: src_file={src_file}, dst_file={dst_file}"
                     )
 
@@ -586,11 +585,11 @@ def _copy_targetinfo_ini(plugin_folder, targetinfo_path):
         targetinfo_dst = os.path.join(plugin_folder, "TargetInfo.ini")
         try:
             shutil.copy2(targetinfo_src, targetinfo_dst)
-            print(f"Copied TargetInfo.ini to {plugin_folder}")
+            reporter.detail(f"Copied TargetInfo.ini to {plugin_folder}")
         except Exception as e:
-            print(f"Error copying TargetInfo.ini: {e}")
+            reporter.error(f"Error copying TargetInfo.ini: {e}")
     else:
-        print("Warning: Could not resolve path to TargetInfo.ini")
+        reporter.warn("Warning: Could not resolve path to TargetInfo.ini")
 
 
 def _validate_ini(config):
@@ -695,7 +694,7 @@ def gen_lv_target_support(config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Clean fpga plugins folder
@@ -762,32 +761,34 @@ def gen_lv_target_support(config=None):
     _copy_targetinfo_ini(config.lv_target_plugin_output_folder, config.lv_target_info_ini)
 
     if register_space_warnings:
-        print("\n" + "!" * 80)
-        print("!!! WARNING SUMMARY: HDL/LabVIEW register-space usage is high !!!")
+        reporter.warn("\n" + "!" * 80)
+        reporter.warn("!!! WARNING SUMMARY: HDL/LabVIEW register-space usage is high !!!")
         for warning in register_space_warnings:
-            print(f"  ! WARNING: {warning}")
-        print("!" * 80)
+            reporter.warn(f"  ! WARNING: {warning}")
+        reporter.warn("!" * 80)
 
     if register_space_errors:
-        print("\n" + "#" * 80)
-        print("### ERROR SUMMARY: HDL/LabVIEW register-space overflow detected ###")
+        reporter.detail("\n" + "#" * 80)
+        reporter.error("### ERROR SUMMARY: HDL/LabVIEW register-space overflow detected ###")
         for error in register_space_errors:
-            print(f"  # ERROR: {error}")
-        print("#" * 80)
+            reporter.error(f"  # ERROR: {error}")
+        reporter.detail("#" * 80)
 
     # Report validation errors at the end
     if has_validation_errors:
-        print("\n" + "=" * 80)
-        print("ERRORS: The following validation errors were found in your signal definitions:")
+        reporter.detail("\n" + "=" * 80)
+        reporter.error(
+            "ERRORS: The following validation errors were found in your signal definitions:"
+        )
         for error in validation_errors:
-            print(f"  - {error}")
-        print("\nThe target files were generated but may contain incorrect values.")
-        print("Please correct these errors in your CSV file and regenerate.")
-        print("=" * 80)
+            reporter.error(f"  - {error}")
+        reporter.error("\nThe target files were generated but may contain incorrect values.")
+        reporter.error("Please correct these errors in your CSV file and regenerate.")
+        reporter.detail("=" * 80)
         return 1
 
     if register_space_errors:
         return 1
 
-    print("Target support file generation complete.")
+    reporter.success("Target support file generation complete.")
     return 0

@@ -11,6 +11,7 @@ import subprocess
 
 from . import common
 from .create_modelsim_project import _get_vsim_executable
+from .reporting import reporter
 
 
 def _validate_ini(config):
@@ -56,13 +57,13 @@ def launch_modelsim(batch=False, config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
 
     if not os.path.isdir(project_dir):
-        print(
+        reporter.error(
             f"Error: ModelSim project directory not found: {project_dir}\n"
             f"Run 'nihdl create-modelsim' first to create the project."
         )
@@ -77,7 +78,7 @@ def launch_modelsim(batch=False, config=None):
 
     do_path = os.path.join(project_dir, do_file)
     if not os.path.exists(do_path):
-        print(
+        reporter.error(
             f"Error: .do file not found: {do_path}\n"
             f"Run 'nihdl create-modelsim' to regenerate the project."
         )
@@ -85,26 +86,26 @@ def launch_modelsim(batch=False, config=None):
 
     vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
     if not vsim_exe or not os.path.exists(vsim_exe):
-        print(f"Error: vsim executable not found at {vsim_exe}")
+        reporter.error(f"Error: vsim executable not found at {vsim_exe}")
         return 1
 
-    print(f"Launching ModelSim from: {vsim_exe}")
-    print(f"Do file: {do_file}")
-    print(f"Working directory: {project_dir}")
+    reporter.detail(f"Launching ModelSim from: {vsim_exe}")
+    reporter.detail(f"Do file: {do_file}")
+    reporter.detail(f"Working directory: {project_dir}")
 
     if config.skip_modelsim:
-        print("SKIP MODELSIM: Validation successful, skipping ModelSim launch")
+        reporter.success("SKIP MODELSIM: Validation successful, skipping ModelSim launch")
         return 0
 
     if batch:
         # Batch mode: run vsim -c -do <script> and wait for completion
         cmd = [vsim_exe, "-c", "-do", do_file]
-        print(f"Running batch simulation...")
+        reporter.detail(f"Running batch simulation...")
         result = subprocess.run(cmd, cwd=project_dir)
         if result.returncode != 0:
-            print(f"Error: Simulation failed (exit code {result.returncode})")
+            reporter.error(f"Error: Simulation failed (exit code {result.returncode})")
             return result.returncode
-        print("Simulation completed successfully")
+        reporter.success("Simulation completed successfully")
     else:
         # GUI mode: launch vsim detached
         if platform.system() == "Windows":
@@ -121,9 +122,9 @@ def launch_modelsim(batch=False, config=None):
             return_code = 0
 
         if return_code != 0:
-            print(f"Error: Failed to launch ModelSim (exit code {return_code})")
+            reporter.error(f"Error: Failed to launch ModelSim (exit code {return_code})")
             return return_code
 
-        print("ModelSim launched successfully")
+        reporter.success("ModelSim launched successfully")
 
     return 0

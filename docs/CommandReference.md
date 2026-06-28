@@ -11,6 +11,40 @@ All commands require a `nihdlsettings.py` file in the current directory (or one
 specified via `--config`). Run any command with `--help` for its options, and
 `nihdl --help` for the full grouped command list.
 
+## Output and Verbosity
+
+By default, `nihdl` keeps the console quiet: it prints **results** (pass/fail
+and completion lines) as they happen. Step-by-step status is suppressed, and
+warnings and errors are not shown inline — they are collected and printed once
+in an aggregated summary at the end.
+
+Use `-v` / `--verbose` to see the full detailed status, with each warning and
+error printed inline where it occurs. The flag works in either position:
+
+```bash
+nihdl -v compile-vivado      # global position
+nihdl compile-vivado -v      # after the command
+```
+
+Each warning and error is always recapped in the end summary. The difference is
+whether it *also* appears inline:
+
+- **Default (normal):** only in the grouped `Summary:` block at the end (on
+  `stderr`).
+- **Verbose:** inline where it occurs (on `stderr`) **and** in the end summary.
+  Verbose is additive, so a problem may appear twice.
+
+Because results go to `stdout` and warnings/errors/summary go to `stderr`, you
+can separate them, for example:
+
+```bash
+nihdl compile-vivado 2> errors.log
+```
+
+`-v` / `--verbose` is available on every command, alongside `--config` and
+`--set KEY=VALUE`. See [Output Verbosity Examples](VerbosityExamples.md) for
+side-by-side captured output.
+
 ## Command Flow
 
 Most commands chain into a build flow. Some commands run others automatically:
@@ -90,6 +124,7 @@ flowchart LR
 ## Common Command Notes
 
 - All commands require `nihdlsettings.py` in the current directory (or specified via `--config`).
+- By default only results are shown inline; warnings and errors are collected into one summary at the end. Pass `-v`/`--verbose` for detailed status with warnings and errors also shown inline (the end summary still appears — verbose is additive). See [Output and Verbosity](#output-and-verbosity).
 - Use `set_skip_vivado(True)` / `set_skip_modelsim(True)` in `nihdlsettings.py` to validate settings without launching external tools.
 - install-deps and gen-guid do not need most settings (but still require `nihdlsettings.py`).
 - install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.

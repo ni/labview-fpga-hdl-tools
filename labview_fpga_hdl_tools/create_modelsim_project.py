@@ -12,6 +12,7 @@ import subprocess
 
 from . import common
 from . import generate_vhdl
+from .reporting import reporter
 
 
 def _validate_ini(config):
@@ -106,7 +107,7 @@ def _get_modelsim_tool(modelsim_path, tool_name):
 def _run_modelsim_tool(tool_path, args, cwd=None):
     """Run a ModelSim tool and return output."""
     cmd = [tool_path] + args
-    print(f"  Running: {os.path.basename(tool_path)} {' '.join(args)}")
+    reporter.detail(f"  Running: {os.path.basename(tool_path)} {' '.join(args)}")
     result = subprocess.run(
         cmd,
         cwd=cwd,
@@ -166,15 +167,19 @@ def _create_modelsim_ini(modelsim_install_path, project_dir):
     with open(dst_ini, "w") as f:
         f.write(content)
 
-    print(f"  Created modelsim.ini from {src_ini}")
+    reporter.detail(f"  Created modelsim.ini from {src_ini}")
     return dst_ini
 
 
 def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_folder):
     """Add Xilinx simulation library mappings to modelsim.ini."""
     if not xilinx_sim_lib_folder or not os.path.isdir(xilinx_sim_lib_folder):
-        print(f"  WARNING: Xilinx simulation library path not found: {xilinx_sim_lib_folder}")
-        print("  Skipping Xilinx library mappings. Simulation of Xilinx primitives may fail.")
+        reporter.warn(
+            f"  WARNING: Xilinx simulation library path not found: {xilinx_sim_lib_folder}"
+        )
+        reporter.detail(
+            "  Skipping Xilinx library mappings. Simulation of Xilinx primitives may fail."
+        )
         return
 
     # Enumerate the compiled library directories
@@ -185,7 +190,7 @@ def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_folder):
             lib_dirs.append(entry)
 
     if not lib_dirs:
-        print(f"  WARNING: No library directories found in {xilinx_sim_lib_folder}")
+        reporter.warn(f"  WARNING: No library directories found in {xilinx_sim_lib_folder}")
         return
 
     # Use forward slashes for ModelSim paths
@@ -218,7 +223,7 @@ def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_folder):
     with open(ini_path, "w") as f:
         f.write(content)
 
-    print(f"  Added {len(lib_dirs)} Xilinx library mappings")
+    reporter.detail(f"  Added {len(lib_dirs)} Xilinx library mappings")
 
 
 def _get_vhdl_files_from_lists(file_lists):
@@ -260,10 +265,10 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files):
             fout.write(f'"{common.fix_file_slashes(f)}"\n')
 
     if not all_files:
-        print("  No VHDL files to compile.")
+        reporter.detail("  No VHDL files to compile.")
         return
 
-    print(f"\n  Compiling {len(all_files)} VHDL files (-autoorder -2008)...")
+    reporter.detail(f"\n  Compiling {len(all_files)} VHDL files (-autoorder -2008)...")
 
     base_args = ["-work", "work", "-autoorder", "-2008", "-explicit", "-quiet", "-nowarn", "5"]
 
@@ -274,7 +279,7 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files):
         if not os.path.exists(abs_path):
             check_path = common.handle_long_path(abs_path)
             if not os.path.exists(check_path):
-                print(f"  WARNING: File not found, skipping: {filepath}")
+                reporter.warn(f"  WARNING: File not found, skipping: {filepath}")
                 continue
         resolved_files.append(common.fix_file_slashes(abs_path))
 
@@ -283,8 +288,8 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files):
     try:
         _run_modelsim_tool(vcom_path, args, cwd=project_dir)
     except RuntimeError as e:
-        print(f"  ERROR during compilation:")
-        print(f"    {e}")
+        reporter.error(f"  ERROR during compilation:")
+        reporter.error(f"    {e}")
         raise
 
 
@@ -314,7 +319,7 @@ add wave -r /*
     with open(do_path, "w") as f:
         f.write(do_content)
 
-    print(f"  Generated {do_filename}")
+    reporter.detail(f"  Generated {do_filename}")
     return do_filename
 
 
@@ -343,7 +348,7 @@ quit -f
     with open(do_path, "w") as f:
         f.write(do_content)
 
-    print(f"  Generated {do_filename}")
+    reporter.detail(f"  Generated {do_filename}")
     return do_filename
 
 
@@ -361,7 +366,7 @@ def create_modelsim_project(overwrite=False, config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
@@ -378,7 +383,7 @@ def create_modelsim_project(overwrite=False, config=None):
                 try:
                     os.rename(transcript_path, temp_path)
                 except (PermissionError, OSError):
-                    print(
+                    reporter.error(
                         f"Error: The ModelSim project appears to be open in another process.\n"
                         f"Close ModelSim and try again.\n"
                         f"  Locked file: {transcript_path}"
@@ -386,28 +391,30 @@ def create_modelsim_project(overwrite=False, config=None):
                     return 1
                 else:
                     os.rename(temp_path, transcript_path)
-            print(f"Removing existing ModelSim project: {project_dir}")
+            reporter.detail(f"Removing existing ModelSim project: {project_dir}")
             shutil.rmtree(project_dir)
         else:
-            print(
+            reporter.error(
                 f"Error: ModelSim project already exists at {project_dir}\n"
                 f"Use --overwrite to recreate it."
             )
             return 1
 
-    print(f"\nCreating ModelSim project for entity '{entity_name}'")
-    print(f"Project directory: {project_dir}")
+    reporter.detail(f"\nCreating ModelSim project for entity '{entity_name}'")
+    reporter.detail(f"Project directory: {project_dir}")
     os.makedirs(project_dir, exist_ok=True)
 
     if config.skip_modelsim:
-        print("\nSKIP MODELSIM: Validation successful, skipping ModelSim project creation")
+        reporter.detail(
+            "\nSKIP MODELSIM: Validation successful, skipping ModelSim project creation"
+        )
         return 0
 
     # Step 0: Generate all configured VHDL from Mako templates (the
     # PkgNiHdlSettings single-source-of-truth package and any other generated
     # design sources). The simulation flow validates that every listed source
     # file exists, so this must run before gathering source files.
-    print("\nStep 0: Generating VHDL from templates...")
+    reporter.detail("\nStep 0: Generating VHDL from templates...")
     if generate_vhdl.gen_generated_vhdl(config=config) != 0:
         return 1
 
@@ -416,24 +423,26 @@ def create_modelsim_project(overwrite=False, config=None):
     vcom_path = _get_modelsim_tool(modelsim_install, "vcom")
 
     # Step 1: Create modelsim.ini
-    print("\nStep 1: Creating modelsim.ini...")
+    reporter.detail("\nStep 1: Creating modelsim.ini...")
     ini_path = _create_modelsim_ini(modelsim_install, project_dir)
 
     # Step 2: Add Xilinx simulation library mappings
     xilinx_sim_lib = config.xilinx_sim_lib_folder
     if xilinx_sim_lib:
-        print("\nStep 2: Adding Xilinx simulation library mappings...")
+        reporter.detail("\nStep 2: Adding Xilinx simulation library mappings...")
         _add_xilinx_library_mappings(ini_path, xilinx_sim_lib)
     else:
-        print("\nStep 2: Skipping Xilinx library mappings (XilinxSimLibFolder not configured)")
+        reporter.detail(
+            "\nStep 2: Skipping Xilinx library mappings (XilinxSimLibFolder not configured)"
+        )
 
     # Step 3: Create work library
-    print("\nStep 3: Creating work library...")
+    reporter.detail("\nStep 3: Creating work library...")
     _run_modelsim_tool(vlib_path, ["work"], cwd=project_dir)
-    print("  Created work library")
+    reporter.detail("  Created work library")
 
     # Step 4: Gather VHDL source files
-    print("\nStep 4: Gathering VHDL source files...")
+    reporter.detail("\nStep 4: Gathering VHDL source files...")
 
     # Use ModelSimFilesLists if configured, otherwise fall back to VivadoProjectFilesLists
     file_lists = config.modelsim_file_lists if config.modelsim_file_lists else config.hdl_file_lists
@@ -454,35 +463,35 @@ def create_modelsim_project(overwrite=False, config=None):
     all_paths = std_files + vhdl2008_files
     missing = [f for f in all_paths if not os.path.exists(os.path.abspath(f))]
     if missing:
-        print("ERROR: The following source files were not found:")
+        reporter.error("ERROR: The following source files were not found:")
         for f in missing:
-            print(f"  {f}")
+            reporter.error(f"  {f}")
         return 1
 
-    print(f"  Found {len(std_files)} standard VHDL files")
-    print(f"  Found {len(vhdl2008_files)} VHDL-2008 files")
+    reporter.detail(f"  Found {len(std_files)} standard VHDL files")
+    reporter.detail(f"  Found {len(vhdl2008_files)} VHDL-2008 files")
 
     # Step 5: Compile with vcom -autoorder (automatic dependency resolution)
-    print("\nStep 5: Compiling VHDL files...")
+    reporter.detail("\nStep 5: Compiling VHDL files...")
     try:
         _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files)
     except RuntimeError as e:
-        print(f"\nCompilation failed: {e}")
+        reporter.error(f"\nCompilation failed: {e}")
         return 1
 
     # Step 6: Generate .do files
-    print("\nStep 6: Generating simulation scripts...")
+    reporter.detail("\nStep 6: Generating simulation scripts...")
     _generate_load_do_file(project_dir, entity_name)
     _generate_sim_do_file(project_dir, entity_name)
 
     total_files = len(std_files) + len(vhdl2008_files)
-    print(f"\nModelSim project created successfully!")
-    print(f"  Directory: {project_dir}")
-    print(f"  Files compiled: {total_files}")
-    print(f"\nTo launch ModelSim GUI:")
-    print(f"  nihdl launch-modelsim")
-    print(f"\nOr manually:")
-    print(f"  cd {project_dir}")
-    print(f"  vsim -do load_{entity_name}.do")
+    reporter.success(f"\nModelSim project created successfully!")
+    reporter.detail(f"  Directory: {project_dir}")
+    reporter.detail(f"  Files compiled: {total_files}")
+    reporter.detail(f"\nTo launch ModelSim GUI:")
+    reporter.detail(f"  nihdl launch-modelsim")
+    reporter.detail(f"\nOr manually:")
+    reporter.detail(f"  cd {project_dir}")
+    reporter.detail(f"  vsim -do load_{entity_name}.do")
 
     return 0

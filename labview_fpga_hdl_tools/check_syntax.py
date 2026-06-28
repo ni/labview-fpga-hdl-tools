@@ -9,6 +9,7 @@ import os
 import subprocess
 
 from . import common
+from .reporting import reporter
 
 
 def _generate_check_syntax_tcl(config, output_path):
@@ -136,10 +137,10 @@ def _run_check_syntax(config, generated_tcl_path):
         f'-journal "{journal_path}"'
     )
 
-    print(f"Generated TCL script: {generated_tcl_path}")
-    print(f"Vivado executable: {vivado_abs}")
-    print(f"Working directory: {vivado_project_dir}")
-    print(f"Running command: {command}")
+    reporter.detail(f"Generated TCL script: {generated_tcl_path}")
+    reporter.detail(f"Vivado executable: {vivado_abs}")
+    reporter.detail(f"Working directory: {vivado_project_dir}")
+    reporter.detail(f"Running command: {command}")
 
     result = subprocess.run(command, cwd=vivado_project_dir, shell=True, check=False)
 
@@ -159,7 +160,7 @@ def _run_check_syntax(config, generated_tcl_path):
 
     if status_marker == "PASSED":
         if result.returncode != 0:
-            print(
+            reporter.warn(
                 "Warning: Vivado returned a non-zero exit code "
                 f"({result.returncode}) but NIHDL_CHECK_SYNTAX=PASSED was found."
             )
@@ -191,7 +192,7 @@ def check_syntax(config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     generated_tcl_path = os.path.join(os.getcwd(), "objects", "TCL", "CheckSyntax.tcl")
@@ -199,19 +200,19 @@ def check_syntax(config=None):
     try:
         _generate_check_syntax_tcl(config, generated_tcl_path)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     if config.skip_vivado:
-        print(f"Generated TCL script: {generated_tcl_path}")
-        print("SKIP VIVADO: Validation successful, skipping Vivado launch")
+        reporter.detail(f"Generated TCL script: {generated_tcl_path}")
+        reporter.detail("SKIP VIVADO: Validation successful, skipping Vivado launch")
         return 0
 
     try:
         _run_check_syntax(config, generated_tcl_path)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
-    print("Vivado syntax check completed successfully.")
+    reporter.success("Vivado syntax check completed successfully.")
     return 0

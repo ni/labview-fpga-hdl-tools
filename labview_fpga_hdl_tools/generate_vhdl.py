@@ -20,11 +20,11 @@ Vivado/ModelSim project flows.
 
 import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
-import sys  # For error handling
 
 from mako.template import Template  # For template-based file generation  # type: ignore
 
 from . import common  # For shared utilities across tools
+from .reporting import reporter
 
 
 def _ensure_text(value):
@@ -70,7 +70,7 @@ def _map_datatype_to_vhdl(data_type):
             total_width = array_size * element_width
             return f"std_logic_vector({total_width - 1} downto 0)"
         except Exception as e:
-            print(f"Error parsing array type: {data_type}, error: {e}")
+            reporter.error(f"Error parsing array type: {data_type}, error: {e}")
             return "INVALID_ARRAY_DATA_TYPE"
 
     else:
@@ -123,7 +123,7 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
         output_path (str): Path where the signal assignments file will be written
 
     Raises:
-        SystemExit: If an error occurs during example generation
+        RuntimeError: If an error occurs during example generation
     """
     try:
         signals = _get_board_io_signals(csv_path)
@@ -139,11 +139,10 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(assignments))
 
-        print(f"Generated Board IO signal assignments: {output_path}")
+        reporter.detail(f"Generated Board IO signal assignments: {output_path}")
 
     except Exception as e:
-        print(f"Error generating Board IO signal assignments: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate Board IO signal assignments: {e}") from e
 
 
 def _get_num_fixed_logic_dma_streams(target_family):
@@ -234,7 +233,7 @@ def _render_generated_vhdl(template_paths, output_folder, context):
             )
             output_path = os.path.join(output_folder, output_filename)
 
-            print(f"Processing template: {template_path} -> {output_path}")
+            reporter.detail(f"Processing template: {template_path} -> {output_path}")
 
             with open(template_path, "r", encoding="utf-8") as f:
                 template = Template(f.read())
@@ -244,11 +243,10 @@ def _render_generated_vhdl(template_paths, output_folder, context):
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(_ensure_text(output_text))
 
-            print(f"Generated VHDL file: {output_path}")
+            reporter.detail(f"Generated VHDL file: {output_path}")
 
     except Exception as e:
-        print(f"Error generating VHDL from template: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate VHDL from template: {e}") from e
 
 
 def _validate_generated_vhdl_settings(config):
@@ -313,15 +311,19 @@ def gen_generated_vhdl(config=None):
         error_msg = common.get_missing_settings_error(missing_settings)
         error_msg += common.get_invalid_paths_error(invalid_paths)
         error_msg += "\nPlease update your configuration file and try again."
-        print(f"Error: {error_msg}")
+        reporter.error(f"Error: {error_msg}")
         return 1
 
     context = _build_generated_vhdl_context(config)
-    _render_generated_vhdl(
-        config.generated_vhdl_templates,
-        config.generated_vhdl_output_folder,
-        context,
-    )
+    try:
+        _render_generated_vhdl(
+            config.generated_vhdl_templates,
+            config.generated_vhdl_output_folder,
+            context,
+        )
+    except Exception as e:
+        reporter.error(f"Error: {e}")
+        return 1
 
-    print("Generated VHDL generation complete.")
+    reporter.success("Generated VHDL generation complete.")
     return 0

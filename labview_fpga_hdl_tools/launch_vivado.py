@@ -10,6 +10,7 @@ import platform
 import subprocess
 
 from . import common
+from .reporting import reporter
 
 
 def _validate_ini(config):
@@ -68,7 +69,7 @@ def launch_vivado(config=None):
     try:
         _validate_ini(config)
     except Exception as e:
-        print(f"Error: {e}")
+        reporter.error(f"Error: {e}")
         return 1
 
     # Change to the VivadoProject directory
@@ -97,13 +98,13 @@ def launch_vivado(config=None):
     project_file = os.path.join(vivado_project_dir, project_arg)
     invalid_path = common.validate_path(project_file, "Vivado project file", "file")
     if invalid_path:
-        print(f"Error: {invalid_path}")
+        reporter.error(f"Error: {invalid_path}")
         return 1
 
     # Print status information
-    print(f"Launching Vivado from: {vivado_abs}")
-    print(f"Project: {project_arg if project_arg else 'None'}")
-    print(f"Working directory: {vivado_project_dir}")
+    reporter.detail(f"Launching Vivado from: {vivado_abs}")
+    reporter.detail(f"Project: {project_arg if project_arg else 'None'}")
+    reporter.detail(f"Working directory: {vivado_project_dir}")
 
     # Verify that the executable exists
     if not os.path.exists(vivado_abs):
@@ -111,7 +112,7 @@ def launch_vivado(config=None):
 
     # In skip_vivado mode, stop here after validation
     if config.skip_vivado:
-        print("SKIP VIVADO: Validation successful, skipping Vivado launch")
+        reporter.success("SKIP VIVADO: Validation successful, skipping Vivado launch")
         return 0
 
     # Launch Vivado
@@ -127,8 +128,8 @@ def launch_vivado(config=None):
         return_code = subprocess.call(cmd, cwd=vivado_project_dir)
 
     if return_code != 0:
-        print(f"Error: Failed to launch Vivado (exit code {return_code})")
+        reporter.error(f"Error: Failed to launch Vivado (exit code {return_code})")
         return return_code
 
-    print("Vivado launched successfully")
+    reporter.success("Vivado launched successfully")
     return 0
