@@ -215,10 +215,25 @@ def _run_compile_simlib(config, tcl_path, out_folder, libraries):
     process.wait()
 
     if process.returncode != 0:
-        raise RuntimeError(
-            "Vivado compile_simlib failed with a non-zero exit code "
-            f"({process.returncode}). See log for details: {log_path}"
+        # compile_simlib returns non-zero if ANY library fails, but it also
+        # compiles many bundled Xilinx IP/VIP libraries we never use (e.g. the
+        # Zynq/Versal processing-system VIPs, which ModelSim PE cannot parse).
+        # Only treat the run as failed if a library we actually requested is
+        # missing; otherwise warn and continue.
+        missing = [lib for lib in libraries if not os.path.isdir(os.path.join(out_folder, lib))]
+        if missing:
+            raise RuntimeError(
+                "Vivado compile_simlib failed and the requested libraries were not "
+                f"produced: {', '.join(missing)} (exit code {process.returncode}). "
+                f"See log for details: {log_path}"
+            )
+        reporter.warn(
+            "compile_simlib reported errors in some bundled Xilinx libraries that "
+            "are not required for this simulation; the requested libraries "
+            f"({', '.join(libraries)}) were built successfully. "
+            f"See {log_path} if you need the details."
         )
+        return
 
     if not _libraries_already_built(out_folder, libraries):
         missing = [lib for lib in libraries if not os.path.isdir(os.path.join(out_folder, lib))]

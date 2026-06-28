@@ -48,6 +48,7 @@ flowchart TD
 
     genv --> tgt[gen-target] --> inst[install-target<br/><i>custom LV FPGA target</i>]
     genv --> sim[gen-modelsim] --> simrun[launch-modelsim / sim-modelsim]
+    simlib[compile-modelsim-lib<br/><i>Xilinx sim libraries</i>] -.auto.-> sim
 
     clip[migrate-clip<br/><i>port existing CLIP</i>] -.-> genv
 ```

@@ -157,7 +157,10 @@ def pre_all(context):
 | `set_vivado_tools_folder(value)` | Vivado installation root containing bin/vivado(.bat). |
 | `set_vivado_tcl_scripts_folder(value)` | Folder with Vivado TCL Mako templates/scripts. |
 | `set_modelsim_tools_folder(value)` | ModelSim installation root directory. |
-| `set_xilinx_sim_lib_folder(value)` | Pre-compiled Xilinx simulation libraries path. |
+| `set_xilinx_sim_lib_folder(value)` | Pre-compiled Xilinx simulation libraries path. Output of compile-modelsim-lib and input to gen-modelsim. |
+| `add_xilinx_sim_library(name)` | Add a Xilinx simulation library to build with compile-modelsim-lib (for example, "unisim"). Repeatable. Defaults to unisim + secureip when none are added. |
+| `set_xilinx_sim_family(value)` | Device family for compile-modelsim-lib (for example, "kintexu"). Defaults to "all", which builds every Xilinx family and can take hours — narrow it to the target family. |
+| `set_xilinx_sim_language(value)` | HDL language for compile-modelsim-lib ("verilog", "vhdl", or "all"). Defaults to "all". |
 | `set_labview_path(value)` | LabVIEW install folder used to locate createBitfile.exe for gen-lvbitx (for example, "C:\Program Files\National Instruments\LabVIEW 2023"). Optional — when unset, the latest installed LabVIEW (2023–2030) is auto-discovered under Program Files. |
 
 **Vivado Project**

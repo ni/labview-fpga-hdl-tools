@@ -25,7 +25,8 @@ You need the external tools your flow uses:
 - **LabVIEW + LabVIEW FPGA** and the **LabVIEW FPGA Compilation Tool for
   Vivado** — for `gen-lvbitx` and custom LabVIEW FPGA targets.
 - **ModelSim** — only for simulation (`gen-modelsim`, `sim-modelsim`,
-  `launch-modelsim`).
+  `launch-modelsim`, `compile-modelsim-lib`). `compile-modelsim-lib` also needs
+  Vivado to compile the Xilinx simulation libraries.
 - **Git** and **Python** (Python 3.11 is the officially tested version).
 
 ### Installing the tools
@@ -118,6 +119,9 @@ nihdl install-target
 
 ```bash
 # Create the ModelSim project and compile all VHDL (vcom -autoorder -2008)
+# When XilinxSimLibFolder is configured, this also compiles the Xilinx
+# simulation libraries (unisim, secureip, ...) on the first run, which can
+# take several minutes. Run it standalone with: nihdl compile-modelsim-lib
 nihdl gen-modelsim
 
 # Launch the GUI, or run headless with --batch

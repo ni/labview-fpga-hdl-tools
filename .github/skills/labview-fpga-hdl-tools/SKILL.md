@@ -16,7 +16,7 @@ Python CLI package (`nihdl`) for automating Vivado FPGA project creation, compil
 | `cli.py` | Click CLI entry point (`@click.group` / `@cli.command`). |
 | `nihdlsettings_default.py` | Template for new nihdlsettings.py files. |
 
-Command modules: `create_vivado_project.py`, `create_lvbitx.py`, `gen_labview_target_plugin.py`, `compile_project.py`, `check_syntax.py`, `get_window_netlist.py`, `process_constraints.py`, `create_modelsim_project.py`, `install_labview_target_plugin.py`, `install_dependencies.py`, `migrate_clip.py`, `launch_vivado.py`, `launch_modelsim.py`, `sim_modelsim.py`.
+Command modules: `create_vivado_project.py`, `create_lvbitx.py`, `gen_labview_target_plugin.py`, `compile_project.py`, `check_syntax.py`, `get_window_netlist.py`, `process_constraints.py`, `create_modelsim_project.py`, `compile_modelsim_lib.py`, `install_labview_target_plugin.py`, `install_dependencies.py`, `migrate_clip.py`, `launch_vivado.py`, `launch_modelsim.py`, `sim_modelsim.py`.
 
 ### Design Philosophy
 
