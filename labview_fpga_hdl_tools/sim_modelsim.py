@@ -113,9 +113,9 @@ def sim_modelsim(do_file=None, config=None):
     reporter.detail(f"\nRunning simulation...")
     start_time = time.time()
 
-    # Stream output to console in real time (verbose only) while always
-    # capturing it for the summary and log file. In quiet mode the raw
-    # ModelSim transcript is suppressed so the pass/fail summary stands out.
+    # Stream the ModelSim transcript to the console in real time so progress is
+    # visible while the simulation runs, and always capture it for the summary
+    # and log file.
     output_lines = []
     process = subprocess.Popen(
         cmd,
@@ -126,8 +126,7 @@ def sim_modelsim(do_file=None, config=None):
     )
     if process.stdout:
         for line in process.stdout:
-            if reporter.verbose:
-                sys.stdout.write(line)
+            sys.stdout.write(line)
             output_lines.append(line)
     process.wait()
 
@@ -148,6 +147,12 @@ def sim_modelsim(do_file=None, config=None):
             f"ModelSim simulation FAILED (exit code {process.returncode}). "
             f"See {sim_log_path} for the full transcript."
         )
+        if "failed to access library" in output.lower():
+            reporter.error(
+                "A Xilinx simulation library could not be accessed. "
+                "Run 'nihdl compile-modelsim-lib' to build the libraries, then "
+                "re-run 'nihdl gen-modelsim' before simulating."
+            )
         return process.returncode or 1
 
     return 0

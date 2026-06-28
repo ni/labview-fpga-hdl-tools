@@ -139,6 +139,15 @@ class CommandConfiguration:
     # ----- MODELSIM SETTINGS -----
     modelsim_tools_folder: Optional[str] = None  # Path to ModelSim installation directory
     xilinx_sim_lib_folder: Optional[str] = None  # Path to compiled Xilinx simulation libraries
+    xilinx_sim_libraries: List[str] = field(
+        default_factory=list
+    )  # Xilinx simulation libraries to build with compile-modelsim-lib (e.g. unisim, secureip)
+    xilinx_sim_family: str = (
+        "all"  # Device family for compile-modelsim-lib (e.g. kintexu); "all" is slow
+    )
+    xilinx_sim_language: str = (
+        "all"  # HDL language for compile-modelsim-lib (verilog, vhdl, or all)
+    )
     modelsim_project_folder: Optional[str] = None  # Relative path to ModelSim project folder
     modelsim_entity: Optional[str] = None  # Top-level entity name for ModelSim simulation
     modelsim_file_lists: List[str] = field(
@@ -417,6 +426,32 @@ class CommandConfiguration:
     def set_xilinx_sim_lib_folder(self, value):
         """Set the Xilinx simulation library path (resolved to absolute)."""
         self.xilinx_sim_lib_folder = resolve_path(value)
+
+    def add_xilinx_sim_library(self, value):
+        """Append a Xilinx simulation library name to build (e.g. 'unisim', 'secureip').
+
+        These are logical library names passed to Vivado's compile_simlib, not
+        filesystem paths, so they are stored verbatim without path resolution.
+        """
+        if value is not None and str(value).strip() != "":
+            self.xilinx_sim_libraries.append(str(value).strip())
+
+    def set_xilinx_sim_family(self, value):
+        """Set the device family for compile_simlib (e.g. 'kintexu', or 'all').
+
+        This is a Vivado family keyword, not a path, so it is stored verbatim.
+        Narrowing from 'all' to a single family greatly speeds up compilation.
+        """
+        if value is not None and str(value).strip() != "":
+            self.xilinx_sim_family = str(value).strip()
+
+    def set_xilinx_sim_language(self, value):
+        """Set the HDL language for compile_simlib ('verilog', 'vhdl', or 'all').
+
+        This is a Vivado language keyword, not a path, so it is stored verbatim.
+        """
+        if value is not None and str(value).strip() != "":
+            self.xilinx_sim_language = str(value).strip()
 
     def add_modelsim_file_list(self, value):
         """Append a ModelSim file list path (resolved to absolute)."""

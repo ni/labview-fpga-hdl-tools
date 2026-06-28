@@ -16,6 +16,7 @@ from . import (
     check_syntax,
     command_hooks,
     common,
+    compile_modelsim_lib,
     compile_project,
     create_lvbitx,
     create_modelsim_project,
@@ -502,6 +503,30 @@ def sim_modelsim_cmd(ctx, do_file, config, settings_args, verbose):
         return 1
 
 
+@cli.command(
+    "compile-modelsim-lib",
+    help="Compile the Xilinx ModelSim simulation libraries (unisim, secureip, ...)",
+)
+@click.option("--force", is_flag=True, help="Recompile even if the libraries already exist")
+@hook_options
+@click.pass_context
+def compile_modelsim_lib_cmd(ctx, force, config, settings_args, verbose):
+    """Compile the Xilinx simulation libraries used by ModelSim."""
+    try:
+        result = command_hooks.run_with_hooks(
+            "compile_modelsim_lib",
+            compile_modelsim_lib.compile_modelsim_lib,
+            command_config_path=config,
+            settings_args=_parse_set(settings_args),
+            verbose=verbose,
+            force=force,
+        )
+        return result
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
 # ---------------------------------------------------------------------------
 # CLIP Migration
 # ---------------------------------------------------------------------------
@@ -534,7 +559,10 @@ cli.add_section("Workspace Setup", ["install-deps"])
 cli.add_section("Vivado", ["gen-vivado", "launch-vivado", "check-vivado", "compile-vivado"])
 cli.add_section("HDL Tools", ["gen-window", "gen-hdl", "gen-xdc", "gen-lvbitx"])
 cli.add_section("LabVIEW FPGA Target", ["gen-guid", "gen-target", "install-target"])
-cli.add_section("ModelSim", ["gen-modelsim", "launch-modelsim", "sim-modelsim"])
+cli.add_section(
+    "ModelSim",
+    ["gen-modelsim", "launch-modelsim", "sim-modelsim", "compile-modelsim-lib"],
+)
 cli.add_section("CLIP Migration", ["migrate-clip"])
 
 

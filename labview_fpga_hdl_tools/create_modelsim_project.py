@@ -200,8 +200,9 @@ def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_folder):
         reporter.warn(
             f"  WARNING: Xilinx simulation library path not found: {xilinx_sim_lib_folder}"
         )
-        reporter.detail(
-            "  Skipping Xilinx library mappings. Simulation of Xilinx primitives may fail."
+        reporter.warn(
+            "  Run 'nihdl compile-modelsim-lib' to build the Xilinx simulation libraries, "
+            "otherwise simulation of Xilinx primitives (e.g. unisim) will fail."
         )
         return
 
@@ -214,6 +215,9 @@ def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_folder):
 
     if not lib_dirs:
         reporter.warn(f"  WARNING: No library directories found in {xilinx_sim_lib_folder}")
+        reporter.warn(
+            "  Run 'nihdl compile-modelsim-lib' to build the Xilinx simulation libraries."
+        )
         return
 
     # Use forward slashes for ModelSim paths
@@ -453,6 +457,14 @@ def create_modelsim_project(overwrite=False, config=None):
     xilinx_sim_lib = config.xilinx_sim_lib_folder
     if xilinx_sim_lib:
         reporter.detail("\nStep 2: Adding Xilinx simulation library mappings...")
+        # Ensure the Xilinx libraries exist before mapping them into the .ini.
+        # This is idempotent: once compiled it is a cheap no-op (and does not
+        # even require Vivado). Imported locally to avoid a circular import,
+        # since compile_modelsim_lib imports helpers from this module.
+        from . import compile_modelsim_lib
+
+        if compile_modelsim_lib.compile_modelsim_lib(config=config) != 0:
+            return 1
         _add_xilinx_library_mappings(ini_path, xilinx_sim_lib)
     else:
         reporter.detail(

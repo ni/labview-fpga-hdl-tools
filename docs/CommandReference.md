@@ -111,9 +111,10 @@ flowchart LR
 
 | Command | Purpose | Options |
 | --- | --- | --- |
-| gen-modelsim | Create a ModelSim project for HDL simulation. | --overwrite (-o), --config |
+| gen-modelsim | Create a ModelSim project for HDL simulation (auto-runs compile-modelsim-lib when Xilinx libraries are configured). | --overwrite (-o), --config |
 | launch-modelsim | Launch ModelSim with the current project. | --batch, --config |
 | sim-modelsim | Run a ModelSim simulation with a custom .do file. | --do-file, --config |
+| compile-modelsim-lib | Compile the Xilinx ModelSim simulation libraries (unisim, secureip, ...) with Vivado's compile_simlib. | --force, --config |
 
 ### CLIP Migration
 
@@ -132,6 +133,8 @@ flowchart LR
 - gen-lvbitx locates createBitfile.exe from the LabVIEW install. By default it auto-discovers the latest installed LabVIEW (2023–2030) under Program Files; set `set_labview_path` in `nihdlsettings.py` to override (for example, "C:\Program Files\National Instruments\LabVIEW 2023").
 - gen-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
 - launch-modelsim defaults to GUI mode; use --batch for headless simulation.
+- compile-modelsim-lib wraps Vivado's `compile_simlib` to build the Xilinx simulation libraries (unisim, secureip, ...) into `xilinx_sim_lib_folder`. It is idempotent: if the requested libraries already exist it returns immediately (no Vivado needed) unless `--force` is passed. The compiled libraries are simulator- and device-family specific, so they cannot be committed and must be built on the simulation machine. Narrow `set_xilinx_sim_family` to the target family (for example, "kintexu") so it does not build every Xilinx family, which can take hours. `compile_simlib` also compiles many bundled Xilinx IP/VIP libraries; failures in libraries you did not request (for example the Zynq/Versal processing-system VIPs, which ModelSim PE cannot parse) are reported as a warning and do not fail the command as long as the requested libraries were built.
+- gen-modelsim automatically runs compile-modelsim-lib (the idempotent fast-path) when `xilinx_sim_lib_folder` is configured, then maps the compiled libraries into modelsim.ini. The first run can take many minutes; subsequent runs skip the compile.
 
 ## Per-Command Setting Requirements
 
@@ -153,9 +156,10 @@ one.
 | gen-guid | None | Does not use any settings. |
 | gen-target | `target_family`, `base_target`, `generated_vhdl_templates`, `generated_vhdl_output_folder`, `lv_target_plugin_output_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` ([reference](LVTargetCustomIO-Reference.md)) required when include_custom_io_on_lv_window=True. |
 | install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_output_folder` | Install folder and plugin folder must exist. |
-| gen-modelsim | `top_level_entity`, `hdl_file_lists`, `modelsim_tools_folder` | Uses `modelsim_file_lists` if set, otherwise `hdl_file_lists`. |
+| gen-modelsim | `top_level_entity`, `hdl_file_lists`, `modelsim_tools_folder` | Uses `modelsim_file_lists` if set, otherwise `hdl_file_lists`. Auto-runs compile-modelsim-lib when `xilinx_sim_lib_folder` is set. |
 | launch-modelsim | `top_level_entity`, `modelsim_tools_folder` | Requires existing ModelSim project directory (run gen-modelsim first). |
 | sim-modelsim | `top_level_entity`, `modelsim_tools_folder` | Requires existing ModelSim project directory. |
+| compile-modelsim-lib | `xilinx_sim_lib_folder`, `vivado_tools_folder`, `modelsim_tools_folder` | Validation and Vivado are skipped on the idempotent fast-path when the requested libraries already exist (unless `--force`). |
 | migrate-clip | `clip_input_xml`, `clip_output_csv`, `clip_top_hdl`, `clip_inst_example`, `clip_to_window_signal_definitions` | If `clip_constraints` is set, `clip_entity_path` and `clip_output_xdc_folder` are also required. |
 
 ## Example Usage
@@ -175,6 +179,9 @@ nihdl gen-target
 
 # Create ModelSim project and compile all VHDL
 nihdl gen-modelsim
+
+# Compile the Xilinx simulation libraries on their own (normally automatic)
+nihdl compile-modelsim-lib
 
 # Launch ModelSim GUI
 nihdl launch-modelsim

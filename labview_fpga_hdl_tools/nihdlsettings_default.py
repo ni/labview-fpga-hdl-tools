@@ -37,7 +37,8 @@ Available setters (grouped by section):
 
     Tools:
         set_vivado_tools_folder, set_vivado_tcl_scripts_folder,
-        set_modelsim_tools_folder, set_xilinx_sim_lib_folder
+        set_modelsim_tools_folder, set_xilinx_sim_lib_folder,
+        add_xilinx_sim_library, set_xilinx_sim_family, set_xilinx_sim_language
 
     General Settings:
         set_target_family, set_base_target, set_dependencies
@@ -93,6 +94,13 @@ def pre_all(context):
     config.set_vivado_tcl_scripts_folder("../common/TCL")
     # config.set_modelsim_tools_folder("")
     # config.set_xilinx_sim_lib_folder("")
+    # Xilinx simulation libraries (compile-modelsim-lib / auto-run by gen-modelsim).
+    # Narrow the family to the target device so it does not build every Xilinx
+    # family, which can take hours. Defaults: libraries unisim + secureip,
+    # family "all", language "all".
+    # config.add_xilinx_sim_library("unisim")
+    # config.set_xilinx_sim_family("kintexu")
+    # config.set_xilinx_sim_language("all")
 
     # --- General Settings ---
     config.set_target_family("FlexRIO")
