@@ -8,6 +8,7 @@
 import os
 import re
 import shutil
+import stat
 import subprocess
 
 from . import common, generate_vhdl
@@ -157,9 +158,11 @@ def _create_modelsim_ini(modelsim_install_path, project_dir):
 
     shutil.copy2(src_ini, dst_ini)
 
-    # Remove read-only attribute if present
-    if os.name == "nt":
-        os.chmod(dst_ini, 0o666)
+    # shutil.copy2 preserves the source file's mode. The source modelsim.ini is
+    # often read-only (for example when it is copied from a read-only EDA tools
+    # mount on a Linux build agent), which would make the patch-write below fail
+    # with PermissionError. Ensure the copy is writable on every platform.
+    os.chmod(dst_ini, os.stat(dst_ini).st_mode | stat.S_IWUSR)
 
     # Patch settings for simulation (matching vsmake behavior)
     with open(dst_ini, "r") as f:

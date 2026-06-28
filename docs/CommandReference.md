@@ -122,6 +122,14 @@ flowchart LR
 | --- | --- | --- |
 | migrate-clip | Migrate CLIP assets into top-level HDL workflow artifacts. | --config |
 
+### Tool Info
+
+| Command | Purpose | Options |
+| --- | --- | --- |
+| version | Print the installed labview-fpga-hdl-tools version to stdout. | (none) |
+
+> The version is also available as a global flag: `nihdl --version` (or `-V`).
+
 ## Common Command Notes
 
 - All commands require `nihdlsettings.py` in the current directory (or specified via `--config`).

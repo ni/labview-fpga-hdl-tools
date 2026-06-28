@@ -92,6 +92,13 @@ class SectionGroup(click.Group):
     help=f"LabVIEW FPGA HDL Tools (v{__version__})",
     context_settings={"max_content_width": 120, "terminal_width": 120},
 )
+@click.version_option(
+    __version__,
+    "-V",
+    "--version",
+    prog_name="labview-fpga-hdl-tools",
+    message="%(prog)s %(version)s",
+)
 @click.option(
     "-v",
     "--verbose",
@@ -552,6 +559,18 @@ def migrate_clip_cmd(ctx, config, settings_args, verbose):
 
 
 # ---------------------------------------------------------------------------
+# Tool Info
+# ---------------------------------------------------------------------------
+
+
+@cli.command("version", help="Show the installed labview-fpga-hdl-tools version")
+def version_cmd():
+    """Print the installed labview-fpga-hdl-tools version to stdout."""
+    click.echo(__version__)
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # Section ordering for --help
 # ---------------------------------------------------------------------------
 
@@ -564,6 +583,7 @@ cli.add_section(
     ["gen-modelsim", "launch-modelsim", "sim-modelsim", "compile-modelsim-lib"],
 )
 cli.add_section("CLIP Migration", ["migrate-clip"])
+cli.add_section("Tool Info", ["version"])
 
 
 def handle_exception(e):
