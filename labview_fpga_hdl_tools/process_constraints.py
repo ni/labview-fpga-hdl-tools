@@ -210,10 +210,9 @@ def process_constraints_template(config):
                 from_to_match = re.search(from_to_pattern, constraints_content, re.DOTALL)
 
                 if not period_match or not clip_match or not from_to_match:
-                    reporter.error(
-                        "Error: Could not find one or more marker sections in TheWindowConstraints.xdc"
+                    raise RuntimeError(
+                        "Could not find one or more marker sections in TheWindowConstraints.xdc"
                     )
-                    return
 
                 period_content = period_match.group(1)
                 clip_content = clip_match.group(1)
@@ -225,10 +224,9 @@ def process_constraints_template(config):
                     "current_instance $TopInstance0\n"
                 )
         else:
-            reporter.error(f"TheWindowConstraints.xdc file not found at {window_constraints_path}")
-            period_content = ""
-            clip_content = ""
-            from_to_content = ""
+            raise RuntimeError(
+                f"TheWindowConstraints.xdc file not found at {window_constraints_path}"
+            )
 
     # Read custom constraints file if specified
     custom_constraints_content = load_custom_constraints(config.custom_constraints)

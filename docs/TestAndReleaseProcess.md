@@ -33,7 +33,7 @@ Make the release:
 
 Note: If you are doing a development release, name it 2.5.0.dev0 and set the "Pre-release" label
 
-Run the publish labview-fgpa-hdl-tools action to publish to PyPi:
+Run the publish labview-fpga-hdl-tools action to publish to PyPI:
 - Use workflow from: releases/2.5.0
 - Publish to: pypi
 

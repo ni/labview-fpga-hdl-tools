@@ -20,7 +20,6 @@ import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
 import re
 import shutil  # For file copying operations
-import sys  # For command-line arguments and error handling
 import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
 from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
@@ -344,8 +343,7 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
         return None
 
     except Exception as e:
-        reporter.error(f"Error generating XML from CSV: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate XML from CSV: {e}") from e
 
 
 def _generate_target_xml(
@@ -462,11 +460,11 @@ def _generate_target_xml(
                 reporter.detail(f"Generated Target XML file: {current_output_path}")
 
             except Exception as e:
+                register_errors.append(f"Error processing template {template_path}: {e}")
                 reporter.error(f"Error processing template {template_path}: {e}")
 
     except Exception as e:
-        reporter.error(f"Error generating Target XML: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate Target XML: {e}") from e
 
     return register_warnings, register_errors
 

@@ -58,7 +58,12 @@ class Reporter:
         self.verbose = bool(verbose)
 
     def reset(self):
-        """Clear all captured warnings and errors."""
+        """Clear all captured warnings and errors.
+
+        Only the per-command problem log is cleared. The ``verbose`` setting is
+        intentionally preserved because it is a session-level flag controlled by
+        the CLI (e.g. a global ``nihdl -v``), not per-command state.
+        """
         self._problems = []
 
     def detail(self, message=""):

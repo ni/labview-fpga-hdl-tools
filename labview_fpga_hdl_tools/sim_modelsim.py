@@ -212,7 +212,12 @@ def _print_simulation_summary(output, elapsed, return_code):
     failed = bool(fatals or errors or return_code != 0)
     if failed:
         reporter.success(f"\n  Result:   FAILED")
+        reporter.success(f"{'='*60}")
+        reporter.error(
+            f"ModelSim simulation failed: {len(fatals)} fatal(s), "
+            f"{len(errors)} error(s), return code {return_code}."
+        )
     else:
         reporter.success(f"\n  Result:   PASSED")
-    reporter.success(f"{'='*60}")
+        reporter.success(f"{'='*60}")
     return failed

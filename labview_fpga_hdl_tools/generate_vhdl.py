@@ -20,7 +20,6 @@ Vivado/ModelSim project flows.
 
 import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
-import sys  # For error handling
 
 from mako.template import Template  # For template-based file generation  # type: ignore
 
@@ -124,7 +123,7 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
         output_path (str): Path where the signal assignments file will be written
 
     Raises:
-        SystemExit: If an error occurs during example generation
+        RuntimeError: If an error occurs during example generation
     """
     try:
         signals = _get_board_io_signals(csv_path)
@@ -143,8 +142,7 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
         reporter.detail(f"Generated Board IO signal assignments: {output_path}")
 
     except Exception as e:
-        reporter.error(f"Error generating Board IO signal assignments: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate Board IO signal assignments: {e}") from e
 
 
 def _get_num_fixed_logic_dma_streams(target_family):
@@ -248,8 +246,7 @@ def _render_generated_vhdl(template_paths, output_folder, context):
             reporter.detail(f"Generated VHDL file: {output_path}")
 
     except Exception as e:
-        reporter.error(f"Error generating VHDL from template: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to generate VHDL from template: {e}") from e
 
 
 def _validate_generated_vhdl_settings(config):
@@ -318,11 +315,15 @@ def gen_generated_vhdl(config=None):
         return 1
 
     context = _build_generated_vhdl_context(config)
-    _render_generated_vhdl(
-        config.generated_vhdl_templates,
-        config.generated_vhdl_output_folder,
-        context,
-    )
+    try:
+        _render_generated_vhdl(
+            config.generated_vhdl_templates,
+            config.generated_vhdl_output_folder,
+            context,
+        )
+    except Exception as e:
+        reporter.error(f"Error: {e}")
+        return 1
 
     reporter.success("Generated VHDL generation complete.")
     return 0

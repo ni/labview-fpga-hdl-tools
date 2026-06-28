@@ -14,7 +14,6 @@ The hook execution order for each command is:
 
 import importlib.util
 import os
-import sys
 
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
 from labview_fpga_hdl_tools.reporting import reporter
@@ -57,15 +56,17 @@ def _load_config_module(command_config_path):
 
     Returns:
         The loaded module object.
+
+    Raises:
+        FileNotFoundError: If the settings file does not exist.
+        ImportError: If the module spec or loader could not be created.
     """
     if not os.path.exists(command_config_path):
-        reporter.error(f"Error: Settings file not found: {command_config_path}")
-        sys.exit(1)
+        raise FileNotFoundError(f"Settings file not found: {command_config_path}")
 
     spec = importlib.util.spec_from_file_location("nihdlsettings", command_config_path)
     if spec is None or spec.loader is None:
-        reporter.error(f"Error: Could not load module spec from: {command_config_path}")
-        sys.exit(1)
+        raise ImportError(f"Could not load module spec from: {command_config_path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

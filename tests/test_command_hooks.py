@@ -35,7 +35,7 @@ class TestRunWithHooksErrorRollup:
             return 0
 
         reporter.set_verbose(False)
-        with pytest.raises(SystemExit):
+        with pytest.raises(FileNotFoundError):
             command_hooks.run_with_hooks("gen_window", noop, command_config_path=str(missing))
 
         captured = capsys.readouterr()
