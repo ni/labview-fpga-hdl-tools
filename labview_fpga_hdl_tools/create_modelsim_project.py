@@ -10,8 +10,7 @@ import re
 import shutil
 import subprocess
 
-from . import common
-from . import generate_vhdl
+from . import common, generate_vhdl
 from .reporting import reporter
 
 
@@ -68,39 +67,63 @@ def _validate_ini(config):
 
 def _get_vsim_executable(modelsim_path):
     """Resolve vsim executable from the ModelSim install directory."""
-    if modelsim_path is None:
-        return None
-    modelsim_path = modelsim_path.strip()
-    # If it's directly a vsim executable
-    if os.path.isfile(modelsim_path) and os.path.basename(modelsim_path).startswith("vsim"):
-        return modelsim_path
-    # Try common subdirectories
-    for subdir in ["win32pe", "win64", "win32", ""]:
-        candidate = (
-            os.path.join(modelsim_path, subdir, "vsim.exe")
-            if subdir
-            else os.path.join(modelsim_path, "vsim.exe")
-        )
-        if os.path.exists(candidate):
-            return candidate
-    return os.path.join(modelsim_path, "vsim.exe")
+    return _find_modelsim_executable(modelsim_path, "vsim")
 
 
 def _get_modelsim_tool(modelsim_path, tool_name):
     """Resolve a ModelSim tool (vcom, vlib, vmap) from the install directory."""
-    if modelsim_path is None:
+    return _find_modelsim_executable(modelsim_path, tool_name)
+
+
+# Subdirectories under a ModelSim/Questa install that can hold the tool
+# executables, across both Windows and Linux install layouts. The trailing
+# empty string also checks the install root itself.
+_MODELSIM_BIN_SUBDIRS = [
+    "win32pe",
+    "win64",
+    "win32",
+    "linux_x86_64",
+    "linuxpe",
+    "linux",
+    "bin",
+    "",
+]
+
+
+def _find_modelsim_executable(modelsim_path, tool_name):
+    """Resolve a ModelSim tool executable from the install directory.
+
+    Searches the common Windows and Linux binary subdirectories and uses the
+    platform-appropriate executable name (``<tool>.exe`` on Windows, ``<tool>``
+    elsewhere). Returns the path of the first match, or a best-guess path at the
+    install root when nothing is found so callers' existence checks still
+    report a sensible location.
+    """
+    if not modelsim_path:
         return None
     modelsim_path = modelsim_path.strip()
     exe_name = f"{tool_name}.exe" if os.name == "nt" else tool_name
-    # Try common subdirectories
-    for subdir in ["win32pe", "win64", "win32", ""]:
-        candidate = (
-            os.path.join(modelsim_path, subdir, exe_name)
-            if subdir
-            else os.path.join(modelsim_path, exe_name)
-        )
-        if os.path.exists(candidate):
+
+    # If the configured path is already the tool executable itself.
+    if os.path.isfile(modelsim_path) and os.path.basename(modelsim_path).startswith(tool_name):
+        return modelsim_path
+
+    # Try the known Windows/Linux binary subdirectories (and the root).
+    for subdir in _MODELSIM_BIN_SUBDIRS:
+        candidate = os.path.join(modelsim_path, subdir, exe_name)
+        if os.path.isfile(candidate):
             return candidate
+
+    # Last resort: scan immediate subdirectories so unusual platform folder
+    # names (e.g. a versioned linux directory) are still discovered.
+    try:
+        for entry in sorted(os.listdir(modelsim_path)):
+            candidate = os.path.join(modelsim_path, entry, exe_name)
+            if os.path.isfile(candidate):
+                return candidate
+    except OSError:
+        pass
+
     return os.path.join(modelsim_path, exe_name)
 
 
