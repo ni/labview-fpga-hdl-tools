@@ -57,9 +57,8 @@ from .reporting import reporter
 
 # Suffix for the per-dependency version marker files written next to each
 # cloned repo. Mirrors the discoverability of Python's "<pkg>-<ver>.dist-info"
-# directories, but as a single lightweight text file instead of a folder. The
-# ".txt" extension lets the file open in any text editor on a double-click.
-_DEP_INFO_SUFFIX = ".dep-info.txt"
+# directories, but as a single lightweight text file instead of a folder.
+_DEP_INFO_SUFFIX = ".dep-info"
 
 
 def _remove_readonly(func, path, exc_info):
