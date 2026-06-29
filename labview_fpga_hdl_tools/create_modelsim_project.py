@@ -505,7 +505,7 @@ def create_modelsim_project(overwrite=False, config=None):
 
     # Step 3: Create work library
     reporter.detail("\nStep 3: Creating work library...")
-    _run_modelsim_tool(vlib_path, ["-modelsimini", ini_path, "work"], cwd=project_dir)
+    _run_modelsim_tool(vlib_path, ["work"], cwd=project_dir)
     reporter.detail("  Created work library")
 
     # Step 4: Gather VHDL source files
