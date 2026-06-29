@@ -32,7 +32,7 @@ def _validate_ini(config):
 
     if not common.get_modelsim_entity(config):
         missing_settings.append(
-            "ModelSimSettings.ModelSimEntity (or VivadoProjectSettings.TopLevelEntity)"
+            "ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)"
         )
 
     error_msg = common.get_missing_settings_error(missing_settings)
