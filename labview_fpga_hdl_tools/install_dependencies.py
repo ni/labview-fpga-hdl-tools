@@ -36,6 +36,7 @@ Command-line options:
 # SPDX-License-Identifier: MIT
 #
 
+import datetime
 import os
 import shutil
 import stat
@@ -54,10 +55,81 @@ from packaging.version import InvalidVersion, Version
 from .reporting import reporter
 
 
+# Suffix for the per-dependency version marker files written next to each
+# cloned repo. Mirrors the discoverability of Python's "<pkg>-<ver>.dist-info"
+# directories, but as a single lightweight text file instead of a folder. The
+# ".txt" extension lets the file open in any text editor on a double-click.
+_DEP_INFO_SUFFIX = ".dep-info.txt"
+
+
 def _remove_readonly(func, path, exc_info):
     """Error handler for shutil.rmtree to handle read-only files on Windows."""
     os.chmod(path, stat.S_IWRITE)
     func(path)
+
+
+def _get_commit_hash(repo_path):
+    """Return the checked-out commit hash for a cloned repo, or None."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_path), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.strip()
+    except (subprocess.CalledProcessError, OSError):
+        return None
+
+
+def _write_dep_marker(repo, repo_name, tag, requested, repo_url, repo_path, deps_dir):
+    """Write a version marker file next to a cloned dependency.
+
+    Creates ``deps/<repo_name>-<version><_DEP_INFO_SUFFIX>`` so the installed
+    version is visible just by listing the deps directory, similar to the way
+    pip writes ``<package>-<version>.dist-info`` alongside installed packages.
+
+    Any older marker files for the same repo are removed first so only the
+    currently installed version is recorded.
+
+    Args:
+        repo: Repository in "owner/repo" form.
+        repo_name: Bare repository name (the cloned folder name).
+        tag: Resolved git tag that was checked out (may carry a 'v' prefix).
+        requested: The version specifier requested from dependencies.toml
+            (e.g. ">=26.0.0" or "latest").
+        repo_url: Clone URL of the repository.
+        repo_path: Path to the cloned repo folder.
+        deps_dir: Directory holding the dependencies.
+    """
+    version = _normalize_tag(tag)
+
+    # Remove stale markers for this repo (previous versions).
+    for stale in deps_dir.glob(f"{repo_name}-*{_DEP_INFO_SUFFIX}"):
+        try:
+            stale.unlink()
+        except OSError:
+            pass
+
+    commit = _get_commit_hash(repo_path) or "unknown"
+    installed = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    marker_path = deps_dir / f"{repo_name}-{version}{_DEP_INFO_SUFFIX}"
+    lines = [
+        f"Name: {repo_name}",
+        f"Version: {version}",
+        f"Tag: {tag}",
+        f"Repo: {repo}",
+        f"Source: {repo_url}",
+        f"Commit: {commit}",
+        f"Requested: {requested}",
+        f"Installed: {installed}",
+    ]
+    try:
+        marker_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        reporter.detail(f"    [INFO] Wrote version marker: {marker_path.name}")
+    except OSError as e:
+        reporter.warn(f"    [WARN] Could not write version marker for {repo_name}: {e}")
 
 
 def _normalize_tag(tag):
@@ -318,6 +390,9 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
             check=True,
         )
         reporter.success(f"  [OK] Successfully cloned {repo_name}")
+        _write_dep_marker(
+            repo, repo_name, tag, tag_or_spec, repo_url, repo_path, base_dir
+        )
         return True
 
     except subprocess.CalledProcessError as e:
