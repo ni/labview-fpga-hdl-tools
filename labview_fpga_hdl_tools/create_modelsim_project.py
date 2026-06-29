@@ -242,13 +242,28 @@ def _add_xilinx_library_mappings(ini_path, xilinx_sim_lib_folder):
     else:
         insert_pos = len(content)
 
+    # The bundled modelsim.ini may already map some of these libraries (e.g.
+    # unisim/unisims_ver) to a path that does not exist on this agent. ModelSim
+    # resolves the first matching entry, so a stale mapping ahead of ours would
+    # shadow the freshly compiled libraries and cause "Library not found". Drop
+    # any existing mappings for these names within [Library] before appending.
+    lib_names = {name.lower() for name in lib_dirs}
+    library_section = content[lib_section_match.end() : insert_pos]
+    kept_lines = []
+    for line in library_section.splitlines(keepends=True):
+        key = line.split("=", 1)[0].strip().lower() if "=" in line else ""
+        if key in lib_names:
+            continue
+        kept_lines.append(line)
+    library_section = "".join(kept_lines)
+
     # Build the library mapping lines
     mappings = "\n; --- Xilinx Simulation Libraries ---\n"
     for lib_name in sorted(lib_dirs):
         mappings += f"{lib_name} = {sim_lib_fwd}/{lib_name}\n"
     mappings += "\n"
 
-    content = content[:insert_pos] + mappings + content[insert_pos:]
+    content = content[: lib_section_match.end()] + library_section + mappings + content[insert_pos:]
 
     with open(ini_path, "w") as f:
         f.write(content)
@@ -300,7 +315,16 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files):
 
     reporter.detail(f"\n  Compiling {len(all_files)} VHDL files (-autoorder -2008)...")
 
-    base_args = ["-work", "work", "-autoorder", "-2008", "-explicit", "-quiet", "-nowarn", "5"]
+    base_args = [
+        "-work",
+        "work",
+        "-autoorder",
+        "-2008",
+        "-explicit",
+        "-quiet",
+        "-nowarn",
+        "5",
+    ]
 
     # Validate all files exist and build resolved list
     resolved_files = []
