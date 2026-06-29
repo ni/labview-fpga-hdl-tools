@@ -24,16 +24,20 @@ def _validate_ini(config):
 
     if not modelsim_entity:
         missing_settings.append(
-            "ModelSimSettings.ModelSimEntity (or VivadoProjectSettings.TopLevelEntity)"
+            "ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)"
         )
 
-    if not config.hdl_file_lists:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectFilesLists")
+    # gen-modelsim compiles the ModelSim file lists only. There is intentionally
+    # no fallback to the Vivado HDL file lists: a simulation project must declare
+    # its own sources via add_modelsim_file_list so ModelSim is independent of
+    # the Vivado flow.
+    if not config.modelsim_file_lists:
+        missing_settings.append("ModelSimSettings.ModelSimFilesLists")
     else:
-        for i, file_list_path in enumerate(config.hdl_file_lists):
+        for i, file_list_path in enumerate(config.modelsim_file_lists):
             invalid_path = common.validate_path(
                 file_list_path,
-                f"VivadoProjectSettings.VivadoProjectFilesLists[{i}]",
+                f"ModelSimSettings.ModelSimFilesLists[{i}]",
                 "file",
             )
             if invalid_path:
@@ -517,8 +521,8 @@ def create_modelsim_project(overwrite=False, config=None):
     # Step 4: Gather VHDL source files
     reporter.detail("\nStep 4: Gathering VHDL source files...")
 
-    # Use ModelSimFilesLists if configured, otherwise fall back to VivadoProjectFilesLists
-    file_lists = config.modelsim_file_lists if config.modelsim_file_lists else config.hdl_file_lists
+    # ModelSim compiles its own file lists only (no fallback to the Vivado lists).
+    file_lists = config.modelsim_file_lists
     all_files = _get_vhdl_files_from_lists(file_lists)
     vhdl2008_files = _get_vhdl_files_from_lists(config.vhdl2008_file_lists)
 

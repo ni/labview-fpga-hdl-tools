@@ -75,16 +75,14 @@ def _normalize_fs_path(path: Optional[str]) -> Optional[str]:
 def get_modelsim_entity(config) -> Optional[str]:
     """Resolve the top entity for ModelSim commands.
 
-    Prefers the dedicated ModelSim entity when configured, and falls back to
-    the synthesis top-level entity for backward compatibility.
+    The ModelSim top entity must be declared explicitly via
+    ``set_modelsim_top_entity``. There is intentionally no fallback to the
+    Vivado synthesis top entity: a simulation project must state its testbench
+    top so the intent is unambiguous and missing declarations fail loudly.
     """
     modelsim_entity = getattr(config, "modelsim_entity", None)
     if modelsim_entity is not None and str(modelsim_entity).strip() != "":
         return str(modelsim_entity).strip()
-
-    top_entity = getattr(config, "top_level_entity", None)
-    if top_entity is not None and str(top_entity).strip() != "":
-        return str(top_entity).strip()
 
     return None
 
