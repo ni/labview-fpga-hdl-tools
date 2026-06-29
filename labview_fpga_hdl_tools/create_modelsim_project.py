@@ -342,10 +342,20 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files, ini_p
                 continue
         resolved_files.append(common.fix_file_slashes(abs_path))
 
-    # Pass all files in a single invocation for -autoorder to work
-    args = base_args + resolved_files
+    # Compile packages before everything else. vcom -autoorder cannot see into
+    # encrypted package bodies, so it leaves them in the file-list order, which
+    # is unpredictable. A package supplied after its consumer then fails on a
+    # clean work library (e.g. Linux CI), even though it passes on Windows
+    # where a previous run's work library already holds the package. Compiling
+    # the packages first guarantees they exist before any consumer is analyzed.
+    package_files = [f for f in resolved_files if os.path.basename(f).lower().startswith("pkg")]
+    other_files = [f for f in resolved_files if f not in package_files]
+
     try:
-        _run_modelsim_tool(vcom_path, args, cwd=project_dir)
+        if package_files:
+            _run_modelsim_tool(vcom_path, base_args + package_files, cwd=project_dir)
+        if other_files:
+            _run_modelsim_tool(vcom_path, base_args + other_files, cwd=project_dir)
     except RuntimeError as e:
         reporter.error(f"  ERROR during compilation:")
         reporter.error(f"    {e}")
