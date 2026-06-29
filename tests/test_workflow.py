@@ -61,15 +61,23 @@ def run_command(cmd, working_dir=None, expected_exit_code=0, timeout=60):
 
         status = f"{GREEN}SUCCESS{RESET}" if success else f"{RED}FAILED{RESET}"
 
+        # A negative test deliberately expects a non-zero exit code. Flag the
+        # matched failure so anyone scanning the log knows the error below is
+        # intentional rather than a real regression.
+        expected_error = success and expected_exit_code != 0
+
         print(
             f"{BLUE}Command completed in {duration:.2f}s with exit code {result.returncode} - {status}{RESET}"
         )
+        if expected_error:
+            print(f"{GREEN}EXPECTED ERROR: exit code {result.returncode} matches expected{RESET}")
 
         if result.stdout.strip():
             print(f"{YELLOW}STDOUT:{RESET}\n{result.stdout.strip()}")
 
         if result.stderr.strip():
-            print(f"{YELLOW}STDERR:{RESET}\n{result.stderr.strip()}")
+            stderr_label = "STDERR (expected)" if expected_error else "STDERR"
+            print(f"{YELLOW}{stderr_label}:{RESET}\n{result.stderr.strip()}")
 
         return {
             "success": success,
@@ -78,6 +86,7 @@ def run_command(cmd, working_dir=None, expected_exit_code=0, timeout=60):
             "stderr": result.stderr,
             "duration": duration,
             "has_traceback": has_traceback,
+            "expected_error": expected_error,
         }
 
     except subprocess.TimeoutExpired:
@@ -519,6 +528,8 @@ def run_test_cases(tests, test_name="Unnamed Test Set"):
     for name, result in results.items():
         status = f"{GREEN}PASSED{RESET}" if result["success"] else f"{RED}FAILED{RESET}"
         reason = " - unexpected traceback" if result.get("has_traceback", False) else ""
+        if result.get("expected_error", False):
+            reason = " - expected error found"
         print(
             f"{name}: {status}{reason} (Exit Code: {result['exit_code']}, Time: {result['duration']:.2f}s)"
         )

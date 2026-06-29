@@ -107,8 +107,14 @@ def sim_modelsim(do_file=None, config=None):
         reporter.success("SKIP MODELSIM: Validation successful, skipping simulation")
         return 0
 
-    # Build command: vsim in batch/command-line mode
-    cmd = [vsim_exe, "-c", "-do", do_file]
+    # Build command: vsim in batch/command-line mode. Force the project
+    # modelsim.ini so unisim/Xilinx library mappings are honored; an external
+    # MODELSIM env var would otherwise override the local .ini.
+    cmd = [vsim_exe, "-c"]
+    ini_path = os.path.join(project_dir, "modelsim.ini")
+    if os.path.exists(ini_path):
+        cmd += ["-modelsimini", ini_path]
+    cmd += ["-do", do_file]
 
     reporter.detail(f"\nRunning simulation...")
     start_time = time.time()

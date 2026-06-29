@@ -294,7 +294,7 @@ def _get_vhdl_files_from_lists(file_lists):
     return files
 
 
-def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files):
+def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files, ini_path=None):
     """Compile all VHDL files using vcom -autoorder -2008.
 
     Uses a single vcom invocation with -autoorder for automatic dependency
@@ -325,6 +325,11 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files):
         "-nowarn",
         "5",
     ]
+    # Force the project modelsim.ini so the unisim/Xilinx library mappings are
+    # honored. An external MODELSIM env var (set by the nihdlsettings wrapper)
+    # otherwise overrides the local .ini and our mappings are ignored.
+    if ini_path:
+        base_args = ["-modelsimini", ini_path] + base_args
 
     # Validate all files exist and build resolved list
     resolved_files = []
@@ -500,7 +505,7 @@ def create_modelsim_project(overwrite=False, config=None):
 
     # Step 3: Create work library
     reporter.detail("\nStep 3: Creating work library...")
-    _run_modelsim_tool(vlib_path, ["work"], cwd=project_dir)
+    _run_modelsim_tool(vlib_path, ["-modelsimini", ini_path, "work"], cwd=project_dir)
     reporter.detail("  Created work library")
 
     # Step 4: Gather VHDL source files
@@ -536,7 +541,7 @@ def create_modelsim_project(overwrite=False, config=None):
     # Step 5: Compile with vcom -autoorder (automatic dependency resolution)
     reporter.detail("\nStep 5: Compiling VHDL files...")
     try:
-        _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files)
+        _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files, ini_path)
     except RuntimeError as e:
         reporter.error(f"\nCompilation failed: {e}")
         return 1
