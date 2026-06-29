@@ -313,7 +313,7 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files, ini_p
         reporter.detail("  No VHDL files to compile.")
         return
 
-    reporter.detail(f"\n  Compiling {len(all_files)} VHDL files (iterative, -2008)...")
+    reporter.detail(f"\n  Compiling {len(all_files)} VHDL files (-autoorder -2008)...")
 
     base_args = [
         "-work",
@@ -342,29 +342,20 @@ def _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files, ini_p
                 continue
         resolved_files.append(common.fix_file_slashes(abs_path))
 
-    # Compile iteratively so file-list order never matters. vcom -autoorder
-    # cannot see into encrypted package bodies, so packages supplied after
-    # their consumers fail on a clean work library (e.g. Linux CI) even though
-    # they pass on Windows where a previous run's work library already holds
-    # them. Each round compiles every still-uncompiled file individually;
-    # files whose dependencies are not yet in 'work' fail and are retried next
-    # round. The loop ends when a full round compiles nothing new (success) or
-    # makes no progress (genuine error, reported below).
-    remaining = list(resolved_files)
-    last_error = None
-    while remaining:
-        compiled_this_round = []
-        for filepath in remaining:
-            try:
-                _run_modelsim_tool(vcom_path, base_args + [filepath], cwd=project_dir)
-                compiled_this_round.append(filepath)
-            except RuntimeError as e:
-                last_error = e
-        if not compiled_this_round:
-            reporter.error(f"  ERROR during compilation:")
-            reporter.error(f"    {last_error}")
-            raise last_error if last_error else RuntimeError("Compilation failed")
-        remaining = [f for f in remaining if f not in compiled_this_round]
+    # Pass all files in a single invocation so vcom -autoorder can analyze the
+    # whole dependency graph and compile in the correct order regardless of
+    # file-list order. vcom decrypts IEEE-1735 protected files with its keys, so
+    # their design-unit declarations participate in autoorder like any other
+    # file (consumers bind to a package's declaration, not its body), making the
+    # earlier per-file iterative workaround unnecessary now that every package
+    # actually has a provider in the source list.
+    args = base_args + resolved_files
+    try:
+        _run_modelsim_tool(vcom_path, args, cwd=project_dir)
+    except RuntimeError as e:
+        reporter.error(f"  ERROR during compilation:")
+        reporter.error(f"    {e}")
+        raise
 
 
 def _generate_load_do_file(project_dir, entity_name):

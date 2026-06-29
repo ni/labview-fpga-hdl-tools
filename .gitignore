@@ -12,6 +12,9 @@ test_results/
 .coverage
 htmlcov/
 
+# ModelSim project
+ModelSimProject/
+
 # Environments
 .env
 .venv
