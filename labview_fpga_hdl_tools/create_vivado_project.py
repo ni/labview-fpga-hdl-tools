@@ -781,6 +781,22 @@ def create_project(overwrite=False, update=False, config=None):
     if config is None:
         config = common.CommandConfiguration()
 
+    result = _run_create_project_steps(overwrite, update, config)
+
+    if result == 0:
+        reporter.success("Vivado project created successfully.")
+    else:
+        reporter.success("Vivado project creation FAILED.")
+
+    return result
+
+
+def _run_create_project_steps(overwrite, update, config):
+    """Run the gen-vivado steps in order.
+
+    Returns 0 on success or 1 on the first failure. The caller is responsible
+    for reporting the overall success/failure milestone.
+    """
     # Validate that all required settings are present
     try:
         _validate_ini(config)
@@ -816,13 +832,15 @@ def create_project(overwrite=False, update=False, config=None):
         reporter.error(f"Error: {e}")
         return 1
 
+    # Launching Vivado to build the project is the slow step; tell the user so
+    # the pause after VHDL generation is clearly expected and not a hang.
+    reporter.success("Generating Vivado project (this may take a few moments)...")
+
     # Create or update the Vivado project based on the determined mode
     try:
         _create_project(project_mode, config)
     except Exception as e:
         reporter.error(f"Error: {e}")
         return 1
-
-    reporter.success("Vivado project created successfully.")
 
     return 0
