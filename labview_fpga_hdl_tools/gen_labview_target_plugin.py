@@ -38,6 +38,10 @@ DOCUMENT_ROOT_PREFIX = (
 
 # Data type prototypes mapping - used to map LabVIEW data types to their FPGA representations
 # The {direction} placeholder is replaced with Input/OutputWithoutReadback based on signal direction
+#
+# LV FPGA supported prototypes are documented here -
+#         src/lvfpga/source/LabVIEW/resource/RVI/FPGATargetXML/niLvFpgaTargetNecessities.xml
+#
 DATA_TYPE_PROTOTYPES = {
     "FXP": DOCUMENT_ROOT_PREFIX
     + "FXPDigital{direction}{output_readback}{zero_sync_regs}",  # Fixed-point numeric type
@@ -60,6 +64,49 @@ DATA_TYPE_PROTOTYPES = {
     "I64": DOCUMENT_ROOT_PREFIX
     + "i64Digital{direction}{output_readback}{zero_sync_regs}",  # Signed 64-bit integer
 }
+
+# The BoardIO prototype name is assembled as:
+#   <type>Digital<direction><output_readback><zero_sync_regs>
+# Not every permutation of the CSV Direction / OutputReadback / ZeroSyncRegs
+# columns corresponds to a prototype that LabVIEW FPGA publishes. These sets
+# capture the supported suffixes (everything after "<type>Digital") so that
+# unsupported combinations are reported as validation errors instead of being
+# written out as unusable prototypes.
+#
+# Every supported data type allows these combinations:
+_BASE_PROTOTYPE_SUFFIXES = frozenset(
+    {
+        "Input",
+        "InputZeroDefaultSyncRegisters",
+        "OutputWithReadback",
+        "OutputWithReadbackZeroDefaultSyncRegisters",
+        "OutputWithoutReadback",
+    }
+)
+
+# Only Boolean and FXP additionally support a zero-default-sync-register form of
+# the without-readback output. The integer port types (U8-U64, I8-I64) do not.
+_TYPES_SUPPORTING_WITHOUT_READBACK_ZERO_SYNC = frozenset({"Boolean", "FXP"})
+
+
+def _get_supported_prototype_suffixes(data_type_name):
+    """Return the set of supported prototype suffixes for a CSV DataType.
+
+    The suffix is the portion of the prototype name after ``<type>Digital``
+    (i.e. ``<direction><output_readback><zero_sync_regs>``). This encodes which
+    Direction / OutputReadback / ZeroSyncRegs permutations map to a real
+    LabVIEW FPGA prototype for the given data type.
+
+    Args:
+        data_type_name (str): DataType base name (e.g. ``Boolean``, ``U8``, ``FXP``).
+
+    Returns:
+        set[str]: Supported prototype-name suffixes for the data type.
+    """
+    suffixes = set(_BASE_PROTOTYPE_SUFFIXES)
+    if data_type_name in _TYPES_SUPPORTING_WITHOUT_READBACK_ZERO_SYNC:
+        suffixes.add("OutputWithoutReadbackZeroDefaultSyncRegisters")
+    return suffixes
 
 
 def _parse_register_offset(offset_text):
@@ -286,10 +333,14 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                         "true": "ZeroDefaultSyncRegisters",
                         "false": "",
                     }.get(zero_sync_regs.lower())
-                    if io_zero_sync_regs is None and zero_sync_regs:
-                        error = f"Row {row_count}: Invalid ZeroSyncRegs '{zero_sync_regs}' for signal '{lv_name}'. Must be 'TRUE' or 'FALSE'."
-                        validation_errors.append(error)
-                        io_zero_sync_regs = "INVALID_SYNC_REGS"
+                    if io_zero_sync_regs is None:
+                        if zero_sync_regs:
+                            error = f"Row {row_count}: Invalid ZeroSyncRegs '{zero_sync_regs}' for signal '{lv_name}'. Must be 'TRUE' or 'FALSE'."
+                            validation_errors.append(error)
+                            io_zero_sync_regs = "INVALID_SYNC_REGS"
+                        else:
+                            # An empty cell is treated as FALSE (no suffix appended).
+                            io_zero_sync_regs = ""
 
                     # Validate output readback setting for outputs
                     if io_direction == "Output":
@@ -308,25 +359,54 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                     data_type_name = data_type.split("(")[0] if "(" in data_type else data_type
 
                     if data_type_name in DATA_TYPE_PROTOTYPES:
-                        prototype = DATA_TYPE_PROTOTYPES[data_type_name].format(
-                            direction=io_direction,
-                            zero_sync_regs=io_zero_sync_regs,
-                            output_readback=io_output_readback,
+                        # The prototype name is assembled from the direction,
+                        # readback, and sync-register tokens. Not every
+                        # permutation corresponds to a prototype that LabVIEW
+                        # FPGA publishes, so reject unsupported combinations
+                        # instead of emitting an unusable prototype.
+                        prototype_suffix = f"{io_direction}{io_output_readback}{io_zero_sync_regs}"
+                        supported_suffixes = _get_supported_prototype_suffixes(data_type_name)
+                        tokens_valid = (
+                            io_direction in ("Input", "Output")
+                            and io_output_readback in ("", "WithReadback", "WithoutReadback")
+                            and io_zero_sync_regs in ("", "ZeroDefaultSyncRegisters")
                         )
-                        io_resource.set("prototype", prototype)
 
-                        # Handle FXP attributes
-                        if data_type_name == "FXP" and "(" in data_type:
-                            try:
-                                parts = data_type.split("(")[1].split(")")[0].split(",")
-                                io_resource.set("wordLength", parts[0])
-                                io_resource.set("integerWordLength", parts[1])
-                                io_resource.set(
-                                    "unsigned",
-                                    "true" if "Unsigned" in data_type else "false",
-                                )
-                            except Exception as e:
-                                reporter.error(f"Error parsing FXP parameters for {lv_name}: {e}")
+                        if tokens_valid and prototype_suffix not in supported_suffixes:
+                            error = (
+                                f"Row {row_count}: DataType='{data_type}' with "
+                                f"Direction='{direction}', OutputReadback='{output_readback}', "
+                                f"and ZeroSyncRegs='{zero_sync_regs}' for signal '{lv_name}' "
+                                f"does not map to a supported LabVIEW FPGA prototype. The integer "
+                                f"port types (U8-U64, I8-I64) have no WithoutReadback output with "
+                                f"ZeroSyncRegs=TRUE; set OutputReadback=TRUE or ZeroSyncRegs=FALSE. "
+                                f"See the DataType compatibility table in "
+                                f"docs/LVTargetCustomIO-Reference.md for all valid combinations."
+                            )
+                            validation_errors.append(error)
+                            io_resource.set("prototype", "UNSUPPORTED_PROTOTYPE_COMBINATION")
+                        else:
+                            prototype = DATA_TYPE_PROTOTYPES[data_type_name].format(
+                                direction=io_direction,
+                                zero_sync_regs=io_zero_sync_regs,
+                                output_readback=io_output_readback,
+                            )
+                            io_resource.set("prototype", prototype)
+
+                            # Handle FXP attributes
+                            if data_type_name == "FXP" and "(" in data_type:
+                                try:
+                                    parts = data_type.split("(")[1].split(")")[0].split(",")
+                                    io_resource.set("wordLength", parts[0])
+                                    io_resource.set("integerWordLength", parts[1])
+                                    io_resource.set(
+                                        "unsigned",
+                                        "true" if "Unsigned" in data_type else "false",
+                                    )
+                                except Exception as e:
+                                    reporter.error(
+                                        f"Error parsing FXP parameters for {lv_name}: {e}"
+                                    )
                     else:
                         # Add validation error for invalid signal type
                         error = f"Row {row_count}: Invalid signal type '{data_type}' for signal '{lv_name}'. Valid types: {', '.join(DATA_TYPE_PROTOTYPES.keys())}"
