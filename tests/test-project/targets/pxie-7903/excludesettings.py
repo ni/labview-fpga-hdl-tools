@@ -44,5 +44,12 @@ def pre_all(context):
 
     # --- ModelSim Settings ---
     config.set_modelsim_project_folder("ModelSimProject")
+    config.set_modelsim_top_entity("SasquatchTopTemplate")
+
+    # ModelSim compiles its own file lists (independent of the Vivado HDL lists).
+    # The shared exclude list (excludedeps.txt) also applies here.
+    config.add_modelsim_file_list("vivadoprojectdeps.txt")
+    config.add_modelsim_file_list("vivadoprojectdeps_usp.txt")
+    config.add_modelsim_file_list("vivadoprojectsources_nowindow.txt")
 
     # NOTE: lv_window_netlist_folder is intentionally NOT set.

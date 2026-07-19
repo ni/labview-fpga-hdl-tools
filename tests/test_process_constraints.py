@@ -112,9 +112,7 @@ class TestBuildCustomConstraintsContent:
     def test_given_empty_mapping__when_built__then_returns_empty_string(self):
         assert build_custom_constraints_content({}) == ""
 
-    def test_given_multiple_files__when_built__then_concatenated_in_ascending_order(
-        self, tmp_path
-    ):
+    def test_given_multiple_files__when_built__then_concatenated_in_ascending_order(self, tmp_path):
         first = tmp_path / "first.xdc"
         first.write_text("FIRST")
         second = tmp_path / "second.xdc"

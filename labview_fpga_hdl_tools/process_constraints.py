@@ -137,8 +137,7 @@ def build_custom_constraints_content(custom_constraints):
     if not custom_constraints:
         return ""
     sections = [
-        load_custom_constraints(custom_constraints[order])
-        for order in sorted(custom_constraints)
+        load_custom_constraints(custom_constraints[order]) for order in sorted(custom_constraints)
     ]
     return "\n".join(sections)
 
@@ -280,9 +279,7 @@ def process_constraints_template(config):
         flags=re.IGNORECASE,
     )
     if count == 0:
-        raise ValueError(
-            f"macro_periodConstraints token not found in template {template_basename}"
-        )
+        raise ValueError(f"macro_periodConstraints token not found in template {template_basename}")
 
     # Replace _CLIP macro token (case insensitive)
     final_content, count = re.subn(
@@ -292,9 +289,7 @@ def process_constraints_template(config):
         flags=re.IGNORECASE,
     )
     if count == 0:
-        raise ValueError(
-            f"macro_ClipConstraints token not found in template {template_basename}"
-        )
+        raise ValueError(f"macro_ClipConstraints token not found in template {template_basename}")
 
     # Replace FROM_TO macro token (case insensitive)
     final_content, count = re.subn(
@@ -304,9 +299,7 @@ def process_constraints_template(config):
         flags=re.IGNORECASE,
     )
     if count == 0:
-        raise ValueError(
-            f"macro_fromToConstraints token not found in template {template_basename}"
-        )
+        raise ValueError(f"macro_fromToConstraints token not found in template {template_basename}")
 
     # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
     final_content, count = _CUSTOM_CONSTRAINTS_RE.subn(

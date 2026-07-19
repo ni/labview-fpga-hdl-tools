@@ -116,7 +116,9 @@ def pre_all(context):
     config.add_hdl_file_list("vivadoprojectsources.txt")
 
     config.set_constraints_template("../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc")
-    config.add_custom_constraints("../../deps/hdl-shared/host_interfaces/fifo/xdc/hdl_fifo_cdc_constraints.xdc", order=1)
+    config.add_custom_constraints(
+        "../../deps/hdl-shared/host_interfaces/fifo/xdc/hdl_fifo_cdc_constraints.xdc", order=1
+    )
     config.add_custom_constraints("xdc/custom_constraints.xdc", order=2)
 
     config.add_vivado_project_constraints(

@@ -23,9 +23,7 @@ def _validate_ini(config):
     modelsim_entity = common.get_modelsim_entity(config)
 
     if not modelsim_entity:
-        missing_settings.append(
-            "ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)"
-        )
+        missing_settings.append("ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)")
 
     # gen-modelsim compiles the ModelSim file lists only. There is intentionally
     # no fallback to the Vivado HDL file lists: a simulation project must declare

@@ -31,9 +31,7 @@ def _validate_ini(config):
             )
 
     if not common.get_modelsim_entity(config):
-        missing_settings.append(
-            "ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)"
-        )
+        missing_settings.append("ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)")
 
     error_msg = common.get_missing_settings_error(missing_settings)
     error_msg += common.get_invalid_paths_error(invalid_paths)

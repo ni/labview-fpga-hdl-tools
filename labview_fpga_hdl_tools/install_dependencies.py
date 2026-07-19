@@ -54,7 +54,6 @@ from packaging.version import InvalidVersion, Version
 
 from .reporting import reporter
 
-
 # Suffix for the per-dependency version marker files written next to each
 # cloned repo. Mirrors the discoverability of Python's "<pkg>-<ver>.dist-info"
 # directories, but as a single lightweight text file instead of a folder.
@@ -389,9 +388,7 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
             check=True,
         )
         reporter.success(f"  [OK] Successfully cloned {repo_name}")
-        _write_dep_marker(
-            repo, repo_name, tag, tag_or_spec, repo_url, repo_path, base_dir
-        )
+        _write_dep_marker(repo, repo_name, tag, tag_or_spec, repo_url, repo_path, base_dir)
         return True
 
     except subprocess.CalledProcessError as e:
