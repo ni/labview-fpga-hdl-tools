@@ -159,7 +159,7 @@ one.
 | compile-vivado | `vivado_project_folder`, `vivado_tcl_scripts_folder` | Non-skip adds `vivado_tools_folder` and an existing project .xpr file. |
 | gen-window | `lv_window_vivado_project_export_xpr`, `lv_window_netlist_output_folder`, `vivado_tools_folder` | When skip_vivado is set, Vivado is not launched. |
 | gen-hdl | `generated_vhdl_templates`, `generated_vhdl_output_folder` | `custom_io_csv` ([reference](LVTargetCustomIO-Reference.md)) required when include_custom_io_on_lv_window=True. |
-| gen-xdc | None enforced by a dedicated validator | For useful output, set `constraints_templates`. |
+| gen-xdc | None enforced by a dedicated validator | For useful output, set `constraints_template`. |
 | gen-lvbitx | `top_level_entity` | Locates createBitfile.exe from `labview_path` when set, otherwise auto-discovers the latest installed LabVIEW (2023–2030) under Program Files. Uses `top_level_entity` to derive filenames. |
 | gen-guid | None | Does not use any settings. |
 | gen-target | `target_family`, `base_target`, `generated_vhdl_templates`, `generated_vhdl_output_folder`, `lv_target_plugin_output_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` ([reference](LVTargetCustomIO-Reference.md)) required when include_custom_io_on_lv_window=True. |

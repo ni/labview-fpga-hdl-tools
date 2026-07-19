@@ -501,15 +501,14 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if config.constraints_templates:
-        for i, constr_path in enumerate(config.constraints_templates):
-            invalid_path = common.validate_path(
-                constr_path,
-                f"VivadoProjectSettings.VivadoProjectConstraintsTemplates[{i}]",
-                "file",
-            )
-            if invalid_path:
-                invalid_paths.append(invalid_path)
+    if config.constraints_template:
+        invalid_path = common.validate_path(
+            config.constraints_template,
+            "VivadoProjectSettings.ConstraintsTemplate",
+            "file",
+        )
+        if invalid_path:
+            invalid_paths.append(invalid_path)
 
     # Construct error message
     error_msg = common.get_missing_settings_error(missing_settings)

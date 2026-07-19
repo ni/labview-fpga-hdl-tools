@@ -124,27 +124,45 @@ def load_custom_constraints(custom_constraints_path):
     return ""
 
 
+def build_custom_constraints_content(custom_constraints):
+    """Concatenate custom constraints files in ascending insertion order.
+
+    Args:
+        custom_constraints (dict[int, str]): Mapping of insertion order -> XDC file path.
+
+    Returns:
+        str: The concatenated content of every custom constraints file, ordered by
+        ascending key. Returns an empty string if the mapping is empty.
+    """
+    if not custom_constraints:
+        return ""
+    sections = [
+        load_custom_constraints(custom_constraints[order])
+        for order in sorted(custom_constraints)
+    ]
+    return "\n".join(sections)
+
+
 _CUSTOM_CONSTRAINTS_RE = re.compile(
     r"#LabVIEWFPGAHdlTools_Macro\s+macro_GitHubCustomConstraints",
     re.IGNORECASE,
 )
 
 
-def replace_custom_constraints_in_xdc_folder(folder, custom_constraints_path):
+def replace_custom_constraints_in_xdc_folder(folder, custom_constraints_content):
     """Replace the custom constraints macro in all XDC files in a folder.
 
     Scans every ``.xdc`` file in *folder* and replaces
-    ``#LabVIEWFPGAHDLTools_Macro macro_GitHubCustomConstraints`` with the
-    content of *custom_constraints_path*.
+    ``#LabVIEWFPGAHDLTools_Macro macro_GitHubCustomConstraints`` with
+    *custom_constraints_content*.
 
     Args:
         folder (str): Directory containing XDC files to process.
-        custom_constraints_path (str | None): Path to the custom constraints file.
+        custom_constraints_content (str): Pre-built custom constraints content to
+            substitute for the macro token (see build_custom_constraints_content).
     """
     if not os.path.isdir(folder):
         return
-
-    custom_constraints_content = load_custom_constraints(custom_constraints_path)
 
     for filename in os.listdir(folder):
         if not filename.lower().endswith(".xdc"):
@@ -228,85 +246,83 @@ def process_constraints_template(config):
                 f"TheWindowConstraints.xdc file not found at {window_constraints_path}"
             )
 
-    # Read custom constraints file if specified
-    custom_constraints_content = load_custom_constraints(config.custom_constraints)
+    # Build custom constraints content from the ordered custom constraints files
+    custom_constraints_content = build_custom_constraints_content(config.custom_constraints)
 
-    # Get template files from configuration
-    template_files = config.constraints_templates
+    # Get the constraints template from configuration
+    template_path = config.constraints_template
 
-    if not template_files:
-        reporter.detail("No constraint templates specified in configuration.")
+    if not template_path:
+        reporter.detail("No constraints template specified in configuration.")
         return
 
-    # Process each template file
-    for template_path in template_files:
-        # Get base filename from template path
-        template_basename = os.path.basename(template_path)
+    # Get base filename from template path
+    template_basename = os.path.basename(template_path)
 
-        # Remove _template from filename to get output filename
-        output_file = template_basename.replace("_template", "")
-        output_path = os.path.join(output_folder, output_file)
+    # Remove _template from filename to get output filename
+    output_file = template_basename.replace("_template", "")
+    output_path = os.path.join(output_folder, output_file)
 
-        reporter.detail(f"Processing {template_basename} -> {output_file}")
+    reporter.detail(f"Processing {template_basename} -> {output_file}")
 
-        # Read the template file
-        with open(template_path, "r", encoding="utf-8") as f:
-            template_content = f.read()
+    # Read the template file
+    with open(template_path, "r", encoding="utf-8") as f:
+        template_content = f.read()
 
-        # Replace content between markers
-        final_content = template_content
+    # Replace content between markers
+    final_content = template_content
 
-        # Replace PERIOD macro token (case insensitive)
-        final_content, count = re.subn(
-            r"#LabVIEWFPGA_Macro\s+macro_periodConstraints",
-            period_content,
-            final_content,
-            flags=re.IGNORECASE,
+    # Replace PERIOD macro token (case insensitive)
+    final_content, count = re.subn(
+        r"#LabVIEWFPGA_Macro\s+macro_periodConstraints",
+        period_content,
+        final_content,
+        flags=re.IGNORECASE,
+    )
+    if count == 0:
+        raise ValueError(
+            f"macro_periodConstraints token not found in template {template_basename}"
         )
-        if count == 0:
-            raise ValueError(
-                f"macro_periodConstraints token not found in template {template_basename}"
-            )
 
-        # Replace _CLIP macro token (case insensitive)
-        final_content, count = re.subn(
-            r"#LabVIEWFPGA_Macro\s+macro_ClipConstraints",
-            clip_content,
-            final_content,
-            flags=re.IGNORECASE,
+    # Replace _CLIP macro token (case insensitive)
+    final_content, count = re.subn(
+        r"#LabVIEWFPGA_Macro\s+macro_ClipConstraints",
+        clip_content,
+        final_content,
+        flags=re.IGNORECASE,
+    )
+    if count == 0:
+        raise ValueError(
+            f"macro_ClipConstraints token not found in template {template_basename}"
         )
-        if count == 0:
-            raise ValueError(
-                f"macro_ClipConstraints token not found in template {template_basename}"
-            )
 
-        # Replace FROM_TO macro token (case insensitive)
-        final_content, count = re.subn(
-            r"#LabVIEWFPGA_Macro\s+macro_fromToConstraints",
-            from_to_content,
-            final_content,
-            flags=re.IGNORECASE,
+    # Replace FROM_TO macro token (case insensitive)
+    final_content, count = re.subn(
+        r"#LabVIEWFPGA_Macro\s+macro_fromToConstraints",
+        from_to_content,
+        final_content,
+        flags=re.IGNORECASE,
+    )
+    if count == 0:
+        raise ValueError(
+            f"macro_fromToConstraints token not found in template {template_basename}"
         )
-        if count == 0:
-            raise ValueError(
-                f"macro_fromToConstraints token not found in template {template_basename}"
-            )
 
-        # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
-        final_content, count = _CUSTOM_CONSTRAINTS_RE.subn(
-            custom_constraints_content,
-            final_content,
+    # Replace GITHUB_CUSTOM_CONSTRAINTS macro token (case insensitive)
+    final_content, count = _CUSTOM_CONSTRAINTS_RE.subn(
+        custom_constraints_content,
+        final_content,
+    )
+    if count == 0:
+        raise ValueError(
+            f"macro_GitHubCustomConstraints token not found in template {template_basename}"
         )
-        if count == 0:
-            raise ValueError(
-                f"macro_GitHubCustomConstraints token not found in template {template_basename}"
-            )
 
-        # Write the processed content to output file
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(final_content)
+    # Write the processed content to output file
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(final_content)
 
-        reporter.success(f"Successfully processed and saved: {output_path}")
+    reporter.success(f"Successfully processed and saved: {output_path}")
 
 
 def process_constraints(config=None):

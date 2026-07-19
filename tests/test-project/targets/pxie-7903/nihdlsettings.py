@@ -29,8 +29,8 @@ def pre_all(context):
     config.add_hdl_file_list("vivadoprojectsources.txt")
     config.add_hdl_file_list("vivadoprojectclipsources.txt")
 
-    config.add_constraints_template("xdc/constraints.xdc_template")
-    # config.set_custom_constraints("")
+    config.set_constraints_template("xdc/constraints.xdc_template")
+    # config.add_custom_constraints("xdc/custom_constraints.xdc", order=10)
 
     config.add_vivado_project_constraints("xdc/constraints_place.xdc")
     config.add_vivado_project_constraints("objects/xdc/constraints.xdc")

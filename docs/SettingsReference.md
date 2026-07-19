@@ -170,12 +170,12 @@ def pre_all(context):
 | `set_vivado_top_entity(value)` | HDL top-level entity/module name. |
 | `set_fpga_part(value)` | FPGA part string (for example, "xcku040-ffva1156-2-e"). |
 | `set_vivado_project_folder(value)` | Relative path to the Vivado project folder (for example, "VivadoProject"). |
-| `set_custom_constraints(value)` | Optional custom XDC file path. |
+| `add_custom_constraints(value, order)` | Add a custom XDC file at the given integer `order`. Lower orders are emitted first; each order must be unique. |
 | `set_lv_window_netlist_folder(value)` | Input folder of generated Window files. Optional — when unset, Window files are not integrated into the Vivado project. |
 | `add_hdl_file_list(path)` | Append an HDL file list for Vivado project sources. |
 | `add_exclude_hdl_file_list(path)` | Append a file list naming HDL files to drop from the assembled file list (resolves name collisions across dependencies). |
 | `add_vhdl2008_file_list(path)` | Append a VHDL-2008 file list (compiled with -2008 flag). |
-| `add_constraints_template(path)` | Append a constraints template path. |
+| `set_constraints_template(path)` | Set the constraints template path. |
 | `add_vivado_project_constraints(path)` | Append a Vivado project constraints file. |
 
 **ModelSim Project**

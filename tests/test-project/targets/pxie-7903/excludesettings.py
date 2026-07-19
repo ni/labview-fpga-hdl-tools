@@ -37,7 +37,7 @@ def pre_all(context):
     # Drop the US copy of DFlop.vhd; the USP list provides the correct copy.
     config.add_exclude_hdl_file_list("excludedeps.txt")
 
-    config.add_constraints_template("xdc/constraints.xdc_template")
+    config.set_constraints_template("xdc/constraints.xdc_template")
 
     config.add_vivado_project_constraints("xdc/constraints_place.xdc")
     config.add_vivado_project_constraints("objects/xdc/constraints.xdc")
