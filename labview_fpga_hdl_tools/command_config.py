@@ -11,7 +11,7 @@ used by nihdl commands. Configured via nihdlsettings.py hook files.
 
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 
 def resolve_path(rel_path):
@@ -70,9 +70,7 @@ class CommandConfiguration:
     vhdl2008_file_lists: List[str] = field(
         default_factory=list
     )  # List of VHDL 2008 file list paths for Vivado project generation
-    constraints_templates: List[str] = field(
-        default_factory=list
-    )  # List of constraint template file paths
+    constraints_template: Optional[str] = None  # Path to the constraints template file
     vivado_project_constraints: List[str] = field(
         default_factory=list
     )  # List of Vivado project constraint file paths
@@ -80,7 +78,9 @@ class CommandConfiguration:
     vivado_tcl_scripts_folder_relpath: Optional[str] = (
         None  # Relative path to Vivado TCL scripts folder
     )
-    custom_constraints: Optional[str] = None  # Path to custom constraints XDC file
+    custom_constraints: Dict[int, str] = field(
+        default_factory=dict
+    )  # Mapping of insertion order -> custom constraints XDC file path
     lv_window_netlist_folder: Optional[str] = None  # Input folder for generated Window files
     # ----- LV WINDOW NETLIST SETTINGS -----
     lv_window_vivado_project_export_xpr: Optional[str] = (
@@ -233,11 +233,9 @@ class CommandConfiguration:
         if resolved is not None:
             self.vhdl2008_file_lists.append(resolved)
 
-    def add_constraints_template(self, value):
-        """Append a constraints template path (resolved to absolute)."""
-        resolved = resolve_path(value)
-        if resolved is not None:
-            self.constraints_templates.append(resolved)
+    def set_constraints_template(self, value):
+        """Set the constraints template path (resolved to absolute)."""
+        self.constraints_template = resolve_path(value)
 
     def add_vivado_project_constraints(self, value):
         """Append a Vivado project constraints file path (resolved to absolute)."""
@@ -250,9 +248,31 @@ class CommandConfiguration:
         self.vivado_tcl_scripts_folder = resolve_path(value)
         self.vivado_tcl_scripts_folder_relpath = value
 
-    def set_custom_constraints(self, value):
-        """Set the custom constraints XDC file path (resolved to absolute)."""
-        self.custom_constraints = resolve_path(value)
+    def add_custom_constraints(self, value, order):
+        """Register a custom constraints XDC file at a given insertion order.
+
+        The custom constraints files are concatenated in ascending ``order`` and
+        inserted at the macro_GitHubCustomConstraints anchor in the constraints
+        template. ``order`` is mandatory and must be a unique integer; reusing an
+        order raises ValueError so overlapping insertion points are explicit
+        errors rather than silent last-wins behavior.
+
+        Args:
+            value (str): Path to the custom constraints XDC file (resolved to absolute).
+            order (int): Unique integer insertion order (any integer is allowed).
+        """
+        if not isinstance(order, int) or isinstance(order, bool):
+            raise TypeError(
+                f"add_custom_constraints: 'order' must be an int, got {type(order).__name__}"
+            )
+        if order in self.custom_constraints:
+            raise ValueError(
+                f"add_custom_constraints: order {order} is already used by "
+                f"'{self.custom_constraints[order]}'; each order must be unique"
+            )
+        resolved = resolve_path(value)
+        if resolved is not None:
+            self.custom_constraints[order] = resolved
 
     def set_lv_window_netlist_folder(self, value):
         """Set the input Window folder path (resolved to absolute)."""

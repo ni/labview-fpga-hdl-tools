@@ -32,7 +32,7 @@ def pre_all(context):
     config.add_hdl_file_list("vivadoprojectdeps_usp.txt")
     config.add_hdl_file_list("vivadoprojectsources_nowindow.txt")
 
-    config.add_constraints_template("xdc/constraints.xdc_template")
+    config.set_constraints_template("xdc/constraints.xdc_template")
 
     config.add_vivado_project_constraints("xdc/constraints_place.xdc")
     config.add_vivado_project_constraints("objects/xdc/constraints.xdc")

@@ -45,8 +45,8 @@ Available setters (grouped by section):
 
     Vivado Project Settings:
         set_vivado_top_entity, set_fpga_part, set_vivado_project_folder,
-        add_hdl_file_list, add_vhdl2008_file_list, add_constraints_template,
-        add_vivado_project_constraints, set_custom_constraints,
+        add_hdl_file_list, add_vhdl2008_file_list, set_constraints_template,
+        add_vivado_project_constraints, add_custom_constraints,
         set_lv_window_netlist_folder
         add_exclude_hdl_file_list,
 
@@ -115,8 +115,11 @@ def pre_all(context):
     config.add_hdl_file_list("../../deps/flexrio/targets/pxie-7903/vivadoprojectdeps.txt")
     config.add_hdl_file_list("vivadoprojectsources.txt")
 
-    config.add_constraints_template("../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc")
-    config.set_custom_constraints("xdc/custom_constraints.xdc")
+    config.set_constraints_template("../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc")
+    config.add_custom_constraints(
+        "../../deps/hdl-shared/host_interfaces/fifo/xdc/hdl_fifo_cdc_constraints.xdc", order=1
+    )
+    config.add_custom_constraints("xdc/custom_constraints.xdc", order=2)
 
     config.add_vivado_project_constraints(
         "../../deps/flexrio/targets/pxie-7903/xdc/constraints_place.xdc"

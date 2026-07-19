@@ -37,12 +37,19 @@ def pre_all(context):
     # Drop the US copy of DFlop.vhd; the USP list provides the correct copy.
     config.add_exclude_hdl_file_list("excludedeps.txt")
 
-    config.add_constraints_template("xdc/constraints.xdc_template")
+    config.set_constraints_template("xdc/constraints.xdc_template")
 
     config.add_vivado_project_constraints("xdc/constraints_place.xdc")
     config.add_vivado_project_constraints("objects/xdc/constraints.xdc")
 
     # --- ModelSim Settings ---
     config.set_modelsim_project_folder("ModelSimProject")
+    config.set_modelsim_top_entity("SasquatchTopTemplate")
+
+    # ModelSim compiles its own file lists (independent of the Vivado HDL lists).
+    # The shared exclude list (excludedeps.txt) also applies here.
+    config.add_modelsim_file_list("vivadoprojectdeps.txt")
+    config.add_modelsim_file_list("vivadoprojectdeps_usp.txt")
+    config.add_modelsim_file_list("vivadoprojectsources_nowindow.txt")
 
     # NOTE: lv_window_netlist_folder is intentionally NOT set.
