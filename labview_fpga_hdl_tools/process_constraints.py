@@ -176,6 +176,60 @@ def replace_custom_constraints_in_xdc_folder(folder, custom_constraints_content)
             reporter.detail(f"Replaced macro_GitHubCustomConstraints in {filename}")
 
 
+_FROM_TO_CONSTRAINTS_MACRO_RE = re.compile(
+    r"^([ \t]*)(#LabVIEWFPGA_Macro[ \t]+macro_fromToConstraints)[ \t]*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def wrap_from_to_constraints_macro_in_folder(folder, entity_path_to_window_wrapper):
+    """Wrap the from-to-constraints macro with current_instance scoping in constraint files.
+
+    In the LabVIEW FPGA target plugin flow, LabVIEW FPGA replaces
+    ``#LabVIEWFPGA_Macro macro_fromToConstraints`` with the generated window From/To timing
+    constraints when a VI is compiled against the custom target. Those constraints
+    reference cells relative to the window wrapper instance, so the macro must be wrapped
+    with ``current_instance`` scoping (mirroring the FROM_TO handling in
+    ``process_constraints_template``). Without it, instance-relative constraints fail to
+    match cells inside the window when the window VHDL is encrypted.
+
+    Scans every ``.xdc`` and ``.xdc_template`` file in *folder* and wraps the
+    from-to-constraints macro line, leaving the macro token itself intact for LabVIEW FPGA
+    to replace later.
+
+    Args:
+        folder (str): Directory containing constraint files to process.
+        entity_path_to_window_wrapper (str | None): Hierarchical path to the window wrapper
+            instance. If falsy, no wrapping is performed.
+    """
+    if not os.path.isdir(folder) or not entity_path_to_window_wrapper:
+        return
+
+    def _wrap(match):
+        indent = match.group(1)
+        token = match.group(2)
+        return (
+            f"{indent}set TopInstance0 [current_instance .]\n"
+            f"{indent}current_instance {entity_path_to_window_wrapper}\n"
+            f"{indent}{token}\n"
+            f"{indent}current_instance -quiet\n"
+            f"{indent}current_instance $TopInstance0"
+        )
+
+    for filename in os.listdir(folder):
+        lowered = filename.lower()
+        if not (lowered.endswith(".xdc") or lowered.endswith(".xdc_template")):
+            continue
+        filepath = os.path.join(folder, filename)
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+        new_content, count = _FROM_TO_CONSTRAINTS_MACRO_RE.subn(_wrap, content)
+        if count > 0:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            reporter.detail(f"Wrapped macro_fromToConstraints with current_instance in {filename}")
+
+
 def process_constraints_template(config):
     """Process XDC constraint template files.
 

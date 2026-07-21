@@ -7,6 +7,7 @@ from labview_fpga_hdl_tools.process_constraints import (
     build_custom_constraints_content,
     load_custom_constraints,
     replace_custom_constraints_in_xdc_folder,
+    wrap_from_to_constraints_macro_in_folder,
 )
 
 
@@ -104,6 +105,66 @@ class TestReplaceCustomConstraintsInXdcFolder:
 
         for name in ["a.xdc", "b.xdc", "c.xdc"]:
             assert "REPLACED" in (tmp_path / name).read_text()
+
+
+class TestWrapFromToConstraintsMacroInFolder:
+    """Tests for wrap_from_to_constraints_macro_in_folder()."""
+
+    _FROM_TO_MACRO = "#LabVIEWFPGA_Macro macro_fromToConstraints"
+
+    def test_given_template_with_macro__when_wrapped__then_current_instance_added(self, tmp_path):
+        xdc_file = tmp_path / "constraints.xdc_template"
+        xdc_file.write_text(f"# Header\n{self._FROM_TO_MACRO}\n# Footer\n")
+
+        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "TheLvWindowWrapper")
+
+        result = xdc_file.read_text()
+        assert (
+            "set TopInstance0 [current_instance .]\n"
+            "current_instance TheLvWindowWrapper\n"
+            f"{self._FROM_TO_MACRO}\n"
+            "current_instance -quiet\n"
+            "current_instance $TopInstance0\n"
+        ) in result
+        # The macro token itself is preserved for LabVIEW FPGA to replace later.
+        assert self._FROM_TO_MACRO in result
+
+    def test_given_xdc_extension__when_wrapped__then_processed(self, tmp_path):
+        xdc_file = tmp_path / "constraints.xdc"
+        xdc_file.write_text(f"{self._FROM_TO_MACRO}\n")
+
+        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "WrapperInst")
+
+        assert "current_instance WrapperInst" in xdc_file.read_text()
+
+    def test_given_empty_wrapper__when_called__then_file_unchanged(self, tmp_path):
+        xdc_file = tmp_path / "constraints.xdc_template"
+        original = f"{self._FROM_TO_MACRO}\n"
+        xdc_file.write_text(original)
+
+        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "")
+
+        assert xdc_file.read_text() == original
+
+    def test_given_no_macro__when_called__then_file_unchanged(self, tmp_path):
+        xdc_file = tmp_path / "constraints_place.xdc"
+        original = "set_property FOO BAR\n"
+        xdc_file.write_text(original)
+
+        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "WrapperInst")
+
+        assert xdc_file.read_text() == original
+
+    def test_given_nonexistent_folder__when_called__then_no_error(self):
+        wrap_from_to_constraints_macro_in_folder("/nonexistent/folder", "WrapperInst")
+
+    def test_given_case_insensitive_macro__when_wrapped__then_works(self, tmp_path):
+        xdc_file = tmp_path / "constraints.xdc_template"
+        xdc_file.write_text("#labviewfpga_macro   macro_fromtoconstraints\n")
+
+        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "WrapperInst")
+
+        assert "current_instance WrapperInst" in xdc_file.read_text()
 
 
 class TestBuildCustomConstraintsContent:

@@ -835,6 +835,10 @@ def gen_lv_target_support(config=None):
         fpga_files_folder,
         process_constraints.build_custom_constraints_content(config.custom_constraints),
     )
+    process_constraints.wrap_from_to_constraints_macro_in_folder(
+        fpga_files_folder,
+        config.entity_path_to_window_wrapper,
+    )
 
     _copy_menu_files(config.lv_target_plugin_output_folder, config.lv_target_menus_folder)
 
