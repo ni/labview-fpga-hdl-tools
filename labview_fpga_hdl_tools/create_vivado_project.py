@@ -628,9 +628,7 @@ def _create_project(mode: ProjectMode, config):
     tcl_base_dir = os.path.join(current_dir, "TCL")
     vivado_project_dir = os.path.join(current_dir, config.vivado_project_folder)
     file_list = _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir)
-    vhdl2008_file_list = _copy_long_path_files(
-        vhdl2008_file_list, vivado_project_dir, tcl_base_dir
-    )
+    vhdl2008_file_list = _copy_long_path_files(vhdl2008_file_list, vivado_project_dir, tcl_base_dir)
 
     # Override default LV generated files with extracted window files
     if config.lv_window_netlist_folder:
