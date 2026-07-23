@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "labview-fpga-hdl-tools"
-version = "2.0.0.dev0"
+version = "2.0.0.dev1"
 description = "LabVIEW FPGA HDL Tools"
 authors = [
   "Salvador Santolucito <salvador.santolucito@gmail.com>"

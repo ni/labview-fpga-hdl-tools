@@ -155,6 +155,38 @@ The CSV uses a header row. Column order does not matter—the tools read columns
 
 ---
 
+### Valid DataType / Direction / OutputReadback / ZeroSyncRegs Combinations
+
+The `Direction`, `OutputReadback`, and `ZeroSyncRegs` columns are combined with the `DataType` to select a LabVIEW FPGA I/O prototype. **Not every permutation of these columns corresponds to a real prototype.** The tool assembles a prototype name of the form:
+
+```
+<type>Digital<Direction><OutputReadback><ZeroSyncRegs>
+```
+
+If the assembled combination is not one that LabVIEW FPGA publishes, `gen-target` / `gen-hdl` will **fail with a validation error** instead of silently producing an unusable target. Use the tables below to choose valid combinations.
+
+**Inputs** (`Direction=input`) — `OutputReadback` is not used and should be left empty. Supported for **all** data types:
+
+| Direction | ZeroSyncRegs | Supported? |
+|-----------|-------------|:----------:|
+| `input` | `FALSE` | ✅ |
+| `input` | `TRUE` | ✅ |
+
+**Outputs** (`Direction=output`) — support depends on the data type:
+
+| Direction | OutputReadback | ZeroSyncRegs | `Boolean` / `FXP` | Integer types (`U8`–`U64`, `I8`–`I64`) |
+|-----------|---------------|-------------|:-----------------:|:----------------------------------------:|
+| `output` | `TRUE`  | `FALSE` | ✅ | ✅ |
+| `output` | `TRUE`  | `TRUE`  | ✅ | ✅ |
+| `output` | `FALSE` | `FALSE` | ✅ | ✅ |
+| `output` | `FALSE` | `TRUE`  | ✅ | ❌ **not supported** |
+
+> **Key restriction:** The integer port types (`U8`–`U64`, `I8`–`I64`) have **no** "without-readback output with zero sync registers" prototype. For an integer output with `ZeroSyncRegs=TRUE`, you must set `OutputReadback=TRUE`. Only `Boolean` and `FXP` support `OutputReadback=FALSE` together with `ZeroSyncRegs=TRUE`.
+
+If you supply an unsupported combination, the tool reports an error naming the offending signal and pointing back to this table.
+
+---
+
 ### UseInLabVIEWSingleCycleTimedLoop
 
 **Purpose:** Specifies whether this signal can be used inside a LabVIEW FPGA Single-Cycle Timed Loop (SCTL).
@@ -193,6 +225,8 @@ The CSV uses a header row. Column order does not matter—the tools read columns
 - Set to `TRUE` for input signals and signals with `UseInLabVIEWSingleCycleTimedLoop=Required` (they are already synchronous to their required clock domain)
 - Set to `FALSE` for output signals that don't require SCTL usage
 
+> **Restriction:** For the integer port types (`U8`–`U64`, `I8`–`I64`), `ZeroSyncRegs=TRUE` is only valid on an output when `OutputReadback=TRUE`. See [Valid DataType / Direction / OutputReadback / ZeroSyncRegs Combinations](#valid-datatype--direction--outputreadback--zerosyncregs-combinations).
+
 ---
 
 ### OutputReadback
@@ -212,6 +246,8 @@ The CSV uses a header row. Column order does not matter—the tools read columns
 - `FALSE` → Appends `WithoutReadback` to the BoardIO XML prototype string
 - Only evaluated for signals where Direction=`output`
 - Input signals should leave this field empty
+
+> **Restriction:** Not every `OutputReadback` / `ZeroSyncRegs` pairing is valid for every data type. See [Valid DataType / Direction / OutputReadback / ZeroSyncRegs Combinations](#valid-datatype--direction--outputreadback--zerosyncregs-combinations).
 
 ---
 

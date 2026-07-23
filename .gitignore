@@ -23,6 +23,9 @@ ModelSimProject/
 dist/
 docs/_build/
 
+# AI workspace scratch files (intermediate scripts, logs, captured context)
+.build/ai/
+
 # Common editor metadata
 .vscode/
 
