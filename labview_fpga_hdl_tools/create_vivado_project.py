@@ -25,6 +25,27 @@ from enum import Enum
 from . import common, generate_vhdl, process_constraints
 from .reporting import reporter
 
+# Windows MAX_PATH. When the generated TCL adds a source file, Vivado resolves the
+# file's add_files path (which is relative to the TCL folder) against the Vivado
+# project folder -- its working directory -- WITHOUT collapsing the leading ".."
+# segments. On Windows that raw, non-normalized string is bounded by MAX_PATH.
+# Empirically a resolved length of 260 fails with "[Vivado 12-172] File or
+# Directory ... does not exist" even though the file exists; 259 is the longest
+# that works.
+VIVADO_MAX_PATH_LEN = 260
+
+# Copy a source file into objects/gatheredfiles once its Vivado-resolved path would
+# reach this length. This sits just below VIVADO_MAX_PATH_LEN so a normal install
+# never trips the hard failure, while leaving as much room as possible so that
+# dependency files shipped at their real paths are added in place rather than
+# copied. The dependency path shortening in the flexrio build (build.py
+# DEPS_MAX_REL_PATH_LEN) is sized to keep normal installs under this limit.
+VIVADO_SAFE_MAX_PATH_LEN = 255
+
+# Non-Windows platforms are not affected by MAX_PATH; use a generous limit that
+# effectively only guards against pathological path lengths.
+POSIX_MAX_PATH_LEN = 4096
+
 
 def _has_spaces(file_path):
     """Checks if the given file path contains spaces.
@@ -211,17 +232,25 @@ def _find_and_log_duplicates(file_list):
     return unique_file_list
 
 
-def _copy_long_path_files(file_list):
-    """Copies files to the "objects/gatheredfiles" folder.
+def _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir):
+    """Copies files that would exceed Vivado's path limit into "objects/gatheredfiles".
 
-    The function handles:
-    - Creating the target directory if needed
-    - Handling Windows long paths for deep directory structures
-    - Setting proper file permissions
-    - Error reporting for failed copy operations
+    Vivado does not use a source file's absolute path to decide whether it can open
+    it. The generated TCL adds each file with a path that is relative to the TCL
+    folder, and Vivado resolves that relative path against the Vivado project folder
+    (its working directory) WITHOUT collapsing the leading ".." segments. On Windows
+    that raw, non-normalized string is bounded by the 260-char MAX_PATH limit, so it
+    -- not the shorter normalized absolute path -- is what determines whether Vivado
+    reports "[Vivado 12-172] File or Directory ... does not exist".
+
+    This function reproduces that exact resolution to decide which files must be
+    copied to a short local path before being added to the project.
 
     Args:
         file_list (list): Original list of file paths
+        vivado_project_dir (str): Absolute path of the Vivado project folder, which
+            Vivado uses as its working directory when the generated TCL runs
+        tcl_base_dir (str): Folder that the add_files paths are made relative to
 
     Returns:
         list: Updated file list with long path files moved to local paths
@@ -237,29 +266,28 @@ def _copy_long_path_files(file_list):
         # Store original file path before modification
         original_file = file
         absolute_file_path = os.path.abspath(original_file)
-        try:
-            relative_file_path = os.path.relpath(absolute_file_path, os.getcwd())
-        except ValueError:
-            relative_file_path = original_file
 
-        # Handle long paths on Windows
+        # Reproduce the path length Vivado will actually see. On Windows this is the
+        # non-normalized "<project folder>\<relative add_files path>" string that is
+        # subject to MAX_PATH; elsewhere the generous absolute-path limit applies.
+        if os.name == "nt":
+            tcl_relative_path = os.path.relpath(absolute_file_path, tcl_base_dir)
+            vivado_path_len = len(vivado_project_dir) + len(os.sep) + len(tcl_relative_path)
+            path_len_limit = VIVADO_SAFE_MAX_PATH_LEN
+        else:
+            vivado_path_len = len(absolute_file_path)
+            path_len_limit = POSIX_MAX_PATH_LEN
+
+        # Handle long source paths on Windows so the copy itself can read them.
         if os.name == "nt":
             file = f"\\\\?\\{absolute_file_path}"
             target_folder_long = f"\\\\?\\{os.path.abspath(target_folder)}"
         else:
             target_folder_long = target_folder
 
-        # Vivado has a problem with adding long file paths to the project,
-        # so we check if the file path is too long and if so we copy it
-        # to a local folder and add it from there instead. We check both
-        # the absolute path and the relative path because Vivado might be
-        # using either one when processing the TCL script, and we want to
-        # ensure that we catch all cases where the path length could be
-        # an issue.
-        max_path = 200 if os.name == "nt" else 4096
-
-        # Check if the absolute or relative path is longer than max_path characters.
-        if len(absolute_file_path) > max_path or len(relative_file_path) > max_path:
+        # Copy the file to a short local path when Vivado's resolved path would be
+        # too long. Files at short paths are added from their original location.
+        if vivado_path_len > path_len_limit:
             target_path = os.path.join(target_folder_long, os.path.basename(file))
             if os.path.exists(target_path):
                 os.chmod(target_path, 0o777)  # Make the file writable
@@ -267,7 +295,10 @@ def _copy_long_path_files(file_list):
                 shutil.copy2(file, target_path)
                 new_file_list.append(target_path)
                 reporter.warn(f"WARNING: Long path file {original_file}")
-                reporter.detail(f"         was copied into the objects/gatheredfiles folder.")
+                reporter.detail(
+                    f"         (Vivado path length {vivado_path_len} exceeds the safe "
+                    f"limit of {path_len_limit}) was copied into the objects/gatheredfiles folder."
+                )
                 reporter.detail(
                     f"         You must run 'nihdl create-project --update' to pull in any changes to the source file."
                 )
@@ -592,9 +623,14 @@ def _create_project(mode: ProjectMode, config):
 
     # Copy long path files to the gatheredfiles folder
     # Returns the file list with the files from old long path locations having
-    # new locations in gatheredfiles
-    file_list = _copy_long_path_files(file_list)
-    vhdl2008_file_list = _copy_long_path_files(vhdl2008_file_list)
+    # new locations in gatheredfiles. The Vivado project folder and TCL folder are
+    # needed to reproduce the exact path length Vivado resolves at add_files time.
+    tcl_base_dir = os.path.join(current_dir, "TCL")
+    vivado_project_dir = os.path.join(current_dir, config.vivado_project_folder)
+    file_list = _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir)
+    vhdl2008_file_list = _copy_long_path_files(
+        vhdl2008_file_list, vivado_project_dir, tcl_base_dir
+    )
 
     # Override default LV generated files with extracted window files
     if config.lv_window_netlist_folder:
