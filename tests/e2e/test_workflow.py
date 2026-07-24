@@ -10,7 +10,10 @@ import time
 
 # Set up environment
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(TEST_DIR)
+# TEST_DIR is tests/e2e; the repo root is two levels up, and the pytest unit
+# tests live in the sibling tests/unit folder.
+REPO_ROOT = os.path.dirname(os.path.dirname(TEST_DIR))
+UNIT_TEST_DIR = os.path.join(os.path.dirname(TEST_DIR), "unit")
 
 # Define colors for output formatting (if supported)
 try:
@@ -716,8 +719,8 @@ def run_unit_tests():
     """Run the pytest-based unit tests (createBitfile discovery, constraint helpers).
 
     The main workflow runner exercises the nihdl CLI end to end, but the pure-Python
-    unit tests live in separate ``test_*.py`` modules. Invoke pytest on them here so
-    that ``python tests/test_workflow.py`` (the command CI runs) covers them too.
+    unit tests live in the sibling ``tests/unit`` folder. Invoke pytest on that folder
+    here so that ``python tests/e2e/test_workflow.py`` (the command CI runs) covers them too.
 
     Returns:
         bool: True if all unit tests passed, False otherwise.
@@ -726,18 +729,12 @@ def run_unit_tests():
     print(f"{BLUE}Running Test Set: Unit Tests (pytest){RESET}")
     print(f"{BLUE}{'=' * 80}{RESET}")
 
-    unit_test_files = [
-        os.path.join(TEST_DIR, name)
-        for name in sorted(os.listdir(TEST_DIR))
-        if name.startswith("test_") and name.endswith(".py") and name != "test_workflow.py"
-    ]
-
-    if not unit_test_files:
-        print(f"{YELLOW}No unit test files found.{RESET}")
+    if not os.path.isdir(UNIT_TEST_DIR):
+        print(f"{YELLOW}No unit test directory found at {UNIT_TEST_DIR}.{RESET}")
         return True
 
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", *unit_test_files],
+        [sys.executable, "-m", "pytest", "-q", UNIT_TEST_DIR],
         cwd=REPO_ROOT,
         text=True,
     )

@@ -2,41 +2,54 @@
 
 ## Overview
 
-The test suite validates `nihdl` CLI commands by running them against a self-contained
-sample project, then comparing generated outputs against checked-in reference files.
-All tests run with `skip_vivado` and `skip_modelsim` enabled so no external tools
-are required.
+The test suite is split into two folders:
+
+- **`tests/unit/`** — fast [pytest](https://docs.pytest.org) unit tests that import
+  individual functions and check them in isolation. No external tools, milliseconds
+  to run.
+- **`tests/functional/`** (this folder) — the end-to-end workflow test and all of its
+  fixtures. It runs the `nihdl` CLI as a subprocess against a self-contained sample
+  project and compares generated outputs against checked-in reference files.
+
+This document describes the functional (end-to-end) suite in `tests/functional/`.
+
+The end-to-end tests validate `nihdl` CLI commands by running them against a
+self-contained sample project, then comparing generated outputs against checked-in
+reference files. All tests run with `skip_vivado` and `skip_modelsim` enabled so no
+external tools are required.
 
 ## Folder Layout
 
 ```
 tests/
-├── test_workflow.py              # Test runner (the only file you execute; also runs the unit tests below)
-├── test_create_lvbitx.py         # Unit tests for createBitfile.exe discovery
-├── test_process_constraints.py   # Unit tests for constraint processing helpers
-├── test-project/                 # Input: sample project mimicking a real FlexRIO target
-│   ├── deps/                     # Mock dependency tree (CLIP XML, HDL sources)
-│   └── targets/
-│       ├── common/               # Shared assets (menus, templates)
-│       └── pxie-7903/            # The target under test
-│           ├── nihdlsettings.py          # Primary settings (all features enabled)
-│           ├── badsettings.py            # Intentionally invalid paths (error tests)
-│           ├── nowindowsettings.py       # No lvWindowNetlist (optional-feature test)
-│           ├── lvWindowNetlist/          # Checked-in Window netlist files
-│           ├── lvFpgaTarget/             # Target plugin templates & inputs
-│           ├── rtl-lvfpga/               # Mako templates for HDL generation
-│           ├── xdc/                      # Constraint templates
-│           └── TCL/                      # TCL script templates
-├── test-project-expected/        # Reference: expected generated outputs
-│   └── targets/pxie-7903/
-│       ├── objects/              # Expected contents of objects/ after commands run
-│       └── VivadoProject/        # Expected Vivado project files
-├── test-plugin-install-dir/      # Output: where install-target writes (generated)
-├── test-plugin-install-dir-expected/  # Reference: expected install-target output
-├── test-vivado/                  # Stub: fake vivado.bat (prints nothing, exits 0)
-├── test-modelsim/                # Stub: fake vsim.exe
-├── test-LabVIEW/                 # Stub: fake LabVIEW install with createBitfile.exe
-└── test-labview-vpe/             # Stub: fake LabVIEW VPE export (for get-window)
+├── unit/                         # Fast pytest unit tests (pure logic, no external tools)
+│   ├── conftest.py               # Shared fixtures (resets the global reporter between tests)
+│   └── test_*.py                 # One module per source module under test
+└── functional/                   # This suite: end-to-end CLI tests + all fixtures
+    ├── test_workflow.py          # Test runner (the only file you execute; also runs tests/unit)
+    ├── test-project/             # Input: sample project mimicking a real FlexRIO target
+    │   ├── deps/                 # Mock dependency tree (CLIP XML, HDL sources)
+    │   └── targets/
+    │       ├── common/           # Shared assets (menus, templates)
+    │       └── pxie-7903/        # The target under test
+    │           ├── nihdlsettings.py      # Primary settings (all features enabled)
+    │           ├── badsettings.py        # Intentionally invalid paths (error tests)
+    │           ├── nowindowsettings.py   # No lvWindowNetlist (optional-feature test)
+    │           ├── lvWindowNetlist/      # Checked-in Window netlist files
+    │           ├── lvFpgaTarget/         # Target plugin templates & inputs
+    │           ├── rtl-lvfpga/           # Mako templates for HDL generation
+    │           ├── xdc/                  # Constraint templates
+    │           └── TCL/                  # TCL script templates
+    ├── test-project-expected/    # Reference: expected generated outputs
+    │   └── targets/pxie-7903/
+    │       ├── objects/          # Expected contents of objects/ after commands run
+    │       └── VivadoProject/    # Expected Vivado project files
+    ├── test-plugin-install-dir/          # Output: where install-target writes (generated)
+    ├── test-plugin-install-dir-expected/ # Reference: expected install-target output
+    ├── test-vivado/              # Stub: fake vivado.bat (prints nothing, exits 0)
+    ├── test-modelsim/            # Stub: fake vsim.exe
+    ├── test-LabVIEW/             # Stub: fake LabVIEW install with createBitfile.exe
+    └── test-labview-vpe/         # Stub: fake LabVIEW VPE export (for get-window)
 ```
 
 ## Key Concepts
@@ -114,7 +127,7 @@ error message, never with an uncaught exception.
 
 If your change alters the content of generated files (TCL scripts, XML, HDL, etc.):
 
-1. Run `python tests/test_workflow.py` and confirm the command tests pass.
+1. Run `python tests/functional/test_workflow.py` and confirm the command tests pass.
 2. If output validation fails with "content mismatch", inspect the diff:
    - If the new output is correct, copy it to the corresponding `-expected` folder.
    - If it's wrong, fix the code.

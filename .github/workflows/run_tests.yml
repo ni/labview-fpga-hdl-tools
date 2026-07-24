@@ -32,5 +32,5 @@ jobs:
         pip install mako
 
     - name: Run test workflow
-      run: python tests/test_workflow.py
+      run: python tests/functional/test_workflow.py
       shell: bash

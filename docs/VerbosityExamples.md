@@ -32,7 +32,7 @@
   ```
 
 All of the examples below are **real captured output** from the test sandbox
-at `tests/test-project/targets/pxie-7903`, using its passing config
+at `tests/functional/test-project/targets/pxie-7903`, using its passing config
 (`nihdlsettings.py`) and its intentionally-broken config (`badsettings.py`).
 Long absolute paths are abbreviated to `.../pxie-7903/...` for readability.
 

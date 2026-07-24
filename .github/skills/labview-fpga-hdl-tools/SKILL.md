@@ -49,7 +49,7 @@ All three checks must pass before any change is considered complete:
 # Run from repo root: c:\dev\github8\labview-fpga-hdl-tools\
 
 # 1. Full test suite (31 tests: 16 success + 15 error + 1 skipped)
-python tests\test_workflow.py
+python tests\functional\test_workflow.py
 
 # 2. Lint (wraps Black + flake8 via ni-python-styleguide)
 poetry run ni-python-styleguide lint labview_fpga_hdl_tools/
@@ -66,10 +66,11 @@ poetry run ni-python-styleguide fix labview_fpga_hdl_tools/
 
 ### Test Structure
 
-- `tests/test_workflow.py` — Runs `nihdl <command>` via subprocess against `tests/test-project/`.
-- Tests invoke commands with `cwd=tests/test-project/targets/pxie-7903/` (or `.../impl_1` for create-lvbitx).
-- Output validation compares generated files against `tests/test-project-expected/`.
-- Test settings: `tests/test-project/targets/pxie-7903/nihdlsettings.py`.
+- `tests/unit/` — Fast pytest unit tests (pure logic, no external tools). Run with `poetry run pytest tests/unit`.
+- `tests/functional/test_workflow.py` — Runs `nihdl <command>` via subprocess against `tests/functional/test-project/`; also runs the `tests/unit` suite via pytest.
+- Tests invoke commands with `cwd=tests/functional/test-project/targets/pxie-7903/` (or `.../impl_1` for create-lvbitx).
+- Output validation compares generated files against `tests/functional/test-project-expected/`.
+- Test settings: `tests/functional/test-project/targets/pxie-7903/nihdlsettings.py`.
 
 ## Development Preferences
 
