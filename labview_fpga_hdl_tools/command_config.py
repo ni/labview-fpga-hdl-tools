@@ -14,14 +14,18 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 
-def resolve_path(rel_path):
-    """Convert a relative path to an absolute path based on the current working directory.
+def resolve_path(rel_path, base_dir=None):
+    """Convert a relative path to an absolute path.
 
-    This is useful for processing configuration file paths that may be specified
-    relative to the location of the configuration file itself.
+    Relative paths are resolved against ``base_dir`` when it is given, otherwise
+    against the current working directory. Passing an explicit ``base_dir`` makes
+    resolution deterministic and independent of the process working directory
+    (which is what :class:`CommandConfiguration` does via its ``base_dir``).
 
     Args:
-        rel_path (str): Relative path to convert
+        rel_path (str): Relative path to convert.
+        base_dir (str | None): Directory to resolve ``rel_path`` against. When
+            None, the current working directory is used.
 
     Returns:
         str or None: Normalized absolute path, or None if the input path is empty
@@ -31,7 +35,8 @@ def resolve_path(rel_path):
 
     # Strip whitespace/newlines before processing (handles multi-line INI values)
     rel_path = rel_path.strip()
-    abs_path = os.path.normpath(os.path.join(os.getcwd(), rel_path))
+    root = base_dir if base_dir is not None else os.getcwd()
+    abs_path = os.path.normpath(os.path.join(root, rel_path))
     return abs_path
 
 
@@ -52,6 +57,11 @@ class CommandConfiguration:
 
     # ----- FORMAT VERSION -----
     format_version: Optional[str] = None  # INI format version (e.g., "2.0")
+    # ----- PATH RESOLUTION -----
+    # Directory that relative-path setters resolve against. The hook system sets
+    # this to the nihdlsettings.py file's directory so path resolution does not
+    # depend on the process working directory. None -> resolve against cwd.
+    base_dir: Optional[str] = None
     # ----- GENERAL SETTINGS -----
     target_family: Optional[str] = None  # Target family (e.g., "FlexRIO")
     base_target: Optional[str] = None  # Base target name (e.g., "PXIe-7903")
@@ -170,6 +180,12 @@ class CommandConfiguration:
     skip_vivado: bool = False  # Skip launching Vivado (validation only)
     skip_modelsim: bool = False  # Skip launching ModelSim (validation only)
 
+    # --- Path resolution helper ---
+
+    def _resolve(self, value):
+        """Resolve a relative path against this config's base_dir (or cwd if unset)."""
+        return resolve_path(value, self.base_dir)
+
     # --- General Settings setters ---
 
     def set_target_family(self, value):
@@ -182,7 +198,7 @@ class CommandConfiguration:
 
     def set_dependencies(self, value):
         """Set the path to dependencies.toml (resolved to absolute)."""
-        self.dependencies = resolve_path(value)
+        self.dependencies = self._resolve(value)
 
     # --- Tool Settings setters ---
 
@@ -202,11 +218,11 @@ class CommandConfiguration:
 
     def set_vivado_tools_folder(self, value):
         """Set the Vivado tools path (resolved to absolute)."""
-        self.vivado_tools_folder = resolve_path(value)
+        self.vivado_tools_folder = self._resolve(value)
 
     def add_hdl_file_list(self, value):
         """Append an HDL file list path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.hdl_file_lists.append(resolved)
 
@@ -223,29 +239,29 @@ class CommandConfiguration:
         UltraScale PkgNiDmaConfig.vhd vs the UltraScale+ copy). The target that
         owns the correct copy lists the wrong one here to drop it.
         """
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.exclude_hdl_file_lists.append(resolved)
 
     def add_vhdl2008_file_list(self, value):
         """Append a VHDL 2008 file list path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.vhdl2008_file_lists.append(resolved)
 
     def set_constraints_template(self, value):
         """Set the constraints template path (resolved to absolute)."""
-        self.constraints_template = resolve_path(value)
+        self.constraints_template = self._resolve(value)
 
     def add_vivado_project_constraints(self, value):
         """Append a Vivado project constraints file path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.vivado_project_constraints.append(resolved)
 
     def set_vivado_tcl_scripts_folder(self, value):
         """Set the Vivado TCL scripts folder (resolved to absolute)."""
-        self.vivado_tcl_scripts_folder = resolve_path(value)
+        self.vivado_tcl_scripts_folder = self._resolve(value)
         self.vivado_tcl_scripts_folder_relpath = value
 
     def add_custom_constraints(self, value, order):
@@ -270,41 +286,41 @@ class CommandConfiguration:
                 f"add_custom_constraints: order {order} is already used by "
                 f"'{self.custom_constraints[order]}'; each order must be unique"
             )
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.custom_constraints[order] = resolved
 
     def set_lv_window_netlist_folder(self, value):
         """Set the input Window folder path (resolved to absolute)."""
-        self.lv_window_netlist_folder = resolve_path(value)
+        self.lv_window_netlist_folder = self._resolve(value)
 
     # --- LV Window Netlist Settings setters ---
 
     def set_lv_window_vivado_project_export_xpr(self, value):
         """Set the exported Vivado project .xpr path (resolved to absolute)."""
-        self.lv_window_vivado_project_export_xpr = resolve_path(value)
+        self.lv_window_vivado_project_export_xpr = self._resolve(value)
 
     def set_lv_window_netlist_output_folder(self, value):
         """Set the output Window folder path (resolved to absolute)."""
-        self.lv_window_netlist_output_folder = resolve_path(value)
+        self.lv_window_netlist_output_folder = self._resolve(value)
 
     # --- LVFPGA Target Settings setters ---
 
     def set_custom_io_csv(self, value):
         """Set the custom I/O CSV path (resolved to absolute)."""
-        self.custom_io_csv = resolve_path(value)
+        self.custom_io_csv = self._resolve(value)
 
     def set_boardio_output(self, value):
         """Set the BoardIO XML output path (resolved to absolute)."""
-        self.boardio_output = resolve_path(value)
+        self.boardio_output = self._resolve(value)
 
     def set_clock_output(self, value):
         """Set the Clock XML output path (resolved to absolute)."""
-        self.clock_output = resolve_path(value)
+        self.clock_output = self._resolve(value)
 
     def set_generated_vhdl_output_folder(self, value):
         """Set the generated VHDL output folder (resolved to absolute)."""
-        self.generated_vhdl_output_folder = resolve_path(value)
+        self.generated_vhdl_output_folder = self._resolve(value)
 
     def add_generated_vhdl_template(self, value):
         """Append a generated VHDL Mako template (resolved to absolute).
@@ -314,19 +330,19 @@ class CommandConfiguration:
         design source the simulation needs (e.g. the PkgNiHdlSettings package) is
         produced for both.
         """
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.generated_vhdl_templates.append(resolved)
 
     def add_lv_target_xml_template(self, value):
         """Append a target XML template path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.lv_target_xml_templates.append(resolved)
 
     def add_lv_target_constraints(self, value):
         """Append a LV target constraints file path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.lv_target_constraints.append(resolved)
 
@@ -346,7 +362,7 @@ class CommandConfiguration:
 
     def set_lv_target_plugin_output_folder(self, value):
         """Set the LV target plugin folder (resolved to absolute)."""
-        self.lv_target_plugin_output_folder = resolve_path(value)
+        self.lv_target_plugin_output_folder = self._resolve(value)
 
     def set_lv_target_name(self, value):
         """Set the LabVIEW FPGA target name."""
@@ -358,15 +374,15 @@ class CommandConfiguration:
 
     def set_lv_target_install_folder(self, value):
         """Set the target plugin installation folder (resolved to absolute)."""
-        self.lv_target_install_folder = resolve_path(value)
+        self.lv_target_install_folder = self._resolve(value)
 
     def set_lv_target_menus_folder(self, value):
         """Set the target plugin menus folder (resolved to absolute)."""
-        self.lv_target_menus_folder = resolve_path(value)
+        self.lv_target_menus_folder = self._resolve(value)
 
     def set_lv_target_info_ini(self, value):
         """Set the TargetInfo.ini path (resolved to absolute)."""
-        self.lv_target_info_ini = resolve_path(value)
+        self.lv_target_info_ini = self._resolve(value)
 
     def set_lv_target_exclude_files(self, value):
         """Set the target exclude files path (resolved to absolute).
@@ -379,7 +395,7 @@ class CommandConfiguration:
 
     def add_lv_target_exclude_files(self, value):
         """Append a target exclude files path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.lv_target_exclude_files.append(resolved)
 
@@ -405,19 +421,19 @@ class CommandConfiguration:
 
     def set_clip_input_xml(self, value):
         """Set the CLIP XML input path (resolved to absolute)."""
-        self.clip_input_xml = resolve_path(value)
+        self.clip_input_xml = self._resolve(value)
 
     def set_clip_output_csv(self, value):
         """Set the CSV output path (resolved to absolute)."""
-        self.clip_output_csv = resolve_path(value)
+        self.clip_output_csv = self._resolve(value)
 
     def set_clip_top_hdl(self, value):
         """Set the CLIP HDL top-level file path (resolved to absolute)."""
-        self.clip_top_hdl = resolve_path(value)
+        self.clip_top_hdl = self._resolve(value)
 
     def set_clip_inst_example(self, value):
         """Set the CLIP instantiation example path (resolved to absolute)."""
-        self.clip_inst_example = resolve_path(value)
+        self.clip_inst_example = self._resolve(value)
 
     def set_clip_entity_path(self, value):
         """Set the CLIP instance HDL hierarchy path (not a file path)."""
@@ -425,27 +441,27 @@ class CommandConfiguration:
 
     def add_clip_constraints(self, value):
         """Append a CLIP XDC constraint file path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.clip_constraints.append(resolved)
 
     def set_clip_output_xdc_folder(self, value):
         """Set the updated XDC output folder (resolved to absolute)."""
-        self.clip_output_xdc_folder = resolve_path(value)
+        self.clip_output_xdc_folder = self._resolve(value)
 
     def set_clip_to_window_signal_definitions(self, value):
         """Set the CLIP-to-Window signal definitions path (resolved to absolute)."""
-        self.clip_to_window_signal_definitions = resolve_path(value)
+        self.clip_to_window_signal_definitions = self._resolve(value)
 
     # --- ModelSim Settings setters ---
 
     def set_modelsim_tools_folder(self, value):
         """Set the ModelSim installation path (resolved to absolute)."""
-        self.modelsim_tools_folder = resolve_path(value)
+        self.modelsim_tools_folder = self._resolve(value)
 
     def set_xilinx_sim_lib_folder(self, value):
         """Set the Xilinx simulation library path (resolved to absolute)."""
-        self.xilinx_sim_lib_folder = resolve_path(value)
+        self.xilinx_sim_lib_folder = self._resolve(value)
 
     def add_xilinx_sim_library(self, value):
         """Append a Xilinx simulation library name to build (e.g. 'unisim', 'secureip').
@@ -475,7 +491,7 @@ class CommandConfiguration:
 
     def add_modelsim_file_list(self, value):
         """Append a ModelSim file list path (resolved to absolute)."""
-        resolved = resolve_path(value)
+        resolved = self._resolve(value)
         if resolved is not None:
             self.modelsim_file_lists.append(resolved)
 
@@ -505,7 +521,7 @@ class CommandConfiguration:
         Example: "C:\\Program Files\\National Instruments\\LabVIEW 2023".
         When unset, gen-lvbitx auto-discovers the latest installed LabVIEW.
         """
-        self.labview_path = resolve_path(value)
+        self.labview_path = self._resolve(value)
 
     # --- Runtime Settings setters ---
 

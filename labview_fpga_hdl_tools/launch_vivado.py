@@ -43,20 +43,7 @@ def _validate_ini(config):
     if not config.vivado_project_folder:
         missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
 
-    # If any required settings are missing, raise an error
-    if missing_settings:
-        error_msg = "Missing required configuration settings:\n"
-        for setting in missing_settings:
-            error_msg += f"  - {setting}\n"
-        error_msg += "\nCheck your nihdlsettings.py file and try again."
-        raise ValueError(error_msg)
-
-    if invalid_paths:
-        error_msg = "The following settings have invalid paths:\n"
-        for path in invalid_paths:
-            error_msg += f"  - {path}\n"
-        error_msg += "\nCheck your configuration and try again."
-        raise ValueError(error_msg)
+    common.raise_for_missing_settings(missing_settings, invalid_paths)
 
 
 def launch_vivado(config=None):

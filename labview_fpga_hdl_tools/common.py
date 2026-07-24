@@ -495,6 +495,47 @@ def get_invalid_paths_error(invalid_paths):
     return error_msg
 
 
+def collect_missing_settings(config, required):
+    """Return the labels of required settings that are unset (falsy) on config.
+
+    A small declarative helper for the ``_validate_ini`` functions: instead of a
+    run of ``if not config.attr: missing.append("Label")`` lines, pass the
+    (attribute, label) pairs and get back the labels of the ones that are unset.
+    Command-specific path/conditional checks stay in the caller.
+
+    Args:
+        config: CommandConfiguration.
+        required: Iterable of ``(attribute_name, label)`` pairs. ``label`` is the
+            text that appears in the error message when the attribute is unset.
+
+    Returns:
+        list[str]: Labels of the missing settings, in the given order.
+    """
+    return [label for attr, label in required if not getattr(config, attr, None)]
+
+
+def raise_for_missing_settings(missing_settings, invalid_paths):
+    """Raise ``ValueError`` for missing settings or invalid paths, if any.
+
+    Missing settings take precedence over invalid paths. Produces the standard
+    launch-style messages shared by the launch commands. Does nothing when both
+    lists are empty.
+    """
+    if missing_settings:
+        error_msg = "Missing required configuration settings:\n"
+        for setting in missing_settings:
+            error_msg += f"  - {setting}\n"
+        error_msg += "\nCheck your nihdlsettings.py file and try again."
+        raise ValueError(error_msg)
+
+    if invalid_paths:
+        error_msg = "The following settings have invalid paths:\n"
+        for path in invalid_paths:
+            error_msg += f"  - {path}\n"
+        error_msg += "\nCheck your configuration and try again."
+        raise ValueError(error_msg)
+
+
 def generate_guid():
     """Generate a new GUID (UUID4) in standard format.
 

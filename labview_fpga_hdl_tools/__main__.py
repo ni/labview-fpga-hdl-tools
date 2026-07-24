@@ -168,6 +168,28 @@ def hook_options(func):
     return func
 
 
+def _run(command_name, command_func, *, config, settings_args, verbose, **command_kwargs):
+    """Execute a command through run_with_hooks with the shared error handling.
+
+    Centralizes the per-command boilerplate: parse the repeated ``--set``
+    overrides, run the command wrapped in nihdlsettings hooks, and turn any
+    exception into a non-zero exit while letting run_with_hooks own the error
+    reporting (its end-of-run summary already recorded the failure).
+    """
+    try:
+        return command_hooks.run_with_hooks(
+            command_name,
+            command_func,
+            command_config_path=config,
+            settings_args=_parse_set(settings_args),
+            verbose=verbose,
+            **command_kwargs,
+        )
+    except Exception as e:
+        handle_exception(e)
+        return 1
+
+
 # ---------------------------------------------------------------------------
 # Workspace Setup
 # ---------------------------------------------------------------------------
@@ -181,21 +203,16 @@ def hook_options(func):
 @click.pass_context
 def install_deps_cmd(ctx, delete, pre, latest, config, settings_args, verbose):
     """Install GitHub dependencies from dependencies.toml."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "install_deps",
-            install_dependencies.install_dependencies,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-            delete_allowed=delete,
-            allow_prerelease=pre,
-            use_latest=latest,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "install_deps",
+        install_dependencies.install_dependencies,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+        delete_allowed=delete,
+        allow_prerelease=pre,
+        use_latest=latest,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -210,20 +227,15 @@ def install_deps_cmd(ctx, delete, pre, latest, config, settings_args, verbose):
 @click.pass_context
 def gen_vivado_cmd(ctx, overwrite, update, config, settings_args, verbose):
     """Generate Vivado project."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_vivado",
-            create_vivado_project.create_project,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-            overwrite=overwrite,
-            update=update,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_vivado",
+        create_vivado_project.create_project,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+        overwrite=overwrite,
+        update=update,
+    )
 
 
 @cli.command("launch-vivado", help="Launch Vivado with the current project")
@@ -231,18 +243,13 @@ def gen_vivado_cmd(ctx, overwrite, update, config, settings_args, verbose):
 @click.pass_context
 def launch_vivado_cmd(ctx, config, settings_args, verbose):
     """Launch Vivado with the current project."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "launch_vivado",
-            launch_vivado.launch_vivado,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "launch_vivado",
+        launch_vivado.launch_vivado,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 @cli.command("check-vivado", help="Check Vivado RTL syntax and hierarchy quickly")
@@ -250,18 +257,13 @@ def launch_vivado_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def check_vivado_cmd(ctx, config, settings_args, verbose):
     """Check Vivado RTL syntax and hierarchy using RTL elaboration."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "check_vivado",
-            check_syntax.check_syntax,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "check_vivado",
+        check_syntax.check_syntax,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 @cli.command("compile-vivado", help="Compile Vivado project and generate a LabVIEW FPGA bitfile")
@@ -269,18 +271,13 @@ def check_vivado_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def compile_vivado_cmd(ctx, config, settings_args, verbose):
     """Compile Vivado project and generate a LabVIEW FPGA bitfile."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "compile_vivado",
-            compile_project.compile_project,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "compile_vivado",
+        compile_project.compile_project,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -293,18 +290,13 @@ def compile_vivado_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def gen_window_cmd(ctx, config, settings_args, verbose):
     """Generate LabVIEW window netlist from Vivado project export."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_window",
-            get_window_netlist.get_window,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_window",
+        get_window_netlist.get_window,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 @cli.command(
@@ -315,18 +307,13 @@ def gen_window_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def gen_hdl_cmd(ctx, config, settings_args, verbose):
     """Generate VHDL files from Mako templates only."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_hdl",
-            generate_vhdl.gen_generated_vhdl,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_hdl",
+        generate_vhdl.gen_generated_vhdl,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 @cli.command(
@@ -337,18 +324,13 @@ def gen_hdl_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def gen_xdc_cmd(ctx, config, settings_args, verbose):
     """Generate XDC constraint files from templates."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_xdc",
-            process_constraints.process_constraints,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_xdc",
+        process_constraints.process_constraints,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 @cli.command(
@@ -359,18 +341,13 @@ def gen_xdc_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def gen_lvbitx_cmd(ctx, config, settings_args, verbose):
     """Generate LabVIEW FPGA bitfile from Vivado output."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_lvbitx",
-            create_lvbitx.create_lv_bitx,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_lvbitx",
+        create_lvbitx.create_lv_bitx,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -390,18 +367,13 @@ def gen_guid_cmd(ctx, config, settings_args, verbose):
         reporter.success("Copy and paste this GUID into your nihdlsettings.py file.")
         return 0
 
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_guid",
-            _gen_guid,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_guid",
+        _gen_guid,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 @cli.command("gen-target", help="Generate LabVIEW FPGA target support files")
@@ -409,18 +381,13 @@ def gen_guid_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def gen_target_cmd(ctx, config, settings_args, verbose):
     """Generate LabVIEW FPGA target support files."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_target",
-            gen_labview_target_plugin.gen_lv_target_support,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_target",
+        gen_labview_target_plugin.gen_lv_target_support,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 @cli.command("install-target", help="Install LabVIEW FPGA target support files")
@@ -428,18 +395,13 @@ def gen_target_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def install_target_cmd(ctx, config, settings_args, verbose):
     """Install LabVIEW FPGA target support files."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "install_target",
-            install_labview_target_plugin.install_lv_target_support,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "install_target",
+        install_labview_target_plugin.install_lv_target_support,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -453,19 +415,14 @@ def install_target_cmd(ctx, config, settings_args, verbose):
 @click.pass_context
 def gen_modelsim_cmd(ctx, overwrite, config, settings_args, verbose):
     """Generate a ModelSim project for HDL simulation."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "gen_modelsim",
-            create_modelsim_project.create_modelsim_project,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-            overwrite=overwrite,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "gen_modelsim",
+        create_modelsim_project.create_modelsim_project,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+        overwrite=overwrite,
+    )
 
 
 @cli.command("launch-modelsim", help="Launch ModelSim with the current project")
@@ -474,19 +431,14 @@ def gen_modelsim_cmd(ctx, overwrite, config, settings_args, verbose):
 @click.pass_context
 def launch_modelsim_cmd(ctx, batch, config, settings_args, verbose):
     """Launch ModelSim with the current project."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "launch_modelsim",
-            launch_modelsim.launch_modelsim,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-            batch=batch,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "launch_modelsim",
+        launch_modelsim.launch_modelsim,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+        batch=batch,
+    )
 
 
 @cli.command("sim-modelsim", help="Run ModelSim simulation in batch mode")
@@ -495,19 +447,14 @@ def launch_modelsim_cmd(ctx, batch, config, settings_args, verbose):
 @click.pass_context
 def sim_modelsim_cmd(ctx, do_file, config, settings_args, verbose):
     """Run ModelSim simulation in batch mode and report results."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "sim_modelsim",
-            sim_modelsim.sim_modelsim,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-            do_file=do_file,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "sim_modelsim",
+        sim_modelsim.sim_modelsim,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+        do_file=do_file,
+    )
 
 
 @cli.command(
@@ -519,19 +466,14 @@ def sim_modelsim_cmd(ctx, do_file, config, settings_args, verbose):
 @click.pass_context
 def compile_modelsim_lib_cmd(ctx, force, config, settings_args, verbose):
     """Compile the Xilinx simulation libraries used by ModelSim."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "compile_modelsim_lib",
-            compile_modelsim_lib.compile_modelsim_lib,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-            force=force,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "compile_modelsim_lib",
+        compile_modelsim_lib.compile_modelsim_lib,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+        force=force,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -544,18 +486,13 @@ def compile_modelsim_lib_cmd(ctx, force, config, settings_args, verbose):
 @click.pass_context
 def migrate_clip_cmd(ctx, config, settings_args, verbose):
     """Migrate CLIP files for FlexRIO custom devices."""
-    try:
-        result = command_hooks.run_with_hooks(
-            "migrate_clip",
-            migrate_clip.migrate_clip,
-            command_config_path=config,
-            settings_args=_parse_set(settings_args),
-            verbose=verbose,
-        )
-        return result
-    except Exception as e:
-        handle_exception(e)
-        return 1
+    return _run(
+        "migrate_clip",
+        migrate_clip.migrate_clip,
+        config=config,
+        settings_args=settings_args,
+        verbose=verbose,
+    )
 
 
 # ---------------------------------------------------------------------------

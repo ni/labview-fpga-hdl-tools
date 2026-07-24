@@ -115,11 +115,14 @@ def load_settings(settings_path, context):
     module = _load_config_module(abs_path)
     settings_dir = os.path.dirname(abs_path)
     original_dir = os.getcwd()
+    previous_base_dir = context.config.base_dir
+    context.config.base_dir = settings_dir
     os.chdir(settings_dir)
     try:
         _call_hook(module, "pre_all", context)
     finally:
         os.chdir(original_dir)
+        context.config.base_dir = previous_base_dir
 
 
 def run_with_hooks(
@@ -170,6 +173,11 @@ def run_with_hooks(
     # passed to setters resolve correctly.
     config_dir = os.path.dirname(os.path.abspath(command_config_path))
     original_dir = os.getcwd()
+    # Path setters resolve relative paths against the config's base_dir, so config
+    # resolution no longer depends on the process working directory. The chdir
+    # below remains only to honor the documented "hooks run with cwd = settings
+    # dir" contract for user hook code that does its own relative file I/O.
+    context.config.base_dir = config_dir
 
     try:
         # Load the config module

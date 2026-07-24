@@ -46,6 +46,53 @@ class TestResolvePath:
         monkeypatch.chdir(tmp_path)
         assert resolve_path("  a  ") == os.path.normpath(os.path.join(str(tmp_path), "a"))
 
+    def test_given_explicit_base_dir__when_resolved__then_ignores_cwd(self, tmp_path, monkeypatch):
+        # base_dir must win regardless of the process working directory.
+        monkeypatch.chdir(tmp_path)
+        base = str(tmp_path / "elsewhere")
+        assert resolve_path("a/b", base_dir=base) == os.path.normpath(os.path.join(base, "a/b"))
+
+
+class TestConfigBaseDir:
+    """Tests that path setters resolve against config.base_dir, not ambient cwd."""
+
+    def test_given_base_dir_set__when_setter_called__then_resolves_against_base_dir(
+        self, tmp_path, monkeypatch
+    ):
+        # cwd is somewhere unrelated; base_dir should determine resolution.
+        monkeypatch.chdir(tmp_path)
+        base = str(tmp_path / "settings-dir")
+        config = CommandConfiguration()
+        config.base_dir = base
+
+        config.set_dependencies("deps/dependencies.toml")
+
+        assert config.dependencies == os.path.normpath(os.path.join(base, "deps/dependencies.toml"))
+
+    def test_given_no_base_dir__when_setter_called__then_resolves_against_cwd(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        config = CommandConfiguration()  # base_dir defaults to None
+
+        config.set_dependencies("dependencies.toml")
+
+        assert config.dependencies == os.path.normpath(
+            os.path.join(str(tmp_path), "dependencies.toml")
+        )
+
+    def test_given_base_dir__when_add_file_list__then_resolves_against_base_dir(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        base = str(tmp_path / "target")
+        config = CommandConfiguration()
+        config.base_dir = base
+
+        config.add_hdl_file_list("lists/hdl.txt")
+
+        assert config.hdl_file_lists == [os.path.normpath(os.path.join(base, "lists/hdl.txt"))]
+
 
 class TestNumericSetters:
     """Tests for the integer/hex-aware setters."""
