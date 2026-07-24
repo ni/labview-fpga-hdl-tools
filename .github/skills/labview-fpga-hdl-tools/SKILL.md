@@ -43,25 +43,40 @@ Command modules: `create_vivado_project.py`, `create_lvbitx.py`, `gen_labview_ta
 
 ## Testing & Validation
 
-All three checks must pass before any change is considered complete:
+All of the checks below must pass before any change is considered complete. These
+mirror exactly what the GitHub CI runs, so run them all (not just the package) —
+CI lints and type-checks the **whole repo, including `tests/`**, so a type error
+in a test file will fail CI even though `mypy` (package-only) stays green.
 
 ```powershell
 # Run from repo root: c:\dev\github8\labview-fpga-hdl-tools\
 
-# 1. Full test suite (31 tests: 16 success + 15 error + 1 skipped)
-python tests\functional\test_workflow.py
+# 1. Full test suite: unit (pytest) + functional (end-to-end CLI)
+python tests\functional\test_workflow.py     # runs tests/unit via pytest, then the E2E flow
+poetry run pytest tests/unit                  # (optional) run just the fast unit suite
 
-# 2. Lint (wraps Black + flake8 via ni-python-styleguide)
-poetry run ni-python-styleguide lint labview_fpga_hdl_tools/
+# 2. Lint the WHOLE repo (wraps Black + flake8 via ni-python-styleguide)
+poetry run ni-python-styleguide lint
 
-# 3. Type checking (must report 0 errors)
-poetry run pyright labview_fpga_hdl_tools/
+# 3. mypy static analysis, both platforms (checks the package per pyproject config)
+poetry run mypy
+poetry run mypy --platform win32
+
+# 4. pyright static analysis (must report 0 errors). No path arg -> checks the
+#    whole repo including tests/, exactly like CI. Both platforms:
+poetry run pyright
+poetry run pyright --pythonplatform Windows
 ```
+
+> Note: `mypy` is scoped to `labview_fpga_hdl_tools` (via `pyproject.toml`), but
+> `ni-python-styleguide lint` and `pyright` cover `tests/` too. A common trap is a
+> test that passes an `Optional[str]` return value straight into `os.path.*`;
+> pyright rejects it. Narrow it first with `assert value is not None`.
 
 ### Auto-fix lint issues
 
 ```powershell
-poetry run ni-python-styleguide fix labview_fpga_hdl_tools/
+poetry run ni-python-styleguide fix
 ```
 
 ### Test Structure

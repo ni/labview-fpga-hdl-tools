@@ -65,11 +65,13 @@ class TestNormalizeFsPath:
 
     def test_given_quoted_path__when_normalized__then_quotes_stripped(self):
         result = common._normalize_fs_path('"some/dir"')
+        assert result is not None
         assert '"' not in result
         assert result == os.path.abspath("some/dir")
 
     def test_given_relative_path__when_normalized__then_absolute(self):
         result = common._normalize_fs_path("some/dir")
+        assert result is not None
         assert os.path.isabs(result)
 
 
@@ -83,16 +85,17 @@ class TestGetVivadoExecutable:
         assert common.get_vivado_executable("   ") is None
 
     def test_given_directory__when_resolved__then_appends_bin_executable(self, tmp_path):
+        normalized = common._normalize_fs_path(str(tmp_path))
+        assert normalized is not None
         result = common.get_vivado_executable(str(tmp_path))
         expected_name = "vivado.bat" if os.name == "nt" else "vivado"
-        assert result == os.path.join(
-            common._normalize_fs_path(str(tmp_path)), "bin", expected_name
-        )
+        assert result == os.path.join(normalized, "bin", expected_name)
 
     def test_given_direct_executable_file__when_resolved__then_returned_as_is(self, tmp_path):
         exe = tmp_path / "vivado.bat"
         exe.write_text("echo vivado")
         result = common.get_vivado_executable(str(exe))
+        assert result is not None
         assert os.path.isfile(result)
         assert os.path.basename(result) == "vivado.bat"
 
