@@ -32,17 +32,15 @@ def _generate_check_syntax_tcl(config, output_path):
 
 def _validate_ini(config):
     """Validate required configuration settings for check-syntax."""
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [
+            ("vivado_project_folder", "VivadoProjectSettings.VivadoProjectFolder"),
+            ("top_level_entity", "VivadoProjectSettings.TopLevelEntity"),
+            ("fpga_part", "VivadoProjectSettings.FPGAPart"),
+        ],
+    )
     invalid_paths = []
-
-    if not config.vivado_project_folder:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
-
-    if not config.top_level_entity:
-        missing_settings.append("VivadoProjectSettings.TopLevelEntity")
-
-    if not config.fpga_part:
-        missing_settings.append("VivadoProjectSettings.FPGAPart")
 
     if not config.vivado_tcl_scripts_folder:
         missing_settings.append("VivadoProjectSettings.VivadoTclScriptsFolder")

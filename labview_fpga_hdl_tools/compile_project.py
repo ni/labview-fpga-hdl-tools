@@ -80,6 +80,27 @@ def _validate_ini(config):
         raise ValueError(error_msg)
 
 
+def _get_compile_status_from_log(log_contents):
+    """Return the final NIHDL compile-project marker from non-comment log lines.
+
+    Scans the Vivado log for the sentinel written by CompileProject.tcl and
+    returns ``"PASSED"``, ``"FAILED"``, or ``None`` when no marker is present.
+    The last marker in the file wins; commented and blank lines are ignored.
+    """
+    status = None
+    for raw_line in log_contents.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        if line == "NIHDL_COMPILE_PROJECT=FAILED":
+            status = "FAILED"
+        elif line == "NIHDL_COMPILE_PROJECT=PASSED":
+            status = "PASSED"
+
+    return status
+
+
 def _run_compile_project(config, generated_tcl_path):
     """Run the generated compile-project TCL script in Vivado batch mode."""
     vivado_executable = common.get_vivado_executable(config.vivado_tools_folder)
@@ -121,16 +142,7 @@ def _run_compile_project(config, generated_tcl_path):
     with open(log_path, "r", encoding="utf-8", errors="replace") as log_file:
         log_contents = log_file.read()
 
-    compile_status = None
-    for line in log_contents.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-
-        if stripped == "NIHDL_COMPILE_PROJECT=FAILED":
-            compile_status = "FAILED"
-        elif stripped == "NIHDL_COMPILE_PROJECT=PASSED":
-            compile_status = "PASSED"
+    compile_status = _get_compile_status_from_log(log_contents)
 
     if compile_status == "FAILED":
         raise RuntimeError(f"Vivado project compile failed. See log for details: {log_path}")

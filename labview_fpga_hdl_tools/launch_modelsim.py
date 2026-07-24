@@ -34,19 +34,7 @@ def _validate_ini(config):
             "ModelSimSettings.ModelSimEntity (or VivadoProjectSettings.TopLevelEntity)"
         )
 
-    if missing_settings:
-        error_msg = "Missing required configuration settings:\n"
-        for setting in missing_settings:
-            error_msg += f"  - {setting}\n"
-        error_msg += "\nCheck your nihdlsettings.py file and try again."
-        raise ValueError(error_msg)
-
-    if invalid_paths:
-        error_msg = "The following settings have invalid paths:\n"
-        for path in invalid_paths:
-            error_msg += f"  - {path}\n"
-        error_msg += "\nCheck your configuration and try again."
-        raise ValueError(error_msg)
+    common.raise_for_missing_settings(missing_settings, invalid_paths)
 
 
 def launch_modelsim(batch=False, config=None):

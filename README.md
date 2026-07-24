@@ -27,7 +27,8 @@ You need the external tools your flow uses:
 - **ModelSim** — only for simulation (`gen-modelsim`, `sim-modelsim`,
   `launch-modelsim`, `compile-modelsim-lib`). `compile-modelsim-lib` also needs
   Vivado to compile the Xilinx simulation libraries.
-- **Git** and **Python** (Python 3.11 is the officially tested version).
+- **Git** and **Python** — the tools support Python 3.9+; CI tests on 3.9 and
+  3.11 (3.11 is also used for static analysis).
 
 ### Installing the tools
 

@@ -138,3 +138,30 @@ class TestLoadSettings:
 
         assert context.config.target_family == "FlexRIO"
         assert os.getcwd() == before
+
+
+class TestConfigBaseDirWiring:
+    """run_with_hooks must set config.base_dir to the settings file's directory."""
+
+    def test_given_settings__when_run__then_config_base_dir_is_settings_dir(
+        self, tmp_path, monkeypatch
+    ):
+        settings_dir = tmp_path / "target"
+        settings_dir.mkdir()
+        settings = settings_dir / "nihdlsettings.py"
+        settings.write_text("# empty\n")
+        # Run from an unrelated working directory.
+        other = tmp_path / "other"
+        other.mkdir()
+        monkeypatch.chdir(other)
+
+        captured = {}
+
+        def cmd(config=None, **kwargs):
+            assert config is not None
+            captured["base_dir"] = config.base_dir
+            return 0
+
+        command_hooks.run_with_hooks("gen_hdl", cmd, command_config_path=str(settings))
+
+        assert captured["base_dir"] == os.path.dirname(os.path.abspath(str(settings)))
