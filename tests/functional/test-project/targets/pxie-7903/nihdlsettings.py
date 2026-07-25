@@ -45,7 +45,7 @@ def pre_all(context):
     config.set_lv_target_guid("8943868e-fc0c-4e48-a2e9-1ebce7779d5c")
     config.set_lv_target_install_folder("../../../test-plugin-install-dir")
 
-    config.add_lv_target_constraints("xdc/constraints.xdc_template")
+    config.add_lv_target_constraints("objects/lv_target_xdc/constraints.xdc")
     config.add_lv_target_constraints("xdc/constraints_place.xdc")
 
     config.set_lv_target_menus_folder("../common/lvFpgaTarget/targetpluginmenus")

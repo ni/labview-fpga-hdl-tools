@@ -6,8 +6,8 @@ from labview_fpga_hdl_tools.command_config import CommandConfiguration
 from labview_fpga_hdl_tools.process_constraints import (
     build_custom_constraints_content,
     load_custom_constraints,
-    replace_custom_constraints_in_xdc_folder,
-    wrap_from_to_constraints_macro_in_folder,
+    process_constraints_template,
+    process_lv_target_constraints_template,
 )
 
 
@@ -33,138 +33,226 @@ class TestLoadCustomConstraints:
         assert result == ""
 
 
-class TestReplaceCustomConstraintsInXdcFolder:
-    """Tests for replace_custom_constraints_in_xdc_folder()."""
+class TestProcessLvTargetConstraintsTemplate:
+    """Tests for process_lv_target_constraints_template()."""
 
-    def test_given_xdc_with_macro__when_replaced__then_macro_is_substituted(self, tmp_path):
-        xdc_file = tmp_path / "constraints.xdc"
-        xdc_file.write_text(
-            "# Header\n" "#LabVIEWFPGAHdlTools_Macro macro_GitHubCustomConstraints\n" "# Footer\n"
+    _GITHUB_MACRO = "#LabVIEWFPGAHdlTools_Macro macro_GitHubCustomConstraints"
+    _FROM_TO_MACRO = "#LabVIEWFPGA_Macro macro_fromToConstraints"
+    # The FROM_TO macro token as it appears in a real template: between its markers.
+    _FROM_TO_BLOCK = (
+        "# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+        "#LabVIEWFPGA_Macro macro_fromToConstraints\n"
+        "# END_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+    )
+
+    @staticmethod
+    def _output_path(tmp_path):
+        return tmp_path / "objects" / "lv_target_xdc" / "constraints.xdc"
+
+    def _make_config(self, tmp_path, template_body, custom=None, wrapper=None):
+        template = tmp_path / "constraints.xdc_template"
+        template.write_text(template_body)
+        config = CommandConfiguration()
+        config.constraints_template = str(template)
+        for order, path in custom or []:
+            config.custom_constraints[order] = str(path)
+        config.entity_path_to_window_wrapper = wrapper
+        return config
+
+    def test_given_github_macro__when_processed__then_custom_substituted(
+        self, tmp_path, monkeypatch
+    ):
+        custom_file = tmp_path / "custom.xdc"
+        custom_file.write_text("set_property PACKAGE_PIN A1 [get_ports clk]")
+        config = self._make_config(
+            tmp_path,
+            f"# Header\n{self._GITHUB_MACRO}\n# Footer\n",
+            custom=[(1, custom_file)],
         )
+        monkeypatch.chdir(tmp_path)
 
-        replace_custom_constraints_in_xdc_folder(
-            str(tmp_path), "set_property PACKAGE_PIN A1 [get_ports clk]"
-        )
+        process_lv_target_constraints_template(config)
 
-        result = xdc_file.read_text()
+        result = self._output_path(tmp_path).read_text()
         assert "set_property PACKAGE_PIN A1 [get_ports clk]" in result
         assert "macro_GitHubCustomConstraints" not in result
-        assert "# Header\n" in result
-        assert "# Footer\n" in result
+        assert "# Header" in result
+        assert "# Footer" in result
 
-    def test_given_xdc_with_macro__when_empty_content__then_macro_is_removed(self, tmp_path):
-        xdc_file = tmp_path / "constraints.xdc"
-        xdc_file.write_text(
-            "# Header\n" "#LabVIEWFPGAHdlTools_Macro macro_GitHubCustomConstraints\n" "# Footer\n"
+    def test_given_period_and_clip_macros__when_processed__then_left_intact(
+        self, tmp_path, monkeypatch
+    ):
+        body = (
+            "#LabVIEWFPGA_Macro macro_periodConstraints\n"
+            "#LabVIEWFPGA_Macro macro_ClipConstraints\n"
+            f"{self._GITHUB_MACRO}\n"
         )
+        config = self._make_config(tmp_path, body)
+        monkeypatch.chdir(tmp_path)
 
-        replace_custom_constraints_in_xdc_folder(str(tmp_path), "")
+        process_lv_target_constraints_template(config)
 
-        result = xdc_file.read_text()
-        assert "macro_GitHubCustomConstraints" not in result
-        assert "# Header\n" in result
+        result = self._output_path(tmp_path).read_text()
+        assert "macro_periodConstraints" in result
+        assert "macro_ClipConstraints" in result
 
-    def test_given_no_xdc_files__when_called__then_no_error(self, tmp_path):
-        vhd_file = tmp_path / "design.vhd"
-        vhd_file.write_text("entity design is end;")
+    def test_given_from_to_block_and_wrapper__when_processed__then_wrapped_outside_markers(
+        self, tmp_path, monkeypatch
+    ):
+        body = f"{self._FROM_TO_BLOCK}{self._GITHUB_MACRO}\n"
+        config = self._make_config(tmp_path, body, wrapper="TheLvWindowWrapper")
+        monkeypatch.chdir(tmp_path)
 
-        replace_custom_constraints_in_xdc_folder(str(tmp_path), "")
-        # Should not raise, vhd file should be untouched
-        assert vhd_file.read_text() == "entity design is end;"
+        process_lv_target_constraints_template(config)
 
-    def test_given_nonexistent_folder__when_called__then_no_error(self):
-        replace_custom_constraints_in_xdc_folder("/nonexistent/folder", "")
-        # Should silently return
-
-    def test_given_case_insensitive_macro__when_replaced__then_works(self, tmp_path):
-        xdc_file = tmp_path / "test.xdc"
-        xdc_file.write_text("#labviewfpgahdltools_macro   macro_githubcustomconstraints\n")
-
-        replace_custom_constraints_in_xdc_folder(str(tmp_path), "# custom content")
-
-        result = xdc_file.read_text()
-        assert "# custom content" in result
-        assert "macro_githubcustomconstraints" not in result
-
-    def test_given_xdc_without_macro__when_called__then_file_unchanged(self, tmp_path):
-        xdc_file = tmp_path / "plain.xdc"
-        original = "# Just a normal constraint file\nset_property FOO BAR\n"
-        xdc_file.write_text(original)
-
-        replace_custom_constraints_in_xdc_folder(str(tmp_path), "")
-
-        assert xdc_file.read_text() == original
-
-    def test_given_multiple_xdc_files__when_replaced__then_all_processed(self, tmp_path):
-        for name in ["a.xdc", "b.xdc", "c.xdc"]:
-            (tmp_path / name).write_text(
-                "#LabVIEWFPGAHdlTools_Macro macro_GitHubCustomConstraints\n"
-            )
-
-        replace_custom_constraints_in_xdc_folder(str(tmp_path), "REPLACED")
-
-        for name in ["a.xdc", "b.xdc", "c.xdc"]:
-            assert "REPLACED" in (tmp_path / name).read_text()
-
-
-class TestWrapFromToConstraintsMacroInFolder:
-    """Tests for wrap_from_to_constraints_macro_in_folder()."""
-
-    _FROM_TO_MACRO = "#LabVIEWFPGA_Macro macro_fromToConstraints"
-
-    def test_given_template_with_macro__when_wrapped__then_current_instance_added(self, tmp_path):
-        xdc_file = tmp_path / "constraints.xdc_template"
-        xdc_file.write_text(f"# Header\n{self._FROM_TO_MACRO}\n# Footer\n")
-
-        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "TheLvWindowWrapper")
-
-        result = xdc_file.read_text()
+        result = self._output_path(tmp_path).read_text()
+        # The current_instance save/restore brackets the whole marker block from the
+        # OUTSIDE, so a later gen-window extraction (which reads only text between the
+        # markers) stays pristine and process_constraints_template wraps it exactly once.
         assert (
-            "set TopInstance0 [current_instance .]\n"
+            "set TopInstanceLvTargetFromTo [current_instance .]\n"
             "current_instance TheLvWindowWrapper\n"
+            "# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS\n"
             f"{self._FROM_TO_MACRO}\n"
+            "# END_LV_FPGA_FROM_TO_CONSTRAINTS\n"
             "current_instance -quiet\n"
-            "current_instance $TopInstance0\n"
+            "current_instance $TopInstanceLvTargetFromTo"
         ) in result
-        # The macro token itself is preserved for LabVIEW FPGA to replace later.
+        # The markers and macro token are preserved for LabVIEW FPGA to replace later.
         assert self._FROM_TO_MACRO in result
 
-    def test_given_xdc_extension__when_wrapped__then_processed(self, tmp_path):
-        xdc_file = tmp_path / "constraints.xdc"
-        xdc_file.write_text(f"{self._FROM_TO_MACRO}\n")
+    def test_given_no_wrapper__when_processed__then_from_to_block_unwrapped(
+        self, tmp_path, monkeypatch
+    ):
+        body = f"{self._FROM_TO_BLOCK}{self._GITHUB_MACRO}\n"
+        config = self._make_config(tmp_path, body, wrapper=None)
+        monkeypatch.chdir(tmp_path)
 
-        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "WrapperInst")
+        process_lv_target_constraints_template(config)
 
-        assert "current_instance WrapperInst" in xdc_file.read_text()
+        result = self._output_path(tmp_path).read_text()
+        assert "current_instance" not in result
+        assert self._FROM_TO_MACRO in result
 
-    def test_given_empty_wrapper__when_called__then_file_unchanged(self, tmp_path):
-        xdc_file = tmp_path / "constraints.xdc_template"
-        original = f"{self._FROM_TO_MACRO}\n"
-        xdc_file.write_text(original)
+    def test_given_template_suffix__when_processed__then_output_name_strips_template(
+        self, tmp_path, monkeypatch
+    ):
+        config = self._make_config(tmp_path, f"{self._GITHUB_MACRO}\n")
+        monkeypatch.chdir(tmp_path)
 
-        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "")
+        process_lv_target_constraints_template(config)
 
-        assert xdc_file.read_text() == original
+        assert self._output_path(tmp_path).exists()
 
-    def test_given_no_macro__when_called__then_file_unchanged(self, tmp_path):
-        xdc_file = tmp_path / "constraints_place.xdc"
-        original = "set_property FOO BAR\n"
-        xdc_file.write_text(original)
+    def test_given_missing_github_macro__when_processed__then_raises(self, tmp_path, monkeypatch):
+        config = self._make_config(tmp_path, "# no macros here\n")
+        monkeypatch.chdir(tmp_path)
 
-        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "WrapperInst")
+        with pytest.raises(ValueError):
+            process_lv_target_constraints_template(config)
 
-        assert xdc_file.read_text() == original
+    def test_given_no_template__when_processed__then_no_output_written(self, tmp_path, monkeypatch):
+        config = CommandConfiguration()
+        config.constraints_template = None
+        monkeypatch.chdir(tmp_path)
 
-    def test_given_nonexistent_folder__when_called__then_no_error(self):
-        wrap_from_to_constraints_macro_in_folder("/nonexistent/folder", "WrapperInst")
+        process_lv_target_constraints_template(config)
 
-    def test_given_case_insensitive_macro__when_wrapped__then_works(self, tmp_path):
-        xdc_file = tmp_path / "constraints.xdc_template"
-        xdc_file.write_text("#labviewfpga_macro   macro_fromtoconstraints\n")
+        assert not (tmp_path / "objects" / "lv_target_xdc").exists()
 
-        wrap_from_to_constraints_macro_in_folder(str(tmp_path), "WrapperInst")
 
-        assert "current_instance WrapperInst" in xdc_file.read_text()
+class TestProcessConstraintsTemplateVivadoFlow:
+    """Tests for the Vivado-flow FROM_TO wrapping in process_constraints_template()."""
+
+    _TEMPLATE = (
+        "# BEGIN_LV_FPGA_CONSTRAINTS\n"
+        "# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS\n"
+        "#LabVIEWFPGA_Macro macro_periodConstraints\n"
+        "# END_LV_FPGA_PERIOD_CONSTRAINTS\n"
+        "# BEGIN_LV_FPGA_CLIP_CONSTRAINTS\n"
+        "#LabVIEWFPGA_Macro macro_ClipConstraints\n"
+        "# END_LV_FPGA_CLIP_CONSTRAINTS\n"
+        "# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+        "#LabVIEWFPGA_Macro macro_fromToConstraints\n"
+        "# END_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+        "# END_LV_FPGA_CONSTRAINTS\n"
+        "#LabVIEWFPGAHDLTools_Macro macro_GitHubCustomConstraints\n"
+    )
+
+    @staticmethod
+    def _window_constraints(from_to_section):
+        return (
+            "# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS\n"
+            "create_clock -period 5 [get_ports clk]\n"
+            "# END_LV_FPGA_PERIOD_CONSTRAINTS\n"
+            "# BEGIN_LV_FPGA_CLIP_CONSTRAINTS\n"
+            "# END_LV_FPGA_CLIP_CONSTRAINTS\n"
+            "# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+            f"{from_to_section}"
+            "# END_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+        )
+
+    def _make_config(self, tmp_path, window_file_text):
+        window_folder = tmp_path / "lvWindowNetlist"
+        window_folder.mkdir()
+        (window_folder / "TheWindowConstraints.xdc").write_text(window_file_text)
+        template = tmp_path / "constraints.xdc"
+        template.write_text(self._TEMPLATE)
+        config = CommandConfiguration()
+        config.lv_window_netlist_folder = str(window_folder)
+        config.constraints_template = str(template)
+        config.entity_path_to_window_wrapper = "TheLvWindowWrapper"
+        return config
+
+    @staticmethod
+    def _output(tmp_path):
+        return (tmp_path / "objects" / "xdc" / "constraints.xdc").read_text()
+
+    def test_given_pristine_from_to__when_processed__then_single_vivado_wrap(
+        self, tmp_path, monkeypatch
+    ):
+        config = self._make_config(
+            tmp_path, self._window_constraints("set_max_delay 5 -from A -to B\n")
+        )
+        monkeypatch.chdir(tmp_path)
+
+        process_constraints_template(config)
+
+        result = self._output(tmp_path)
+        assert result.count("set TopInstanceVivadoFromTo [current_instance .]") == 1
+        assert "set_max_delay 5 -from A -to B" in result
+
+    def test_given_from_to_with_stray_outer_wrap__when_processed__then_not_duplicated(
+        self, tmp_path, monkeypatch
+    ):
+        # Simulate a constraints file that round-tripped through the LabVIEW FPGA target
+        # flow: its save/restore sits OUTSIDE the FROM_TO markers, so gen-window copied it
+        # into TheWindowConstraints.xdc but OUTSIDE the FROM_TO section. The Vivado flow
+        # must extract ONLY the pristine content between the markers and wrap it once.
+        window_text = (
+            "# BEGIN_LV_FPGA_PERIOD_CONSTRAINTS\n"
+            "# END_LV_FPGA_PERIOD_CONSTRAINTS\n"
+            "# BEGIN_LV_FPGA_CLIP_CONSTRAINTS\n"
+            "# END_LV_FPGA_CLIP_CONSTRAINTS\n"
+            "set TopInstanceLvTargetFromTo [current_instance .]\n"
+            "current_instance TheLvWindowWrapper\n"
+            "# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+            "set_max_delay 5 -from A -to B\n"
+            "# END_LV_FPGA_FROM_TO_CONSTRAINTS\n"
+            "current_instance -quiet\n"
+            "current_instance $TopInstanceLvTargetFromTo\n"
+        )
+        config = self._make_config(tmp_path, window_text)
+        monkeypatch.chdir(tmp_path)
+
+        process_constraints_template(config)
+
+        result = self._output(tmp_path)
+        # Exactly one wrap, and the stray LV-target save/restore outside the markers is
+        # NOT pulled into the output (that double-wrap was the original bug).
+        assert result.count("set TopInstanceVivadoFromTo [current_instance .]") == 1
+        assert "TopInstanceLvTargetFromTo" not in result
+        assert "set_max_delay 5 -from A -to B" in result
 
 
 class TestBuildCustomConstraintsContent:

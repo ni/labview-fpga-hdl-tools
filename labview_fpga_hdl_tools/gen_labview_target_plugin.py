@@ -770,6 +770,16 @@ def gen_lv_target_support(config=None):
     register_space_warnings = []
     register_space_errors = []
 
+    # Process the constraints template into objects/lv_target_xdc before validation
+    # so the target settings' reference to that objects output resolves. This mirrors
+    # the Vivado flow, which processes objects/xdc before validating the Vivado
+    # project constraints.
+    try:
+        process_constraints.process_lv_target_constraints_template(config)
+    except Exception as e:
+        reporter.error(f"Error: {e}")
+        return 1
+
     # Validate that all required settings are present
     try:
         _validate_ini(config)
@@ -828,16 +838,6 @@ def gen_lv_target_support(config=None):
         config.target_family,
         config.base_target,
         config.lv_target_exclude_files,
-    )
-
-    fpga_files_folder = os.path.join(config.lv_target_plugin_output_folder or "", "FpgaFiles")
-    process_constraints.replace_custom_constraints_in_xdc_folder(
-        fpga_files_folder,
-        process_constraints.build_custom_constraints_content(config.custom_constraints),
-    )
-    process_constraints.wrap_from_to_constraints_macro_in_folder(
-        fpga_files_folder,
-        config.entity_path_to_window_wrapper,
     )
 
     _copy_menu_files(config.lv_target_plugin_output_folder, config.lv_target_menus_folder)

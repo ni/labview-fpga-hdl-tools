@@ -148,86 +148,139 @@ _CUSTOM_CONSTRAINTS_RE = re.compile(
 )
 
 
-def replace_custom_constraints_in_xdc_folder(folder, custom_constraints_content):
-    """Replace the custom constraints macro in all XDC files in a folder.
-
-    Scans every ``.xdc`` file in *folder* and replaces
-    ``#LabVIEWFPGAHDLTools_Macro macro_GitHubCustomConstraints`` with
-    *custom_constraints_content*.
-
-    Args:
-        folder (str): Directory containing XDC files to process.
-        custom_constraints_content (str): Pre-built custom constraints content to
-            substitute for the macro token (see build_custom_constraints_content).
-    """
-    if not os.path.isdir(folder):
-        return
-
-    for filename in os.listdir(folder):
-        if not filename.lower().endswith(".xdc"):
-            continue
-        filepath = os.path.join(folder, filename)
-        with open(filepath, "r", encoding="utf-8") as f:
-            content = f.read()
-        new_content, count = _CUSTOM_CONSTRAINTS_RE.subn(custom_constraints_content, content)
-        if count > 0:
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(new_content)
-            reporter.detail(f"Replaced macro_GitHubCustomConstraints in {filename}")
-
-
-_FROM_TO_CONSTRAINTS_MACRO_RE = re.compile(
-    r"^([ \t]*)(#LabVIEWFPGA_Macro[ \t]+macro_fromToConstraints)[ \t]*$",
+# The LabVIEW FPGA window FROM_TO constraints live between these markers in the base
+# target constraints template (and in the constraints LabVIEW FPGA emits into a project
+# export). Both the Vivado flow (gen-window extraction) and the LabVIEW FPGA target flow
+# key off them, so they are the single, fixed boundary for "the window's own constraints."
+_FROM_TO_BEGIN_MARKER_RE = re.compile(
+    r"^([ \t]*)(# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS)[ \t]*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+_FROM_TO_END_MARKER_RE = re.compile(
+    r"^([ \t]*)(# END_LV_FPGA_FROM_TO_CONSTRAINTS)[ \t]*$",
     re.IGNORECASE | re.MULTILINE,
 )
 
+# Distinct current_instance save variables per wrap site. The LabVIEW FPGA target flow
+# and the Vivado flow each bracket the window FROM_TO constraints with a current_instance
+# save/restore; different variable names guarantee that if the two ever nest (for example,
+# a constraints file that round-trips through gen-window), the inner restore cannot
+# silently clobber the outer save.
+_LV_TARGET_FROM_TO_SAVE_VAR = "TopInstanceLvTargetFromTo"
+_VIVADO_FROM_TO_SAVE_VAR = "TopInstanceVivadoFromTo"
 
-def wrap_from_to_constraints_macro_in_folder(folder, entity_path_to_window_wrapper):
-    """Wrap the from-to-constraints macro with current_instance scoping in constraint files.
+
+def _wrap_from_to_constraints_macro(content, entity_path_to_window_wrapper):
+    """Bracket the LabVIEW FPGA FROM_TO constraints block with current_instance scoping.
 
     In the LabVIEW FPGA target plugin flow, LabVIEW FPGA replaces
-    ``#LabVIEWFPGA_Macro macro_fromToConstraints`` with the generated window From/To timing
-    constraints when a VI is compiled against the custom target. Those constraints
-    reference cells relative to the window wrapper instance, so the macro must be wrapped
-    with ``current_instance`` scoping (mirroring the FROM_TO handling in
-    ``process_constraints_template``). Without it, instance-relative constraints fail to
-    match cells inside the window when the window VHDL is encrypted.
+    ``#LabVIEWFPGA_Macro macro_fromToConstraints`` (which sits between the
+    ``# BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS`` / ``# END_LV_FPGA_FROM_TO_CONSTRAINTS`` markers)
+    with the generated window From/To timing constraints when a VI is compiled against the
+    custom target. Those constraints reference cells relative to the window wrapper
+    instance, so the block is scoped with ``current_instance``. Without it,
+    instance-relative constraints fail to match cells inside the window when the window
+    VHDL is encrypted.
 
-    Scans every ``.xdc`` and ``.xdc_template`` file in *folder* and wraps the
-    from-to-constraints macro line, leaving the macro token itself intact for LabVIEW FPGA
-    to replace later.
+    The save/restore is placed **outside** the ``# BEGIN``/``# END`` markers on purpose.
+    When the Vivado compile flow later extracts the window constraints from a project
+    export (via ``gen-window``), it reads only the text *between* the markers. Keeping the
+    scoping outside the markers means that extraction stays pristine, so
+    ``process_constraints_template`` wraps the raw constraints exactly once instead of
+    re-wrapping an already-wrapped block (a double ``current_instance`` scope whose inner
+    restore corrupts the hierarchy for every constraint that follows).
+
+    The markers and the macro token between them are left intact for LabVIEW FPGA to
+    replace later.
 
     Args:
-        folder (str): Directory containing constraint files to process.
+        content (str): Full text of a constraints file.
         entity_path_to_window_wrapper (str | None): Hierarchical path to the window wrapper
-            instance. If falsy, no wrapping is performed.
-    """
-    if not os.path.isdir(folder) or not entity_path_to_window_wrapper:
-        return
+            instance. If falsy, the content is returned unchanged.
 
-    def _wrap(match):
+    Returns:
+        str: The content with the FROM_TO marker block bracketed in current_instance scoping.
+    """
+    if not entity_path_to_window_wrapper:
+        return content
+
+    def _open(match):
         indent = match.group(1)
-        token = match.group(2)
+        marker = match.group(2)
         return (
-            f"{indent}set TopInstance0 [current_instance .]\n"
+            f"{indent}set {_LV_TARGET_FROM_TO_SAVE_VAR} [current_instance .]\n"
             f"{indent}current_instance {entity_path_to_window_wrapper}\n"
-            f"{indent}{token}\n"
-            f"{indent}current_instance -quiet\n"
-            f"{indent}current_instance $TopInstance0"
+            f"{indent}{marker}"
         )
 
-    for filename in os.listdir(folder):
-        lowered = filename.lower()
-        if not (lowered.endswith(".xdc") or lowered.endswith(".xdc_template")):
-            continue
-        filepath = os.path.join(folder, filename)
-        with open(filepath, "r", encoding="utf-8") as f:
-            content = f.read()
-        new_content, count = _FROM_TO_CONSTRAINTS_MACRO_RE.subn(_wrap, content)
-        if count > 0:
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(new_content)
-            reporter.detail(f"Wrapped macro_fromToConstraints with current_instance in {filename}")
+    def _close(match):
+        indent = match.group(1)
+        marker = match.group(2)
+        return (
+            f"{indent}{marker}\n"
+            f"{indent}current_instance -quiet\n"
+            f"{indent}current_instance ${_LV_TARGET_FROM_TO_SAVE_VAR}"
+        )
+
+    content, _ = _FROM_TO_BEGIN_MARKER_RE.subn(_open, content)
+    content, _ = _FROM_TO_END_MARKER_RE.subn(_close, content)
+    return content
+
+
+def process_lv_target_constraints_template(config):
+    """Process the constraints template for the LabVIEW FPGA target plugin flow.
+
+    Mirrors :func:`process_constraints_template` (the Vivado flow) but performs the
+    LabVIEW-target-specific processing:
+
+    * The period, CLIP, and from-to macro tokens are left in place for LabVIEW FPGA
+      to resolve when a VI is compiled against the custom target.
+    * Only the custom (GitHub) constraints are substituted at the
+      ``macro_GitHubCustomConstraints`` anchor.
+    * The from-to macro is wrapped with ``current_instance`` scoping (the token is
+      preserved).
+
+    The processed file is written to ``objects/lv_target_xdc`` so target settings
+    reference the objects output via ``add_lv_target_constraints``, exactly the way
+    the Vivado flow references ``objects/xdc`` via ``add_vivado_project_constraints``.
+
+    Args:
+        config (CommandConfiguration): Configuration settings object with path information.
+    """
+    template_path = config.constraints_template
+    if not template_path:
+        reporter.detail("No constraints template specified in configuration.")
+        return
+
+    output_folder = os.path.join(os.getcwd(), "objects", "lv_target_xdc")
+    os.makedirs(output_folder, exist_ok=True)
+
+    template_basename = os.path.basename(template_path)
+    output_file = template_basename.replace("_template", "")
+    output_path = os.path.join(output_folder, output_file)
+
+    reporter.detail(f"Processing {template_basename} -> objects/lv_target_xdc/{output_file}")
+
+    with open(template_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Substitute the custom (GitHub) constraints. The period/CLIP/from-to macro
+    # tokens are intentionally left for LabVIEW FPGA to resolve later.
+    custom_constraints_content = build_custom_constraints_content(config.custom_constraints)
+    content, count = _CUSTOM_CONSTRAINTS_RE.subn(custom_constraints_content, content)
+    if count == 0:
+        raise ValueError(
+            f"macro_GitHubCustomConstraints token not found in template {template_basename}"
+        )
+
+    # Wrap the from-to macro with current_instance scoping, preserving the token
+    # for LabVIEW FPGA to replace with the window From/To constraints.
+    content = _wrap_from_to_constraints_macro(content, config.entity_path_to_window_wrapper)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    reporter.success(f"Successfully processed and saved: {output_path}")
 
 
 def process_constraints_template(config):
@@ -288,11 +341,11 @@ def process_constraints_template(config):
                 period_content = period_match.group(1)
                 clip_content = clip_match.group(1)
                 from_to_content = (
-                    "\nset TopInstance0 [current_instance .]\n"
+                    f"\nset {_VIVADO_FROM_TO_SAVE_VAR} [current_instance .]\n"
                     f"current_instance {config.entity_path_to_window_wrapper}"
                     + from_to_match.group(1)
                     + "current_instance -quiet\n"
-                    "current_instance $TopInstance0\n"
+                    f"current_instance ${_VIVADO_FROM_TO_SAVE_VAR}\n"
                 )
         else:
             raise RuntimeError(

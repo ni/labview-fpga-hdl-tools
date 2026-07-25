@@ -2,8 +2,25 @@
 
 Pre-release command-line tools (`nihdl`) for building customized FPGA designs
 for use with the ni/flexrio repository. They move, generate, and process the
-files needed to take a top-level HDL design through Vivado to a LabVIEW FPGA
-bitfile — and to build hybrid LabVIEW + HDL targets.
+files needed to take a top-level HDL design to a LabVIEW FPGA bitfile through
+either of two compile flows (see below).
+
+## The two compile flows
+
+`nihdl` supports two ways to turn a top-level HDL design into a LabVIEW FPGA
+bitfile. Both start by extending the board's open-source top-level HDL, and both
+run Vivado in the end — they differ in what compiles the bitfile:
+
+- **Vivado compile flow** — extend the design in HDL and compile the bitfile
+  directly in Vivado (`gen-vivado` → `compile-vivado`). The host talks to your
+  logic over registers and DMA FIFOs via the NI-RIO driver — no LabVIEW required.
+- **LabVIEW FPGA compile flow** — package your HDL as a custom LabVIEW FPGA
+  target (`gen-target` → `install-target`), then write a VI and let LabVIEW FPGA
+  compile the bitfile (it runs Vivado under the hood).
+
+In short: in the **Vivado flow** you drive Vivado; in the **LabVIEW FPGA flow**
+LabVIEW FPGA drives Vivado for you. See
+[Theory of Operation](docs/TheoryOfOperation.md) for the full story.
 
 ## Documentation
 
@@ -13,6 +30,7 @@ bitfile — and to build hybrid LabVIEW + HDL targets.
 | [Command Reference](docs/CommandReference.md) | Every `nihdl` command, its options, the command flow, and per-command required settings. |
 | [Settings Reference](docs/SettingsReference.md) | The `nihdlsettings.py` model: hooks, context, `--set` overrides, and the full list of setters. |
 | [LVTargetCustomIO Reference](docs/LVTargetCustomIO-Reference.md) | The custom I/O CSV format used to define HDL ↔ LabVIEW FPGA signals. |
+| [Window Netlist and Constraints](docs/WindowNetlistAndConstraints.md) | How the LabVIEW Window netlist is produced/consumed and how XDC constraints are processed for each compile flow (including the `current_instance` scoping rules). |
 
 ## Prerequisites
 
@@ -79,7 +97,7 @@ step-by-step status with warnings and errors also shown inline; the end summary
 still appears, so verbose is additive to the default. See the
 [Command Reference](docs/CommandReference.md#output-and-verbosity) for details.
 
-## Quickstart: HDL to Bitfile
+## Quickstart: the Vivado compile flow
 
 Run these from your target folder (the one with `nihdlsettings.py`), with the
 Python environment active (run `nisetup` once per terminal — see
@@ -103,7 +121,7 @@ nihdl compile-vivado
 
 Open the project interactively at any point with `nihdl launch-vivado`.
 
-### Building a Custom LabVIEW FPGA Target (hybrid flow)
+### The LabVIEW FPGA compile flow (custom target)
 
 To expose your HDL to LabVIEW FPGA as a custom target, define your I/O in the
 [custom I/O CSV](docs/LVTargetCustomIO-Reference.md), then:

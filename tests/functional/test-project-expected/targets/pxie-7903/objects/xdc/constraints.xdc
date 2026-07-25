@@ -4820,12 +4820,12 @@ add_cells_to_pblock [get_pblocks $pciePblock] [get_cells TimingEnginex/TimingPci
 # BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS
 
 
-set TopInstance0 [current_instance .]
+set TopInstanceVivadoFromTo [current_instance .]
 current_instance TheLvWindowWrapper
 
 
 current_instance -quiet
-current_instance $TopInstance0
+current_instance $TopInstanceVivadoFromTo
 
 
 # END_LV_FPGA_FROM_TO_CONSTRAINTS
