@@ -4809,15 +4809,15 @@ add_cells_to_pblock [get_pblocks $pciePblock] [get_cells TimingEnginex/TimingPci
 
 # END_LV_FPGA_CLIP_CONSTRAINTS
 
+set TopInstanceLvTargetFromTo [current_instance .]
+current_instance TheLvWindowWrapper
 # BEGIN_LV_FPGA_FROM_TO_CONSTRAINTS
 
-set TopInstance0 [current_instance .]
-current_instance TheLvWindowWrapper
 #LabVIEWFPGA_Macro macro_fromToConstraints
-current_instance -quiet
-current_instance $TopInstance0
 
 # END_LV_FPGA_FROM_TO_CONSTRAINTS
+current_instance -quiet
+current_instance $TopInstanceLvTargetFromTo
 
 # END_LV_FPGA_CONSTRAINTS
 ################################################################################
@@ -4832,7 +4832,7 @@ current_instance $TopInstance0
 #
 # BEGIN_GITHUB_CUSTOM_CONSTRAINTS
 #
-#LabVIEWFPGAHdlTools_Macro macro_GitHubCustomConstraints
+
 #
 # END_GITHUB_CUSTOM_CONSTRAINTS
 

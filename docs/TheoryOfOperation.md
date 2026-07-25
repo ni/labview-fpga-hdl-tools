@@ -10,11 +10,43 @@ With the previous FPGA architecture used on LabVIEW FPGA targets, custom HDL was
 
 The new architecture provides an open-source top-level HDL file for the FPGA.  And rather than shimming HDL in through the LabVIEW window, the user can directly instantiate their HDL customizations in the top-level file.  Additionally, we will have host interfaces available directly in the HDL so that customers do not need to use a LabVIEW FPGA VI to move data to/from the host PC.  For folks who find value in LabVIEW and want to use it, we will provide improved interfaces (registers and FIFOs) between the custom HDL and VI diagram.
 
-## Workflows
+## The two compile flows
 
-The new architecture will support both HDL-only and LabVIEW-only workflows.  A user will be able to start with the HDL example for a FPGA board and use HDL to extend the design.  Then they can use Vivado to build the bitfile.  Or a user may stick with the traditional LabVIEW FPGA workflow.
+Every design starts the same way: you begin with the open-source top-level HDL for
+your FPGA board and extend it with the `nihdl` tools. From there, there are two ways
+to turn that design into a LabVIEW FPGA bitfile. Both paths ultimately run Vivado —
+they differ in **what compiles the bitfile** and **where you finish the design**.
 
-We will also support hybrid HDL-LV workflows where the user can create an HDL-customized LabVIEW FPGA target for further extension in LabVIEW.  Or they may author code in LabVIEW and export that to a netlist that can be brought into the HDL workflow and Vivado tools.
+### Vivado compile flow
+
+You extend the design in HDL and compile the bitfile **directly in Vivado**.
+`nihdl gen-vivado` assembles a Vivado project from your HDL sources and constraints,
+and `nihdl compile-vivado` (or Vivado itself) produces the bitfile. The host
+communicates with your logic over registers and DMA FIFOs through the NI-RIO driver —
+no LabVIEW required. Choose this when your design is HDL and you want to drive Vivado
+yourself.
+
+### LabVIEW FPGA compile flow
+
+You package your HDL as a **custom LabVIEW FPGA target** and finish the design **in
+LabVIEW FPGA**. `nihdl gen-target` and `nihdl install-target` build and install the
+target plugin; you then write a VI against it and let LabVIEW FPGA compile the
+bitfile — which invokes Vivado under the hood. Choose this when you want to combine
+custom HDL with a LabVIEW FPGA VI and use the standard LabVIEW FPGA bitfile-generation
+experience.
+
+> **In one line:** in the *Vivado compile flow* **you** drive Vivado; in the
+> *LabVIEW FPGA compile flow* **LabVIEW FPGA** drives Vivado for you. After the first
+> mention, these are referred to as the **Vivado flow** and the **LabVIEW FPGA flow**.
+
+### Bridging the two: LabVIEW window netlists
+
+You can also author part of the design in LabVIEW, export it as a netlist
+(`gen-window`), and bring that netlist into the **Vivado compile flow**. This hybrid
+input lets a LabVIEW-authored window ride along inside an HDL/Vivado build. See
+[The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.md) for
+how the netlist is produced and consumed, and how the window's XDC constraints are
+processed for each flow.
 
 <img src="workflows.png" alt="Workflows" width="1200"/>
 

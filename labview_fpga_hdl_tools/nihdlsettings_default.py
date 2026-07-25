@@ -138,7 +138,7 @@ def pre_all(context):
         "C:/Program Files/NI/LVAddons/flexrioii/1/Targets/NI/FPGA/RIO/79XXR"
     )
 
-    config.add_lv_target_constraints("../../deps/flexrio/targets/pxie-7903/xdc/constraints.xdc")
+    config.add_lv_target_constraints("objects/lv_target_xdc/constraints.xdc")
     config.add_lv_target_constraints(
         "../../deps/flexrio/targets/pxie-7903/xdc/constraints_place.xdc"
     )

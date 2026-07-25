@@ -178,6 +178,11 @@ def pre_all(context):
 | `set_constraints_template(path)` | Set the constraints template path. |
 | `add_vivado_project_constraints(path)` | Append a Vivado project constraints file. |
 
+> For how the constraints template, custom constraints, and the window netlist are
+> processed for each compile flow — and the `current_instance` scoping rules that go
+> with them — see
+> [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.md).
+
 **ModelSim Project**
 
 | Setter | Description |

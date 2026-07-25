@@ -71,7 +71,11 @@ flowchart LR
 
 - `gen-vivado` automatically runs `gen-hdl` and `gen-xdc`.
 - `compile-vivado` automatically runs `gen-lvbitx`.
-- `gen-window` is only needed for hybrid LabVIEW + HDL flows; its output feeds `gen-vivado`.
+- `gen-window` brings a LabVIEW-authored window netlist into the Vivado compile flow; its output feeds `gen-vivado`.
+
+For how the window netlist is produced and consumed, and how `gen-vivado`/`gen-target`
+process XDC constraints (including the `current_instance` scoping and the marker rules),
+see [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.md).
 
 ## Commands
 
@@ -81,7 +85,7 @@ flowchart LR
 | --- | --- | --- |
 | install-deps | Install GitHub dependencies from dependencies.toml. | --delete, --pre, --latest, --config |
 
-### Vivado
+### Vivado compile flow
 
 | Command | Purpose | Options |
 | --- | --- | --- |
@@ -99,7 +103,7 @@ flowchart LR
 | gen-xdc | Generate XDC files from constraint templates/macros (automatically run in gen-vivado). | --config |
 | gen-lvbitx | Build a .lvbitx from Vivado implementation output (automatically run in compile-vivado). | --config |
 
-### LabVIEW FPGA Target
+### LabVIEW FPGA compile flow
 
 | Command | Purpose | Options |
 | --- | --- | --- |
