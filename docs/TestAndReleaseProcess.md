@@ -7,6 +7,23 @@ This document covers the process to test and release the **labview-fpga-hdl-tool
 
 The labview-fpga-hdl-toolsd repo versioning is decoupled from NI product releases and use semantic versioning (e.g. 2.5.0)
 
+## Branching and Promotion
+
+Changes are promoted **dev branch → `prerelease` → `main`**:
+
+- Do your work on a dev branch and open a PR into **`prerelease`**. CI (the `PR`
+  workflow) runs on PRs into `prerelease` and `main`.
+- Publish dev builds from `prerelease` (see
+  [Publishing a Development Build](#publishing-a-development-build-from-the-prerelease-branch)).
+- When ready, open a PR from **`prerelease`** into **`main`**. Pull requests into
+  `main` may only come from `prerelease` — this is enforced by the **Enforce PR
+  source branch** job in `.github/workflows/PR.yml`.
+- Cut stable release branches (`releases/X.Y.Z`) from `main`.
+
+Admin setup: make the **Enforce PR source branch** check a **required status
+check** on `main` (repo **Settings → Branches**, or a **Ruleset** for `main`) so
+a PR from any branch other than `prerelease` cannot be merged into `main`.
+
 ## Release LabVIEW FPGA HDL Tools GitHub Repo
 
 The autoamted tests for the tools are run as part of a PR action so everything in the main branch should be tested.  However, it is recommended to manually run the PR action on main branch in case anything got directly checked in without going through a PR.
@@ -71,13 +88,6 @@ Steps for a dev build:
    A plain `pip install labview-fpga-hdl-tools` ignores pre-releases, so dev
    builds never reach regular users.
 
-One-time admin setup:
-- Create a long-lived **`prerelease`** branch (optionally protect it to require
-  PRs, so builds always go through review).
-- In repo **Settings > Environments > pypi > Deployment branches and tags**,
-  allow **`main`**, **`releases/*`**, and **`prerelease`**. The version rules
-  above (stable only from `main`/`releases/*`) are enforced by the
-  `validate_publish_source` guard, not by the branch rule.
 
 
 
