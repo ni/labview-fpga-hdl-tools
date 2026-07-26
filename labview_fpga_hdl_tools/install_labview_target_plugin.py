@@ -72,7 +72,10 @@ def _validate_ini(config):
     Raises:
         ValueError: If any required settings are missing or paths are invalid
     """
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [("lv_target_name", "LVFPGATargetSettings.LVTargetName")],
+    )
     invalid_paths = []
 
     # Check required settings for installation
@@ -88,9 +91,6 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not config.lv_target_name:
-        missing_settings.append("LVFPGATargetSettings.LVTargetName")
-
     if not config.lv_target_plugin_output_folder:
         missing_settings.append("LVFPGATargetSettings.LVTargetPluginOutputFolder")
     else:
@@ -103,14 +103,9 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    # Construct error message
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-
-    # If any issues found, raise an error with the helpful message
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def install_lv_target_support(config=None):

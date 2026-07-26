@@ -40,8 +40,13 @@ def _map_datatype_to_vhdl(data_type):
         return "std_logic"
 
     elif data_type.startswith(("U", "I")):
-        # Handle U8, U16, U32, U64, I8, I16, I32, I64
-        bit_width = int(data_type[1:])
+        # Handle U8, U16, U32, U64, I8, I16, I32, I64. Degrade gracefully to a
+        # sentinel (like the FXP/Array branches) instead of crashing the whole
+        # flow when the CSV holds a malformed U*/I* data type.
+        try:
+            bit_width = int(data_type[1:])
+        except ValueError:
+            return "INVALID_DATA_TYPE"
         return f"std_logic_vector({bit_width - 1} downto 0)"
 
     elif data_type.startswith("FXP"):
@@ -220,7 +225,7 @@ def _render_generated_vhdl(template_paths, output_folder, context):
         context (dict): kwargs passed to ``Template.render``.
 
     Raises:
-        SystemExit: If an error occurs during VHDL generation.
+        RuntimeError: If an error occurs during VHDL generation.
     """
     try:
         os.makedirs(output_folder, exist_ok=True)
@@ -259,7 +264,10 @@ def _validate_generated_vhdl_settings(config):
         tuple: ``(missing_settings, invalid_paths)`` lists describing any
         problems found. Both empty means the VHDL-generation settings are valid.
     """
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [("generated_vhdl_output_folder", "LVFPGATargetSettings.GeneratedVhdlOutputFolder")],
+    )
     invalid_paths = []
 
     # Validate input CSV if custom IO is included
@@ -276,10 +284,6 @@ def _validate_generated_vhdl_settings(config):
             )
             if invalid_path:
                 invalid_paths.append(invalid_path)
-
-    # Validate output folder setting
-    if not config.generated_vhdl_output_folder:
-        missing_settings.append("LVFPGATargetSettings.GeneratedVhdlOutputFolder")
 
     return missing_settings, invalid_paths
 
@@ -307,11 +311,9 @@ def gen_generated_vhdl(config=None):
 
     # Validate that required settings for generation are present
     missing_settings, invalid_paths = _validate_generated_vhdl_settings(config)
-    if missing_settings or invalid_paths:
-        error_msg = common.get_missing_settings_error(missing_settings)
-        error_msg += common.get_invalid_paths_error(invalid_paths)
-        error_msg += "\nPlease update your configuration file and try again."
-        reporter.error(f"Error: {error_msg}")
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        reporter.error(f"Error: {error}")
         return 1
 
     context = _build_generated_vhdl_context(config)

@@ -16,22 +16,36 @@ class TestRunCommandCheck:
 
     def test_given_check_true__when_command_fails__then_raises(self):
         with pytest.raises(subprocess.CalledProcessError):
-            common.run_command(f'"{sys.executable}" -c "raise SystemExit(3)"', check=True)
+            common.run_command([sys.executable, "-c", "raise SystemExit(3)"], check=True)
 
     def test_given_check_false__when_command_fails__then_does_not_raise(self):
         # A non-zero exit must be ignored when check is False (default behavior).
-        result = common.run_command(f'"{sys.executable}" -c "raise SystemExit(3)"', check=False)
+        result = common.run_command([sys.executable, "-c", "raise SystemExit(3)"], check=False)
         assert result == ""
 
     def test_given_capture_output__when_command_succeeds__then_returns_stdout(self):
-        result = common.run_command(f'"{sys.executable}" -c "print(\'hello-output\')"')
+        result = common.run_command([sys.executable, "-c", "print('hello-output')"])
         assert "hello-output" in result
 
     def test_given_no_capture__when_command_succeeds__then_returns_empty(self):
         result = common.run_command(
-            f'"{sys.executable}" -c "print(\'ignored\')"', capture_output=False
+            [sys.executable, "-c", "print('ignored')"], capture_output=False
         )
         assert result == ""
+
+    def test_given_list_command__when_fails_with_check__then_raises(self):
+        with pytest.raises(subprocess.CalledProcessError):
+            common.run_command([sys.executable, "-c", "raise SystemExit(4)"], check=True)
+
+
+class TestResolveVivadoExecutableAbs:
+    """Tests for resolve_vivado_executable_abs()."""
+
+    def test_given_no_tools_folder__when_resolved__then_raises_valueerror(self):
+        # With no VivadoToolsFolder configured, the executable cannot be resolved.
+        config = CommandConfiguration()
+        with pytest.raises(ValueError):
+            common.resolve_vivado_executable_abs(config)
 
 
 class TestFixFileSlashes:

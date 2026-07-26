@@ -25,11 +25,11 @@ def _generate_compile_project_tcl(config, output_path):
 
 def _validate_ini(config):
     """Validate required settings and paths for compile-project."""
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [("vivado_project_folder", "VivadoProjectSettings.VivadoProjectFolder")],
+    )
     invalid_paths = []
-
-    if not config.vivado_project_folder:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
 
     if not config.vivado_tcl_scripts_folder:
         missing_settings.append("VivadoProjectSettings.VivadoTclScriptsFolder")
@@ -72,12 +72,9 @@ def _validate_ini(config):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def _get_compile_status_from_log(log_contents):
@@ -103,16 +100,7 @@ def _get_compile_status_from_log(log_contents):
 
 def _run_compile_project(config, generated_tcl_path):
     """Run the generated compile-project TCL script in Vivado batch mode."""
-    vivado_executable = common.get_vivado_executable(config.vivado_tools_folder)
-    if not vivado_executable:
-        raise ValueError("VivadoToolsFolder setting is missing from configuration")
-
-    vivado_abs = os.path.abspath(vivado_executable)
-    if not os.path.exists(vivado_abs):
-        raise FileNotFoundError(
-            f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your --vivado argument or VivadoToolsFolder setting in nihdlsettings.py"
-        )
+    vivado_abs = common.resolve_vivado_executable_abs(config)
 
     current_dir = os.getcwd()
     vivado_project_dir = os.path.join(current_dir, config.vivado_project_folder)
@@ -123,18 +111,23 @@ def _run_compile_project(config, generated_tcl_path):
         if os.path.exists(path):
             os.remove(path)
 
-    command = (
-        f'"{vivado_abs}" -mode batch '
-        f'-source "{generated_tcl_path}" '
-        f'-log "{log_path}" '
-        f'-journal "{journal_path}"'
-    )
+    command = [
+        vivado_abs,
+        "-mode",
+        "batch",
+        "-source",
+        generated_tcl_path,
+        "-log",
+        log_path,
+        "-journal",
+        journal_path,
+    ]
 
     reporter.detail(f"Vivado executable: {vivado_abs}")
     reporter.detail(f"Working directory: {vivado_project_dir}")
-    reporter.detail(f"Running command: {command}")
+    reporter.detail(f"Running command: {' '.join(command)}")
 
-    result = subprocess.run(command, cwd=vivado_project_dir, shell=True, check=False)
+    result = subprocess.run(command, cwd=vivado_project_dir, check=False)
 
     if not os.path.exists(log_path):
         raise RuntimeError("Vivado compile-project log file was not created.")

@@ -26,7 +26,10 @@ def _validate_ini(config):
     Raises:
         ValueError: If any required settings are missing
     """
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [("vivado_project_folder", "VivadoProjectSettings.VivadoProjectFolder")],
+    )
     invalid_paths = []
 
     # Check required Vivado settings
@@ -39,9 +42,6 @@ def _validate_ini(config):
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
-
-    if not config.vivado_project_folder:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
 
     common.raise_for_missing_settings(missing_settings, invalid_paths)
 
@@ -102,13 +102,18 @@ def launch_vivado(config=None):
         reporter.success("SKIP VIVADO: Validation successful, skipping Vivado launch")
         return 0
 
-    # Launch Vivado
+    # Launch Vivado. project_arg (an existing .xpr) is optional.
     if platform.system() == "Windows":
-        # On Windows, use start to launch in a new window
-        cmd = f'start "" "{vivado_abs}" {project_arg}'
-        return_code = subprocess.call(cmd, shell=True, cwd=vivado_project_dir)
+        # Use cmd's "start" to open Vivado in its own window and return
+        # immediately. Passed as an argument list (shell=False) so there is no
+        # shell-injection surface, and so Vivado's vivado.bat launcher -- a batch
+        # file that CreateProcess cannot run directly -- is executed by cmd.
+        cmd = ["cmd", "/c", "start", "", vivado_abs]
+        if project_arg:
+            cmd.append(project_arg)
+        return_code = subprocess.call(cmd, cwd=vivado_project_dir)
     else:
-        # On Linux/macOS, launch directly
+        # On Linux/macOS, launch directly (blocks until Vivado exits).
         cmd = [vivado_abs]
         if project_arg:
             cmd.append(project_arg)

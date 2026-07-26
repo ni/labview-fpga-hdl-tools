@@ -1,5 +1,16 @@
 name: Publish labview-fpga-hdl-tools
 
+# Publishing model (see docs/TestAndReleaseProcess.md):
+#   * Stable versions may be published to PyPI only from 'main' or a 'releases/*'
+#     branch (or via a GitHub Release). Stable releases are built from a
+#     releases/X.Y.Z branch cut from main.
+#   * Dev builds may be published to PyPI from an allowed branch (e.g. a
+#     'prerelease' branch) but ONLY as PEP 440 pre-releases (e.g. 2.5.0.dev0,
+#     2.5.0rc1). The validate_publish_source job enforces both rules.
+#   * This assumes the 'pypi' GitHub environment allows the intended branches to
+#     deploy -- e.g. 'main', 'releases/*', and 'prerelease' (Settings >
+#     Environments > pypi > Deployment branches).
+
 on:
   release:
     types: [published]
@@ -52,11 +63,58 @@ jobs:
         with:
           name: ${{ env.dist-artifact-name }}
           path: dist/*
+  validate_publish_source:
+    name: Validate publish source
+    # Stable (non pre-release) versions may only be published to PyPI from 'main'
+    # or a 'releases/*' branch (or via a GitHub Release). Any allowed branch may
+    # publish a PEP 440 pre-release (e.g. 2.5.0.dev0, 2.5.0rc1). TestPyPI is
+    # unrestricted.
+    if: github.event_name == 'release' || inputs.environment != 'none'
+    runs-on: ubuntu-latest
+    needs: [build_labview-fpga-hdl-tools]
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Set up Python
+        uses: ni/python-actions/setup-python@f0276f7f58868ec0d0d1a86377287c9e6fe0c6e7 # v0.5.0
+      - name: Set up Poetry
+        uses: ni/python-actions/setup-poetry@f0276f7f58868ec0d0d1a86377287c9e6fe0c6e7 # v0.5.0
+      - name: Enforce stable-release-source
+        run: |
+          # GitHub Release events are the sanctioned stable channel: always allowed.
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "Release event: approved stable publish channel."
+            exit 0
+          fi
+          # Only real PyPI is restricted; TestPyPI (and 'none') are unrestricted.
+          if [ "${{ inputs.environment }}" != "pypi" ]; then
+            echo "Target '${{ inputs.environment }}' is not PyPI; no source restriction."
+            exit 0
+          fi
+          VERSION="$(poetry version -s)"
+          echo "Version '$VERSION' on ref '$GITHUB_REF'."
+          if echo "$VERSION" | grep -Eq '(\.dev|a|b|rc)[0-9]*$'; then
+            IS_PRERELEASE=true
+          else
+            IS_PRERELEASE=false
+          fi
+          # Stable versions may be published only from main or a releases/* branch.
+          # Pre-releases may be published from any (environment-allowed) branch.
+          case "$GITHUB_REF" in
+            refs/heads/main|refs/heads/releases/*) STABLE_ALLOWED=true ;;
+            *) STABLE_ALLOWED=false ;;
+          esac
+          if [ "$IS_PRERELEASE" != "true" ] && [ "$STABLE_ALLOWED" != "true" ]; then
+            echo "::error::Refusing to publish stable version '$VERSION' to PyPI from '$GITHUB_REF'. Publish stable versions from main or a releases/* branch (or via a GitHub Release), or bump to a pre-release (e.g. ${VERSION}.dev0) to publish a dev build."
+            exit 1
+          fi
+          echo "Allowed: publishing '$VERSION' from '$GITHUB_REF' to PyPI."
+
   publish_to_pypi:
     name: Publish labview-fpga-hdl-tools to PyPI
     if: github.event_name == 'release' || inputs.environment != 'none'
     runs-on: ubuntu-latest
-    needs: [build_labview-fpga-hdl-tools]
+    needs: [build_labview-fpga-hdl-tools, validate_publish_source]
     environment:
       # This logic is duplicated because `name` doesn't support the `env` context.
       name: ${{ github.event_name == 'release' && 'pypi' || inputs.environment }}

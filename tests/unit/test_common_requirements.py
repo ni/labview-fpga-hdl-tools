@@ -46,7 +46,7 @@ class TestRaiseForMissingSettings:
     def test_given_missing__when_called__then_raises_with_labels(self):
         with pytest.raises(ValueError) as exc:
             common.raise_for_missing_settings(["Setting.Foo"], [])
-        assert "Missing required configuration settings" in str(exc.value)
+        assert "required settings are missing" in str(exc.value)
         assert "Setting.Foo" in str(exc.value)
 
     def test_given_invalid_paths_only__when_called__then_raises_paths_message(self):
@@ -58,5 +58,28 @@ class TestRaiseForMissingSettings:
     def test_given_both__when_called__then_missing_takes_precedence(self):
         with pytest.raises(ValueError) as exc:
             common.raise_for_missing_settings(["Setting.Foo"], ["some invalid path"])
-        assert "Missing required configuration settings" in str(exc.value)
+        assert "required settings are missing" in str(exc.value)
         assert "some invalid path" not in str(exc.value)
+
+
+class TestBuildSettingsError:
+    """Tests for build_settings_error()."""
+
+    def test_given_nothing__when_built__then_empty_string(self):
+        assert common.build_settings_error([], []) == ""
+
+    def test_given_missing_only__when_built__then_missing_and_hint(self):
+        msg = common.build_settings_error(["Setting.Foo"], [])
+        assert "Setting.Foo" in msg
+        assert "required settings are missing" in msg
+        assert "Please update your configuration file" in msg
+
+    def test_given_invalid_only__when_built__then_paths_message(self):
+        msg = common.build_settings_error([], ["Setting.Bar - Path does not exist"])
+        assert "Setting.Bar - Path does not exist" in msg
+        assert "invalid paths" in msg
+
+    def test_given_both__when_built__then_includes_both(self):
+        msg = common.build_settings_error(["Setting.Foo"], ["Setting.Bar - bad"])
+        assert "Setting.Foo" in msg
+        assert "Setting.Bar - bad" in msg

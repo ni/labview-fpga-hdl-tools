@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'releases/**'
+      - prerelease
   workflow_call:
   workflow_dispatch:
 
@@ -13,6 +14,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  enforce_pr_source:
+    name: Enforce PR source branch
+    # Pull requests into main may only come from the prerelease branch. Promote
+    # dev work through prerelease first (dev -> prerelease -> main).
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Only allow PRs into main from prerelease
+        run: |
+          echo "PR from '${{ github.head_ref }}' into '${{ github.base_ref }}'."
+          if [ "${{ github.head_ref }}" != "prerelease" ]; then
+            echo "::error::Pull requests into 'main' may only come from the 'prerelease' branch (got '${{ github.head_ref }}'). Promote your changes through 'prerelease' first (dev -> prerelease -> main)."
+            exit 1
+          fi
+          echo "OK: PR source branch is 'prerelease'."
+
   run_ci:
     name: Run CI
     uses: ./.github/workflows/CI.yml

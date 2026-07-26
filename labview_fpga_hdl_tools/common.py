@@ -237,7 +237,8 @@ def _parse_vhdl_entity(vhdl_path):
 
     except Exception as e:
         reporter.error(f"Error parsing VHDL file: {str(e)}")
-        traceback.print_exc()
+        if reporter.verbose:
+            traceback.print_exc()
         return None, []
 
 
@@ -406,10 +407,16 @@ def apply_hdl_excludes(file_list, excluded_abspaths):
 
 
 def run_command(cmd, cwd=None, capture_output=True, check=False):
-    """Run a shell command and return its output.
+    """Run a command and return its output.
+
+    The command is given as a pre-tokenized argument list (for example
+    ``[vivado_abs, "-mode", "batch", ...]``) and is executed directly without a
+    shell. Passing an argument list means arguments containing spaces or
+    shell-significant characters are passed through verbatim (no quoting bugs)
+    and there is no shell-injection surface.
 
     Args:
-        cmd: Command string to run through the shell.
+        cmd: The command to run, as a list of arguments.
         cwd: Working directory to run the command in, if any.
         capture_output: When True, capture stdout and return it as a string.
             When False, let the command's output stream to the console and
@@ -421,7 +428,7 @@ def run_command(cmd, cwd=None, capture_output=True, check=False):
         The captured stdout (stripped) when ``capture_output`` is True, otherwise
         an empty string.
     """
-    reporter.detail(f"Running command: {cmd}")
+    reporter.detail(f"Running command: {' '.join(str(arg) for arg in cmd)}")
 
     kwargs = {}
     if cwd:
@@ -429,14 +436,12 @@ def run_command(cmd, cwd=None, capture_output=True, check=False):
 
     if capture_output:
         # Capture and return output
-        result = subprocess.run(
-            cmd, shell=True, text=True, capture_output=True, check=check, **kwargs
-        )
+        result = subprocess.run(cmd, text=True, capture_output=True, check=check, **kwargs)
         # Check if stdout is None before calling strip()
         return result.stdout.strip() if result.stdout is not None else ""
     else:
         # Don't capture output (let it go to console)
-        subprocess.run(cmd, shell=True, check=check, **kwargs)
+        subprocess.run(cmd, check=check, **kwargs)
         return ""  # Return empty string instead of None
 
 
@@ -495,6 +500,48 @@ def get_invalid_paths_error(invalid_paths):
     return error_msg
 
 
+def build_settings_error(missing_settings, invalid_paths):
+    """Return the standard missing-settings / invalid-paths message, or "" if none.
+
+    Combines the missing-settings and invalid-path messages with the shared hint
+    used by every ``_validate_ini``. Returns an empty string when there is
+    nothing to report, so callers can do ``if error: raise ValueError(error)``
+    (or report-and-return) without repeating the concatenation and hint text.
+    """
+    if not (missing_settings or invalid_paths):
+        return ""
+    return (
+        get_missing_settings_error(missing_settings)
+        + get_invalid_paths_error(invalid_paths)
+        + "\nPlease update your configuration file and try again."
+    )
+
+
+def resolve_vivado_executable_abs(config):
+    """Resolve the Vivado executable to an absolute path.
+
+    Args:
+        config: CommandConfiguration providing ``vivado_tools_folder``.
+
+    Returns:
+        str: Absolute path to the Vivado executable.
+
+    Raises:
+        ValueError: if the executable cannot be resolved from the configuration.
+        FileNotFoundError: if the resolved executable does not exist on disk.
+    """
+    vivado_executable = get_vivado_executable(config.vivado_tools_folder)
+    if not vivado_executable:
+        raise ValueError("VivadoToolsFolder setting is missing from configuration")
+    vivado_abs = os.path.abspath(vivado_executable)
+    if not os.path.exists(vivado_abs):
+        raise FileNotFoundError(
+            f"Vivado executable not found at: {vivado_abs}\n"
+            "Please check your VivadoToolsFolder setting in nihdlsettings.py"
+        )
+    return vivado_abs
+
+
 def collect_missing_settings(config, required):
     """Return the labels of required settings that are unset (falsy) on config.
 
@@ -517,23 +564,21 @@ def collect_missing_settings(config, required):
 def raise_for_missing_settings(missing_settings, invalid_paths):
     """Raise ``ValueError`` for missing settings or invalid paths, if any.
 
-    Missing settings take precedence over invalid paths. Produces the standard
-    launch-style messages shared by the launch commands. Does nothing when both
-    lists are empty.
+    Missing settings take precedence over invalid paths (only one message is
+    raised). Uses the shared ``get_missing_settings_error`` /
+    ``get_invalid_paths_error`` builders so the wording matches the
+    ``_validate_ini`` validators. Does nothing when both lists are empty.
     """
     if missing_settings:
-        error_msg = "Missing required configuration settings:\n"
-        for setting in missing_settings:
-            error_msg += f"  - {setting}\n"
-        error_msg += "\nCheck your nihdlsettings.py file and try again."
-        raise ValueError(error_msg)
-
+        raise ValueError(
+            get_missing_settings_error(missing_settings)
+            + "\nPlease update your configuration file and try again."
+        )
     if invalid_paths:
-        error_msg = "The following settings have invalid paths:\n"
-        for path in invalid_paths:
-            error_msg += f"  - {path}\n"
-        error_msg += "\nCheck your configuration and try again."
-        raise ValueError(error_msg)
+        raise ValueError(
+            get_invalid_paths_error(invalid_paths)
+            + "\nPlease update your configuration file and try again."
+        )
 
 
 def generate_guid():

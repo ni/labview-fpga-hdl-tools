@@ -18,6 +18,7 @@ The tool supports:
 import glob
 import os
 import shutil
+import stat
 import subprocess
 from collections import defaultdict
 from enum import Enum
@@ -290,7 +291,7 @@ def _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir):
         if vivado_path_len > path_len_limit:
             target_path = os.path.join(target_folder_long, os.path.basename(file))
             if os.path.exists(target_path):
-                os.chmod(target_path, 0o777)  # Make the file writable
+                os.chmod(target_path, os.stat(target_path).st_mode | stat.S_IWUSR)  # writable
             try:
                 shutil.copy2(file, target_path)
                 new_file_list.append(target_path)
@@ -471,18 +472,15 @@ def _validate_ini(config):
     Raises:
         ValueError: If any required settings are missing or invalid
     """
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [
+            ("vivado_project_folder", "VivadoProjectSettings.VivadoProjectFolder"),
+            ("top_level_entity", "VivadoProjectSettings.TopLevelEntity"),
+            ("fpga_part", "VivadoProjectSettings.FPGAPart"),
+        ],
+    )
     invalid_paths = []
-
-    # Check VivadoProjectSettings
-    if not config.vivado_project_folder:
-        missing_settings.append("VivadoProjectSettings.VivadoProjectFolder")
-
-    if not config.top_level_entity:
-        missing_settings.append("VivadoProjectSettings.TopLevelEntity")
-
-    if not config.fpga_part:
-        missing_settings.append("VivadoProjectSettings.FPGAPart")
 
     # Don't validate Vivado path if skip_vivado is set
     if not config.skip_vivado:
@@ -541,14 +539,9 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    # Construct error message
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-
-    # If any issues found, raise an error with the helpful message
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def _validate_constraints_files(config):
@@ -563,13 +556,9 @@ def _validate_constraints_files(config):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
-    # Construct error message
-    error_msg = common.get_invalid_paths_error(invalid_paths)
-
-    # If any issues found, raise an error with the helpful message
-    if invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error([], invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def _create_project(mode: ProjectMode, config):
@@ -703,14 +692,21 @@ def _create_project(mode: ProjectMode, config):
 
     if mode == ProjectMode.NEW:
         # Create a new project
-        command = f'"{vivado_abs}" -mode batch -source {new_proj_path}'
+        command = [vivado_abs, "-mode", "batch", "-source", new_proj_path]
     elif mode == ProjectMode.UPDATE:
         # Update the existing project
-        command = f'"{vivado_abs}" {project_name}.xpr -mode batch -source {update_proj_path}'
+        command = [
+            vivado_abs,
+            f"{project_name}.xpr",
+            "-mode",
+            "batch",
+            "-source",
+            update_proj_path,
+        ]
     else:
         raise ValueError(f"Unsupported mode: {mode}")
 
-    reporter.detail(f"Running command: {command}")
+    reporter.detail(f"Running command: {' '.join(command)}")
 
     # In skip_vivado mode, create a mock project file and skip Vivado execution
     if config.skip_vivado:
@@ -723,23 +719,25 @@ def _create_project(mode: ProjectMode, config):
         return 0
 
     try:
-        output = common.run_command(
+        # Stream Vivado output live (capture_output=False) so the user sees
+        # progress during the slow compile and so the failure message below
+        # actually has output "above" to point at.
+        common.run_command(
             command,
             cwd=os.getcwd(),
+            capture_output=False,
             check=True,
         )
     except subprocess.CalledProcessError as e:
-        os.chdir(current_dir)
         action = "updating" if mode == ProjectMode.UPDATE else "creating"
         raise RuntimeError(
             f"Vivado exited with a non-zero status ({e.returncode}) while {action} the "
             f"project. Review the Vivado output above and vivado.log for details."
         ) from e
-
-    # Change back to the original directory
-    os.chdir(current_dir)
-
-    reporter.detail(output)
+    finally:
+        # Always restore the working directory, even if Vivado raised, so later
+        # relative-path resolution in the same run is not corrupted.
+        os.chdir(current_dir)
 
 
 def _create_project_handler(config, overwrite=False, update=False):
