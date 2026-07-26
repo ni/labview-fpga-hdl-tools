@@ -69,11 +69,9 @@ def _validate_ini(config):
                 f"{config.modelsim_tools_folder}"
             )
 
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def _libraries_already_built(out_folder, libraries):
@@ -134,16 +132,7 @@ def _is_progress_line(line):
 
 def _run_compile_simlib(config, tcl_path, out_folder, libraries):
     """Run the generated compile_simlib TCL script in Vivado batch mode."""
-    vivado_executable = common.get_vivado_executable(config.vivado_tools_folder)
-    if not vivado_executable:
-        raise ValueError("VivadoToolsFolder setting is missing from configuration")
-
-    vivado_abs = os.path.abspath(vivado_executable)
-    if not os.path.exists(vivado_abs):
-        raise FileNotFoundError(
-            f"Vivado executable not found at: {vivado_abs}\n"
-            f"Please check your VivadoToolsFolder setting in nihdlsettings.py"
-        )
+    vivado_abs = common.resolve_vivado_executable_abs(config)
 
     os.makedirs(out_folder, exist_ok=True)
     # Use a distinct name for Vivado's session log/journal. compile_simlib
@@ -165,12 +154,19 @@ def _run_compile_simlib(config, tcl_path, out_folder, libraries):
                     "try again."
                 ) from exc
 
-    command = (
-        f'"{vivado_abs}" -mode batch '
-        f'-source "{tcl_path}" '
-        f'-log "{log_path}" '
-        f'-journal "{journal_path}"'
-    )
+    # Build the argument list explicitly and run without a shell so paths that
+    # contain spaces or shell-significant characters are passed through verbatim.
+    command = [
+        vivado_abs,
+        "-mode",
+        "batch",
+        "-source",
+        tcl_path,
+        "-log",
+        log_path,
+        "-journal",
+        journal_path,
+    ]
 
     # Run with the MODELSIM environment variable unset so compile_simlib does
     # not read or modify a global modelsim.ini; it writes a fresh one into the
@@ -181,7 +177,7 @@ def _run_compile_simlib(config, tcl_path, out_folder, libraries):
     reporter.detail(f"Vivado executable: {vivado_abs}")
     reporter.detail(f"Output directory:  {out_folder}")
     reporter.detail(f"Libraries:         {', '.join(libraries)}")
-    reporter.detail(f"Running command:   {command}")
+    reporter.detail(f"Running command:   {' '.join(command)}")
     reporter.success("")
     reporter.success("=" * 78)
     reporter.success("Compiling the Xilinx ModelSim simulation libraries with Vivado.")
@@ -201,7 +197,7 @@ def _run_compile_simlib(config, tcl_path, out_folder, libraries):
     process = subprocess.Popen(
         command,
         cwd=out_folder,
-        shell=True,
+        shell=False,
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,

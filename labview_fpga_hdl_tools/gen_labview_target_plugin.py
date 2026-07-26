@@ -20,6 +20,7 @@ import csv  # For reading signal definitions from CSV
 import os  # For file and directory operations
 import re
 import shutil  # For file copying operations
+import stat
 import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
 from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
@@ -616,7 +617,7 @@ def _copy_fpgafiles(
             target_path = os.path.join(dest_deps_folder, base_filename)
 
             if os.path.exists(target_path):
-                os.chmod(target_path, 0o777)  # Make the file writable
+                os.chmod(target_path, os.stat(target_path).st_mode | stat.S_IWUSR)  # writable
             # Check file paths before copy
             if file and target_path:
                 shutil.copy2(file, target_path)
@@ -646,7 +647,7 @@ def _copy_menu_files(plugin_folder, menus_folder):
                 dst_file = os.path.join(dest_dir, file)
                 # Make destination writable if it exists
                 if os.path.exists(dst_file):
-                    os.chmod(dst_file, 0o777)
+                    os.chmod(dst_file, os.stat(dst_file).st_mode | stat.S_IWUSR)
                 # Add null check before copy
                 if src_file is not None and dst_file is not None:
                     shutil.copy2(src_file, dst_file)
@@ -688,29 +689,19 @@ def _validate_ini(config):
     # generation.
     missing_settings, invalid_paths = generate_vhdl._validate_generated_vhdl_settings(config)
 
-    # Required general settings
-    if not config.target_family:
-        missing_settings.append("GeneralSettings.TargetFamily")
-
-    if not config.base_target:
-        missing_settings.append("GeneralSettings.BaseTarget")
-
-    # Required plugin settings
-    if not config.lv_target_plugin_output_folder:
-        missing_settings.append("LVFPGATargetSettings.LVTargetPluginOutputFolder")
-
-    if not config.lv_target_name:
-        missing_settings.append("LVFPGATargetSettings.LVTargetName")
-
-    if not config.lv_target_guid:
-        missing_settings.append("LVFPGATargetSettings.LVTargetGUID")
-
-    # Validate input files and folders
-    if not config.boardio_output:
-        missing_settings.append("LVFPGATargetSettings.BoardIOXML")
-
-    if not config.clock_output:
-        missing_settings.append("LVFPGATargetSettings.ClockXML")
+    # Required presence-only settings (list settings with path validation follow).
+    missing_settings += common.collect_missing_settings(
+        config,
+        [
+            ("target_family", "GeneralSettings.TargetFamily"),
+            ("base_target", "GeneralSettings.BaseTarget"),
+            ("lv_target_plugin_output_folder", "LVFPGATargetSettings.LVTargetPluginOutputFolder"),
+            ("lv_target_name", "LVFPGATargetSettings.LVTargetName"),
+            ("lv_target_guid", "LVFPGATargetSettings.LVTargetGUID"),
+            ("boardio_output", "LVFPGATargetSettings.BoardIOXML"),
+            ("clock_output", "LVFPGATargetSettings.ClockXML"),
+        ],
+    )
 
     # Check list settings
     if not config.hdl_file_lists:
@@ -750,14 +741,9 @@ def _validate_ini(config):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
-    # Construct error message
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-
-    # If any issues found, raise an error with the helpful message
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def gen_lv_target_support(config=None):

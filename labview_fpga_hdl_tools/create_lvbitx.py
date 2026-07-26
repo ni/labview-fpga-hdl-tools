@@ -211,7 +211,8 @@ def create_lv_bitx(config=None):
         return result  # Return the result code
     except Exception as e:
         reporter.error(f"Unhandled exception: {str(e)}")
-        import traceback
+        if reporter.verbose:
+            import traceback
 
-        traceback.print_exc()
+            traceback.print_exc()
         return 1  # Return error code on exception

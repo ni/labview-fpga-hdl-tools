@@ -30,9 +30,7 @@ def _validate_ini(config):
             )
 
     if not common.get_modelsim_entity(config):
-        missing_settings.append(
-            "ModelSimSettings.ModelSimEntity (or VivadoProjectSettings.TopLevelEntity)"
-        )
+        missing_settings.append("ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)")
 
     common.raise_for_missing_settings(missing_settings, invalid_paths)
 
@@ -95,14 +93,17 @@ def launch_modelsim(batch=False, config=None):
             return result.returncode
         reporter.success("Simulation completed successfully")
     else:
-        # GUI mode: launch vsim detached
+        # GUI mode: launch vsim in its own window and return immediately.
         if platform.system() == "Windows":
-            cmd = f'start "" "{vsim_exe}" -do {do_file}'
-            return_code = subprocess.call(cmd, shell=True, cwd=project_dir)
+            # Use cmd's "start" (as an argument list, shell=False) to open vsim
+            # in its own window with no shell-injection surface. This also runs
+            # vsim launchers that are batch files, which CreateProcess cannot
+            # execute directly.
+            cmd = ["cmd", "/c", "start", "", vsim_exe, "-do", do_file]
+            return_code = subprocess.call(cmd, cwd=project_dir)
         else:
-            cmd = [vsim_exe, "-do", do_file]
             subprocess.Popen(
-                cmd,
+                [vsim_exe, "-do", do_file],
                 cwd=project_dir,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,

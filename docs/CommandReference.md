@@ -146,7 +146,7 @@ see [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.
 - gen-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
 - launch-modelsim defaults to GUI mode; use --batch for headless simulation.
 - compile-modelsim-lib wraps Vivado's `compile_simlib` to build the Xilinx simulation libraries (unisim, secureip, ...) into `xilinx_sim_lib_folder`. It is idempotent: if the requested libraries already exist it returns immediately (no Vivado needed) unless `--force` is passed. The compiled libraries are simulator- and device-family specific, so they cannot be committed and must be built on the simulation machine. Narrow `set_xilinx_sim_family` to the target family (for example, "kintexu") so it does not build every Xilinx family, which can take hours. `compile_simlib` also compiles many bundled Xilinx IP/VIP libraries; failures in libraries you did not request (for example the Zynq/Versal processing-system VIPs, which ModelSim PE cannot parse) are reported as a warning and do not fail the command as long as the requested libraries were built.
-- gen-modelsim automatically runs compile-modelsim-lib (the idempotent fast-path) when `xilinx_sim_lib_folder` is configured, then maps the compiled libraries into modelsim.ini. The first run can take many minutes; subsequent runs skip the compile.
+- gen-modelsim automatically runs compile-modelsim-lib (the idempotent fast-path) when `xilinx_sim_lib_folder` is configured, then maps the compiled libraries into modelsim.ini. The very first run launches Vivado to build those libraries, so it additionally requires `vivado_tools_folder` and can take many minutes; once the libraries exist, later runs skip the compile and do not need Vivado. In the normal FlexRIO simulation workflow Vivado is already configured, so this is usually transparent. To build the libraries ahead of time (or on a separate machine), run `nihdl compile-modelsim-lib` once.
 
 ## Per-Command Setting Requirements
 
@@ -168,9 +168,9 @@ one.
 | gen-guid | None | Does not use any settings. |
 | gen-target | `target_family`, `base_target`, `generated_vhdl_templates`, `generated_vhdl_output_folder`, `lv_target_plugin_output_folder`, `lv_target_name`, `lv_target_guid`, `boardio_output`, `clock_output`, `lv_target_xml_templates`, `hdl_file_lists` | `custom_io_csv` ([reference](LVTargetCustomIO-Reference.md)) required when include_custom_io_on_lv_window=True. |
 | install-target | `lv_target_install_folder`, `lv_target_name`, `lv_target_plugin_output_folder` | Install folder and plugin folder must exist. |
-| gen-modelsim | `top_level_entity`, `hdl_file_lists`, `modelsim_tools_folder` | Uses `modelsim_file_lists` if set, otherwise `hdl_file_lists`. Auto-runs compile-modelsim-lib when `xilinx_sim_lib_folder` is set. |
-| launch-modelsim | `top_level_entity`, `modelsim_tools_folder` | Requires existing ModelSim project directory (run gen-modelsim first). |
-| sim-modelsim | `top_level_entity`, `modelsim_tools_folder` | Requires existing ModelSim project directory. |
+| gen-modelsim | `modelsim_top_entity`, `modelsim_file_lists`, `modelsim_tools_folder` | Compiles `modelsim_file_lists` only (no fallback to the Vivado `hdl_file_lists`). When `xilinx_sim_lib_folder` is set, the first run auto-builds the Xilinx sim libraries via compile-modelsim-lib, which also requires `vivado_tools_folder` (Vivado); later runs skip it. |
+| launch-modelsim | `modelsim_top_entity`, `modelsim_tools_folder` | Requires existing ModelSim project directory (run gen-modelsim first). |
+| sim-modelsim | `modelsim_top_entity`, `modelsim_tools_folder` | Requires existing ModelSim project directory. |
 | compile-modelsim-lib | `xilinx_sim_lib_folder`, `vivado_tools_folder`, `modelsim_tools_folder` | Validation and Vivado are skipped on the idempotent fast-path when the requested libraries already exist (unless `--force`). |
 | migrate-clip | `clip_input_xml`, `clip_output_csv`, `clip_top_hdl`, `clip_inst_example`, `clip_to_window_signal_definitions` | If `clip_constraints` is set, `clip_entity_path` and `clip_output_xdc_folder` are also required. |
 

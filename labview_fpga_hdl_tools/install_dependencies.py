@@ -106,8 +106,8 @@ def _write_dep_marker(repo, repo_name, tag, requested, repo_url, repo_path, deps
     for stale in deps_dir.glob(f"{repo_name}-*{_DEP_INFO_SUFFIX}"):
         try:
             stale.unlink()
-        except OSError:
-            pass
+        except OSError as e:
+            reporter.detail(f"    [INFO] Could not remove stale marker {stale.name}: {e}")
 
     commit = _get_commit_hash(repo_path) or "unknown"
     installed = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -360,7 +360,17 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
             response = "y"
             reporter.detail(f"    Auto-deleting and re-cloning (--delete flag set)")
         else:
-            response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
+            try:
+                response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
+            except EOFError:
+                # Non-interactive/CI run: there is no stdin to prompt on. Default
+                # to the safe "keep existing clone" choice instead of crashing;
+                # pass --delete to force a re-clone in automated runs.
+                reporter.detail(
+                    "    No interactive input available; keeping existing clone "
+                    "(pass --delete to force a re-clone)."
+                )
+                response = "n"
 
         if response in ["y", "yes"]:
             reporter.detail(f"    Deleting {repo_path}...")

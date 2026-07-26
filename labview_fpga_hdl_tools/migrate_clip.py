@@ -289,7 +289,8 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, clip_output_csv):
 
     except Exception as e:
         reporter.error(f"Error processing XML: {str(e)}")
-        traceback.print_exc()
+        if reporter.verbose:
+            traceback.print_exc()
 
 
 def _process_constraint_file(input_xml_path, output_folder, instance_path):
@@ -340,7 +341,8 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
 
     except Exception as e:
         reporter.error(f"Error processing XDC file {os.path.basename(input_xml_path)}: {str(e)}")
-        traceback.print_exc()
+        if reporter.verbose:
+            traceback.print_exc()
 
 
 def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
@@ -430,7 +432,8 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
 
     except Exception as e:
         reporter.error(f"Error generating CLIP to Window signals: {e}")
-        traceback.print_exc()
+        if reporter.verbose:
+            traceback.print_exc()
         return False, [f"Critical error: {str(e)}"]
 
 
@@ -573,7 +576,17 @@ def _validate_ini(config):
     Raises:
         ValueError: If any required settings are missing or paths are invalid
     """
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [
+            ("clip_output_csv", "CLIPMigrationSettings.LVTargetBoardIO"),
+            ("clip_inst_example", "CLIPMigrationSettings.CLIPInstantiationExample"),
+            (
+                "clip_to_window_signal_definitions",
+                "CLIPMigrationSettings.CLIPtoWindowSignalDefinitions",
+            ),
+        ],
+    )
     invalid_paths = []
 
     # Check required paths
@@ -587,9 +600,6 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not config.clip_output_csv:
-        missing_settings.append("CLIPMigrationSettings.LVTargetBoardIO")
-
     if not config.clip_top_hdl:
         missing_settings.append("CLIPMigrationSettings.CLIPHDLTop")
     else:
@@ -599,9 +609,6 @@ def _validate_ini(config):
         )
         if invalid_path:
             invalid_paths.append(invalid_path)
-
-    if not config.clip_inst_example:
-        missing_settings.append("CLIPMigrationSettings.CLIPInstantiationExample")
 
     # Note: CLIPXDCIn is optional, so we don't check if it's missing -
     #   but if they are present, validate them
@@ -621,17 +628,9 @@ def _validate_ini(config):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
-    if not config.clip_to_window_signal_definitions:
-        missing_settings.append("CLIPMigrationSettings.CLIPtoWindowSignalDefinitions")
-
-    # Construct error message
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-
-    # If any issues found, raise an error with the helpful message
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def migrate_clip(config=None):
