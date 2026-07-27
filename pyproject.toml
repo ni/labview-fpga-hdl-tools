@@ -29,15 +29,18 @@ pytest = ">=9.0.3"
 
 [tool.poetry.group.lint.dependencies]
 bandit = { version = ">=1.7", extras = ["toml"] }
-ni-python-styleguide = ">=0.4.1"
+# 0.5.x bundles flake8-tidy-imports (bans relative imports) and a pkg_resources-free
+# flake8-import-order (>=0.19.2), which is required for setuptools >= 81.
+ni-python-styleguide = ">=0.5.1"
 # Pinned directly (transitive via ni-python-styleguide) so security updates can be applied.
-black = ">=26.1.0"
+# Capped < 26 because ni-python-styleguide 0.5.x requires black < 26.0; 25.12.0 needs Python >= 3.10.
+black = ">=25.12.0,<26"
 # flake8-black < 0.4.0 crashes (BLK900) on black >= 25.9.0 due to a decode_bytes API change.
 flake8-black = ">=0.4.0"
-# Transitive via bandit/pbr and ni-python-styleguide. CVE-2025-47273 (PackageIndex.download
-# path traversal) was fixed in 78.1.1. Capped < 81 because setuptools 81 removed the bundled
-# pkg_resources, which flake8-import-order 0.18.x (via ni-python-styleguide 0.4.x) still imports.
-setuptools = ">=78.1.1,<81"
+# Transitive via bandit/pbr and ni-python-styleguide. Bumped to the latest to clear the
+# setuptools sdist Unicode-normalization advisory (fixed in 83.0.0); 83 dropped pkg_resources,
+# which is why ni-python-styleguide 0.5.x (pkg_resources-free import-order) is required.
+setuptools = ">=83.0.0"
 mypy = ">=1.0"
 pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 

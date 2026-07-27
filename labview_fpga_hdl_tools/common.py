@@ -14,8 +14,7 @@ from typing import Optional
 
 from mako.template import Template
 
-from .command_config import CommandConfiguration, resolve_path  # noqa: F401
-from .reporting import reporter
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 def handle_long_path(path):

@@ -21,9 +21,10 @@ import os
 import subprocess
 import sys
 
-from . import common
-from .create_modelsim_project import _find_modelsim_executable
-from .reporting import reporter
+from labview_fpga_hdl_tools import common
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.create_modelsim_project import _find_modelsim_executable
+from labview_fpga_hdl_tools.reporting import reporter
 
 # Libraries built when nihdlsettings.py does not specify an explicit scope.
 _DEFAULT_XILINX_SIM_LIBRARIES = ["unisim", "secureip"]
@@ -250,7 +251,7 @@ def compile_modelsim_lib(config=None, force=False):
         int: 0 for success, 1 for error.
     """
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     out_folder = config.xilinx_sim_lib_folder
     if not out_folder:

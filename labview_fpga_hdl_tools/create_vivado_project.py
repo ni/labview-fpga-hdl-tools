@@ -23,8 +23,9 @@ import subprocess
 from collections import defaultdict
 from enum import Enum
 
-from . import common, generate_vhdl, process_constraints
-from .reporting import reporter
+from labview_fpga_hdl_tools import common, generate_vhdl, process_constraints
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 # Windows MAX_PATH. When the generated TCL adds a source file, Vivado resolves the
 # file's add_files path (which is relative to the TCL folder) against the Vivado
@@ -810,7 +811,7 @@ def create_project(overwrite=False, update=False, config=None):
     """
     # Load configuration with optional custom config path
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     result = _run_create_project_steps(overwrite, update, config)
 
