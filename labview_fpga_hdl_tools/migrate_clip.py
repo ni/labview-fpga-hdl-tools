@@ -21,8 +21,9 @@ import sys
 import traceback
 import xml.etree.ElementTree as ET  # noqa: N817
 
-from . import common
-from .reporting import reporter
+from labview_fpga_hdl_tools import common
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 INVALID_LV_DATA_TYPE = "INVALID_LV_DATA_TYPE"
 
@@ -637,7 +638,7 @@ def migrate_clip(config=None):
     """Main program entry point."""
     # Load configuration
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
     validation_errors = []
 
     # Validate that all required settings are present

@@ -13,8 +13,8 @@ into user-provided template files, replacing macro tokens.
 import os
 import re
 
-from . import common
-from .reporting import reporter
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 # ---------------------------------------------------------------------------
 # TG/TNM constraint conversion helpers
@@ -435,6 +435,6 @@ def process_constraints(config=None):
         int: 0 on success.
     """
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
     process_constraints_template(config)
     return 0

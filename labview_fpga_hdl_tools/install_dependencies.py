@@ -52,7 +52,7 @@ except ModuleNotFoundError:
 from packaging.specifiers import SpecifierSet
 from packaging.version import InvalidVersion, Version
 
-from .reporting import reporter
+from labview_fpga_hdl_tools.reporting import reporter
 
 # Suffix for the per-dependency version marker files written next to each
 # cloned repo. Mirrors the discoverability of Python's "<pkg>-<ver>.dist-info"

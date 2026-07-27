@@ -7,8 +7,8 @@
 import os  # For file and directory operations
 import subprocess  # For executing external programs
 
-from . import common  # For shared utilities across tools
-from .reporting import reporter
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 # createBitfile.exe lives at this path relative to a LabVIEW install root.
 _CREATEBITFILE_RELPATH = os.path.join("vi.lib", "rvi", "CDR", "createBitfile.exe")
@@ -114,7 +114,7 @@ def _create_lv_bitfile(config=None):
 
     # Load configuration
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     # Determine path to CodeGenerationResults.lvtxt from TheWindow folder
     if not config.lv_window_netlist_folder:

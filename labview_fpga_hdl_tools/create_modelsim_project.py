@@ -11,8 +11,9 @@ import shutil
 import stat
 import subprocess
 
-from . import common, generate_vhdl
-from .reporting import reporter
+from labview_fpga_hdl_tools import common, generate_vhdl
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 def _validate_ini(config):
@@ -426,7 +427,7 @@ def create_modelsim_project(overwrite=False, config=None):
     - .do files for GUI and batch simulation
     """
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     try:
         _validate_ini(config)
@@ -499,7 +500,7 @@ def create_modelsim_project(overwrite=False, config=None):
         # This is idempotent: once compiled it is a cheap no-op (and does not
         # even require Vivado). Imported locally to avoid a circular import,
         # since compile_modelsim_lib imports helpers from this module.
-        from . import compile_modelsim_lib
+        from labview_fpga_hdl_tools import compile_modelsim_lib
 
         if compile_modelsim_lib.compile_modelsim_lib(config=config) != 0:
             return 1

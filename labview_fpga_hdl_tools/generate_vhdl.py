@@ -23,8 +23,9 @@ import os  # For file and directory operations
 
 from mako.template import Template  # For template-based file generation  # type: ignore
 
-from . import common  # For shared utilities across tools
-from .reporting import reporter
+from labview_fpga_hdl_tools import common  # For shared utilities across tools
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 def _ensure_text(value):
@@ -303,7 +304,7 @@ def gen_generated_vhdl(config=None):
     """
     # Load configuration
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     if not config.generated_vhdl_templates:
         # Nothing to generate; not an error.
