@@ -242,7 +242,7 @@ def _render_generated_vhdl(template_paths, output_folder, context):
             reporter.detail(f"Processing template: {template_path} -> {output_path}")
 
             with open(template_path, "r", encoding="utf-8") as f:
-                template = Template(f.read())
+                template = Template(f.read())  # nosec B702
 
             output_text = template.render(**context)
 

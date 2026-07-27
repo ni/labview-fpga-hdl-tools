@@ -22,13 +22,15 @@ import re
 import shutil  # For file copying operations
 import stat
 import xml.etree.ElementTree as ET  # For XML generation and manipulation # noqa: N817
-from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
+from defusedxml.minidom import parseString  # For safe pretty-formatted XML output
 from mako.template import Template  # For template-based file generation  # type: ignore
 
 from labview_fpga_hdl_tools import common  # For shared utilities across tools
 from labview_fpga_hdl_tools import generate_vhdl  # For generated VHDL file generation
-from labview_fpga_hdl_tools import process_constraints  # For shared constraint macro replacement
+from labview_fpga_hdl_tools import (
+    process_constraints,  # For shared constraint macro replacement
+)
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
 from labview_fpga_hdl_tools.reporting import reporter
 
@@ -508,7 +510,7 @@ def _generate_target_xml(
             # Render template
             try:
                 with open(template_path, "r", encoding="utf-8") as f:
-                    template = Template(f.read())
+                    template = Template(f.read())  # nosec B702
 
                 render_kwargs = {
                     "include_board_io": include_board_io,
