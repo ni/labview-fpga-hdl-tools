@@ -61,11 +61,9 @@ def _validate_ini(config):
                     f"{config.modelsim_tools_folder}"
                 )
 
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def _get_vsim_executable(modelsim_path):

@@ -75,7 +75,14 @@ def _get_window_netlist(config):
 
         try:
             common.run_command(
-                f'"{vivado_abs}" {project_name}.xpr -mode batch -source {get_netlist_tcl_path}',
+                [
+                    vivado_abs,
+                    f"{project_name}.xpr",
+                    "-mode",
+                    "batch",
+                    "-source",
+                    get_netlist_tcl_path,
+                ],
                 cwd=os.getcwd(),
                 capture_output=False,
                 check=True,
@@ -248,7 +255,10 @@ def _validate_ini(config):
     Raises:
         ValueError: If any required settings are missing or paths are invalid
     """
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [("lv_window_netlist_output_folder", "LVWindowNetlistSettings.LVWindowFolder")],
+    )
     invalid_paths = []
 
     # Check required paths for window netlist generation
@@ -274,9 +284,6 @@ def _validate_ini(config):
                     f"Vivado has issues with long paths. Please use a shorter path for your project."
                 )
 
-    if not config.lv_window_netlist_output_folder:
-        missing_settings.append("LVWindowNetlistSettings.LVWindowFolder")
-
     # Check for Vivado tools path
     if not config.vivado_tools_folder:
         missing_settings.append("VivadoProjectSettings.VivadoToolsFolder")
@@ -289,14 +296,9 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    # Construct error message using common utility functions
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-
-    # If any issues found, raise an error with the helpful message
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def get_window(config=None):

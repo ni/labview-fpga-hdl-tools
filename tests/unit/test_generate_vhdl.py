@@ -50,6 +50,12 @@ class TestMapDatatypeToVhdl:
     def test_given_malformed_fxp__when_mapped__then_invalid_marker(self):
         assert generate_vhdl._map_datatype_to_vhdl("FXP(garbage)") == "INVALID_FXP_DATA_TYPE"
 
+    @pytest.mark.parametrize("data_type", ["Ufoo", "Ibar", "U", "I"])
+    def test_given_malformed_integer__when_mapped__then_invalid_marker(self, data_type):
+        # A U*/I* value that is not a valid bit width must degrade to a sentinel
+        # instead of raising, matching the FXP/Array branches.
+        assert generate_vhdl._map_datatype_to_vhdl(data_type) == "INVALID_DATA_TYPE"
+
     def test_given_integer_array__when_mapped__then_total_width_vector(self):
         assert generate_vhdl._map_datatype_to_vhdl("Array<U32>[8]") == (
             "std_logic_vector(255 downto 0)"

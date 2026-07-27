@@ -26,8 +26,21 @@ def _is_admin():
 
 
 def _run_as_admin():
-    """Re-launch the command with administrator privileges."""
+    """Re-launch the command with administrator privileges.
+
+    Security notes:
+    - Elevation spawns a *separate* short-lived process via UAC; the elevated
+      privileges live and die with that child process. The elevated instance
+      performs the install and then exits, so admin rights are never retained
+      by any process after installation completes.
+    - The executable is always resolved to a fully-qualified path before being
+      handed to ShellExecuteW. Passing a bare program name (e.g. "nihdl") would
+      let Windows resolve it against the working directory / PATH in the
+      elevated context, allowing an attacker-planted binary to run as admin
+      (CWE-426/CWE-427, untrusted search path).
+    """
     import ctypes
+    import subprocess
     import sys
 
     # Skip on non-Windows platforms
@@ -35,13 +48,17 @@ def _run_as_admin():
         reporter.detail("Admin elevation only supported on Windows")
         return
 
-    # When running via pip-installed entry point
-    if sys.argv[0].endswith("nihdl") or sys.argv[0].endswith("nihdl.exe"):
-        command = "nihdl"
-        arguments = " ".join(sys.argv[1:])
+    # Resolve the launcher to an absolute, trusted path. Never pass a bare
+    # program name to ShellExecuteW "runas".
+    launcher = os.path.abspath(sys.argv[0])
+    if launcher.lower().endswith(".exe") and os.path.isfile(launcher):
+        # pip-installed console entry point (e.g. nihdl.exe)
+        command = launcher
+        arguments = subprocess.list2cmdline(sys.argv[1:])
     else:
-        command = sys.executable
-        arguments = f'"{sys.argv[0]}" {" ".join(sys.argv[1:])}'
+        # Running as a .py script under the current interpreter
+        command = os.path.abspath(sys.executable)
+        arguments = subprocess.list2cmdline([launcher, *sys.argv[1:]])
 
     reporter.detail("Requesting administrator privileges...")
 
@@ -55,7 +72,8 @@ def _run_as_admin():
         reporter.error(f"Error elevating privileges. Error code: {result}")
         sys.exit(1)
 
-    # The original process should exit after launching the elevated one
+    # The original (non-elevated) process exits after launching the elevated
+    # one, so no admin privileges are held by a lingering process.
     reporter.detail("Elevated process launched. This process will now exit.")
     sys.exit(0)
 
@@ -72,7 +90,10 @@ def _validate_ini(config):
     Raises:
         ValueError: If any required settings are missing or paths are invalid
     """
-    missing_settings = []
+    missing_settings = common.collect_missing_settings(
+        config,
+        [("lv_target_name", "LVFPGATargetSettings.LVTargetName")],
+    )
     invalid_paths = []
 
     # Check required settings for installation
@@ -88,9 +109,6 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    if not config.lv_target_name:
-        missing_settings.append("LVFPGATargetSettings.LVTargetName")
-
     if not config.lv_target_plugin_output_folder:
         missing_settings.append("LVFPGATargetSettings.LVTargetPluginOutputFolder")
     else:
@@ -103,14 +121,9 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
-    # Construct error message
-    error_msg = common.get_missing_settings_error(missing_settings)
-    error_msg += common.get_invalid_paths_error(invalid_paths)
-
-    # If any issues found, raise an error with the helpful message
-    if missing_settings or invalid_paths:
-        error_msg += "\nPlease update your configuration file and try again."
-        raise ValueError(error_msg)
+    error = common.build_settings_error(missing_settings, invalid_paths)
+    if error:
+        raise ValueError(error)
 
 
 def install_lv_target_support(config=None):
