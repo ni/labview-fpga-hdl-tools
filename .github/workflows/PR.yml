@@ -24,10 +24,13 @@ jobs:
       contents: read
     steps:
       - name: Only allow PRs into main from prerelease
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          echo "PR from '${{ github.head_ref }}' into '${{ github.base_ref }}'."
-          if [ "${{ github.head_ref }}" != "prerelease" ]; then
-            echo "::error::Pull requests into 'main' may only come from the 'prerelease' branch (got '${{ github.head_ref }}'). Promote your changes through 'prerelease' first (dev -> prerelease -> main)."
+          echo "PR from '$HEAD_REF' into '$BASE_REF'."
+          if [ "$HEAD_REF" != "prerelease" ]; then
+            echo "::error::Pull requests into 'main' may only come from the 'prerelease' branch (got '$HEAD_REF'). Promote your changes through 'prerelease' first (dev -> prerelease -> main)."
             exit 1
           fi
           echo "OK: PR source branch is 'prerelease'."

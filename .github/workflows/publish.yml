@@ -41,6 +41,9 @@ env:
       }
     }
 
+permissions:
+  contents: read
+
 jobs:
   build_labview-fpga-hdl-tools:
     name: Build labview-fpga-hdl-tools
