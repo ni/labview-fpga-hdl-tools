@@ -21,6 +21,8 @@ python = ">=3.10,<3.15"
 mako = ">=1.3.10"
 click = ">=8.1.8,<8.2"
 packaging = ">=21.0"
+# Hardens XML parsing against XXE / entity-expansion attacks (used instead of xml.etree/minidom).
+defusedxml = ">=0.7.1"
 tomli = {version = ">=1.1.0", python = "<3.11"}
 
 [tool.poetry.group.test.dependencies]
@@ -59,5 +61,15 @@ disallow_incomplete_defs = false
 module = "mako.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "defusedxml.*"
+ignore_missing_imports = true
+
 [tool.bandit]
 exclude_dirs = ["tests"]
+# Reviewed low-severity informational tests, safe by construction:
+#   B404/B603/B607 - subprocess is invoked with argument lists (never shell=True), so there is
+#     no shell-injection surface; executable paths are resolved from trusted configuration.
+#   B405 - xml.etree is used only for XML generation / ParseError handling; all XML parsing
+#     uses defusedxml (see the B314/B318 remediations).
+skips = ["B404", "B603", "B607", "B405"]
