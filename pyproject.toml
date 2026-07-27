@@ -33,6 +33,10 @@ ni-python-styleguide = ">=0.4.1"
 black = ">=26.1.0"
 # flake8-black < 0.4.0 crashes (BLK900) on black >= 25.9.0 due to a decode_bytes API change.
 flake8-black = ">=0.4.0"
+# Transitive via bandit/pbr and ni-python-styleguide. CVE-2025-47273 (PackageIndex.download
+# path traversal) was fixed in 78.1.1. Capped < 81 because setuptools 81 removed the bundled
+# pkg_resources, which flake8-import-order 0.18.x (via ni-python-styleguide 0.4.x) still imports.
+setuptools = ">=78.1.1,<81"
 mypy = ">=1.0"
 pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 
