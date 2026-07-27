@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """LVFPGAHDLTools - Command-line interface for LabVIEW FPGA HDL Tools."""
+
 # Copyright (c) 2025 National Instruments Corporation
 #
 # SPDX-License-Identifier: MIT

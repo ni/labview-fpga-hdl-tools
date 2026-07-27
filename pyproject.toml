@@ -31,6 +31,8 @@ bandit = { version = ">=1.7", extras = ["toml"] }
 ni-python-styleguide = ">=0.4.1"
 # Pinned directly (transitive via ni-python-styleguide) so security updates can be applied.
 black = ">=26.1.0"
+# flake8-black < 0.4.0 crashes (BLK900) on black >= 25.9.0 due to a decode_bytes API change.
+flake8-black = ">=0.4.0"
 mypy = ">=1.0"
 pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 
