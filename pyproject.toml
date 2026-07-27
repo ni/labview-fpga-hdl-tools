@@ -28,6 +28,9 @@ pytest = ">=7.2"
 [tool.poetry.group.lint.dependencies]
 bandit = { version = ">=1.7", extras = ["toml"] }
 ni-python-styleguide = ">=0.4.1"
+# Pinned directly (transitive via ni-python-styleguide) so security updates can be applied.
+# Capped below 25.12 because black 25.12+ drops Python 3.9 support.
+black = ">=25.11.0,<25.12"
 mypy = ">=1.0"
 pyright = { version = ">=1.1.400", extras = ["nodejs"] }
 
