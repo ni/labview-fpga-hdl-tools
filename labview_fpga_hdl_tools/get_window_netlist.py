@@ -10,8 +10,9 @@ import os
 import shutil
 import subprocess
 
-from . import common
-from .reporting import reporter
+from labview_fpga_hdl_tools import common
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 # Generated flat wrapper file produced by the GetWindowNetlist TCL script.
 _WINDOW_FLAT_WRAPPER_FILE = "TheLvWindowFlatWrapper.v"
@@ -305,7 +306,7 @@ def get_window(config=None):
     """Main entry point for the script."""
     # Load configuration
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     # Validate that all required settings are present
     try:

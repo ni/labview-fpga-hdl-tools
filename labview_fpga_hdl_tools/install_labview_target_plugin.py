@@ -8,8 +8,9 @@ import os  # For file and directory operations
 import shutil  # For file copying and directory removal
 import sys  # For command-line arguments and error handling
 
-from . import common  # For shared utilities across tools
-from .reporting import reporter
+from labview_fpga_hdl_tools import common  # For shared utilities across tools
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 def _is_admin():
@@ -139,7 +140,7 @@ def install_lv_target_support(config=None):
     """
     # Load configuration
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     # Validate that all required settings are present
     try:

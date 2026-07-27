@@ -8,8 +8,9 @@
 import os
 import subprocess
 
-from . import common
-from .reporting import reporter
+from labview_fpga_hdl_tools import common
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 def _generate_compile_project_tcl(config, output_path):
@@ -187,7 +188,7 @@ def compile_project(config=None):
         int: 0 for success, 1 for error
     """
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     try:
         _validate_ini(config)

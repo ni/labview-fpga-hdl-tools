@@ -53,7 +53,9 @@ class TestHookOrdering:
     def test_given_all_hooks__when_run__then_called_in_order(self, tmp_path):
         log_path = tmp_path / "order.log"
         settings = tmp_path / "nihdlsettings.py"
-        settings.write_text(textwrap.dedent("""
+        settings.write_text(
+            textwrap.dedent(
+                """
                 def _log(context, name):
                     with open(context.settings["log"], "a", encoding="utf-8") as f:
                         f.write(name + "\\n")
@@ -69,7 +71,9 @@ class TestHookOrdering:
 
                 def post_all(context):
                     _log(context, "post_all")
-                """))
+                """
+            )
+        )
 
         def command(**kwargs):
             with open(log_path, "a", encoding="utf-8") as f:

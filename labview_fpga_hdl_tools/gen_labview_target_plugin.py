@@ -26,10 +26,11 @@ from xml.dom.minidom import parseString  # For pretty-formatted XML output
 
 from mako.template import Template  # For template-based file generation  # type: ignore
 
-from . import common  # For shared utilities across tools
-from . import generate_vhdl  # For generated VHDL file generation
-from . import process_constraints  # For shared constraint macro replacement
-from .reporting import reporter
+from labview_fpga_hdl_tools import common  # For shared utilities across tools
+from labview_fpga_hdl_tools import generate_vhdl  # For generated VHDL file generation
+from labview_fpga_hdl_tools import process_constraints  # For shared constraint macro replacement
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.reporting import reporter
 
 # Constants
 BOARDIO_WRAPPER_NAME = "BoardIO"  # Top-level wrapper name in the BoardIO XML hierarchy
@@ -750,7 +751,7 @@ def gen_lv_target_support(config=None):
     """Generate target support files."""
     # Load configuration
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
     has_validation_errors = False
     validation_errors = []
     register_space_warnings = []

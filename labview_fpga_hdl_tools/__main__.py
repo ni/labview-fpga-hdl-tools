@@ -12,7 +12,7 @@ import traceback
 import click
 
 # Import main functions from all the tool modules
-from . import (
+from labview_fpga_hdl_tools import (
     __version__,
     check_syntax,
     command_hooks,
@@ -33,7 +33,7 @@ from . import (
     process_constraints,
     sim_modelsim,
 )
-from .reporting import reporter
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 class SectionGroup(click.Group):

@@ -10,9 +10,10 @@ import subprocess
 import sys
 import time
 
-from . import common
-from .create_modelsim_project import _get_vsim_executable
-from .reporting import reporter
+from labview_fpga_hdl_tools import common
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
+from labview_fpga_hdl_tools.create_modelsim_project import _get_vsim_executable
+from labview_fpga_hdl_tools.reporting import reporter
 
 
 def _validate_ini(config):
@@ -50,7 +51,7 @@ def sim_modelsim(do_file=None, config=None):
         int: 0 on success, non-zero on failure.
     """
     if config is None:
-        config = common.CommandConfiguration()
+        config = CommandConfiguration()
 
     try:
         _validate_ini(config)
