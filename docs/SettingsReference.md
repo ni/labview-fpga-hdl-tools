@@ -230,6 +230,12 @@ def pre_all(context):
 | `add_lv_target_xml_template(path)` | Append a target resource XML Mako template. |
 | `add_lv_target_constraints(path)` | Append a LV target constraints file. |
 
+> The `generated_vhdl_*`, `custom_io_csv`, `num_hdl_fifos`, and
+> `max_hdl_reg_offset` settings feed the tools' generated VHDL — and, for the same
+> values, the LabVIEW FPGA target resource XML. For what is generated and why (the
+> single-sourcing that keeps the HDL and the LabVIEW FPGA target in sync), see
+> [Generated VHDL](GeneratedVHDL.md).
+
 **CLIP Migration**
 
 | Setter | Description |

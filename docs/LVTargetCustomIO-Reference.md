@@ -11,6 +11,9 @@ This CSV is the central signal definition that drives the generation of:
 3. **Window VHDL** — The HDL interface component that bridges LabVIEW FPGA to custom hardware
 4. **Signal assignments example** — A starter VHDL snippet for connecting Board IO signals
 
+The CSV is one of the two single sources behind the tools' [generated VHDL](GeneratedVHDL.md);
+see that overview for how the Window VHDL and the LabVIEW FPGA resource XML are kept in sync.
+
 ## Theory of Operation
 
 ### How the CSV Fits Into the Tool Flow
