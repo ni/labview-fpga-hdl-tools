@@ -82,7 +82,7 @@ Configure these in the target's `nihdlsettings.py` (see the
 | `add_generated_vhdl_template(path)` | Window VHDL + `PkgNiHdlSettings` templates. See [Generated VHDL](GeneratedVHDL.md). |
 | `set_include_board_io_on_lv_window(flag)` / `set_include_custom_io_on_lv_window(flag)` | Whether standard board I/O and custom I/O appear on the window. |
 | `set_entity_path_to_window(path)` / `set_entity_path_to_window_wrapper(path)` | HDL instance paths to the window and its flat wrapper (used for constraint scoping). |
-| `set_max_hdl_reg_offset(n)` / `set_num_hdl_registers(n)` / `set_num_hdl_fifos(n)` | HDL register/FIFO limits — single-sourced into both the HDL and the target XML. |
+| `set_max_hdl_reg_offset(n)` / `set_num_hdl_registers(n)` / `set_num_hdl_fifos(n)` | HDL register/FIFO limits — single-sourced into both the HDL and the target XML. See how the HDL and LabVIEW FPGA share the [register space](GeneratedVHDL.md#how-hdl-registers-share-the-labview-fpga-register-space) and the [DMA stream channels](GeneratedVHDL.md#how-hdl-fifos-share-the-dma-stream-channels). |
 
 **Exclusions and constraints**
 
