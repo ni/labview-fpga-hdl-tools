@@ -4,6 +4,9 @@ on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   check_nitypes:
     name: Check nitypes
@@ -32,7 +35,7 @@ jobs:
       - name: Mypy static analysis (Windows)
         run:  poetry run mypy --platform win32
       - name: Bandit security checks
-        run:  poetry run bandit -c pyproject.toml -r src/nitypes
+        run:  poetry run bandit -c pyproject.toml -r labview_fpga_hdl_tools
       - name: Add virtualenv to the path for pyright-action
         run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
       - name: Pyright static analysis (Linux)

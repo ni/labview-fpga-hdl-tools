@@ -26,6 +26,8 @@ communicates with your logic over registers and DMA FIFOs through the NI-RIO dri
 no LabVIEW required. Choose this when your design is HDL and you want to drive Vivado
 yourself.
 
+> **Walkthrough:** [Vivado Compile Flow](VivadoCompileFlow.md).
+
 ### LabVIEW FPGA compile flow
 
 You package your HDL as a **custom LabVIEW FPGA target** and finish the design **in
@@ -34,6 +36,8 @@ target plugin; you then write a VI against it and let LabVIEW FPGA compile the
 bitfile — which invokes Vivado under the hood. Choose this when you want to combine
 custom HDL with a LabVIEW FPGA VI and use the standard LabVIEW FPGA bitfile-generation
 experience.
+
+> **Walkthrough:** [LabVIEW FPGA Target and Compile Flow](LabVIEWFpgaTargetFlow.md).
 
 > **In one line:** in the *Vivado compile flow* **you** drive Vivado; in the
 > *LabVIEW FPGA compile flow* **LabVIEW FPGA** drives Vivado for you. After the first
@@ -60,8 +64,13 @@ wired into a custom CI/CD or build process.
 This document covers *why* the tools exist and *how the pieces relate*. For the
 operational details, see:
 
+- [Vivado Compile Flow](VivadoCompileFlow.md) — end-to-end walkthrough: HDL sources → Vivado project → `.lvbitx`.
+- [LabVIEW FPGA Target and Compile Flow](LabVIEWFpgaTargetFlow.md) — end-to-end walkthrough: build/install a custom target, then compile in LabVIEW FPGA.
+- [ModelSim Simulation Flow](ModelSimSimulationFlow.md) — end-to-end walkthrough: simulate a testbench against the design.
+
 - [Command Reference](CommandReference.md) — the commands, their options, and the build flow.
 - [Settings Reference](SettingsReference.md) — how a target is configured via `nihdlsettings.py`.
+- [Generated VHDL](GeneratedVHDL.md) — why the tools generate some of the design's VHDL (the window wrappers and `PkgNiHdlSettings`) instead of hand-authoring it, and how that keeps the HDL and the LabVIEW FPGA target in sync.
 
 ### How the commands relate
 
@@ -85,7 +94,8 @@ flowchart TD
     clip[migrate-clip<br/><i>port existing CLIP</i>] -.-> genv
 ```
 
-`gen-vivado` automatically generates the design's VHDL and XDC along the way, and
+`gen-vivado` automatically generates the design's
+[VHDL](GeneratedVHDL.md) and XDC along the way, and
 `compile-vivado` produces the LabVIEW FPGA bitfile at the end. The
 [Command Reference](CommandReference.md) describes exactly which commands invoke
 which.

@@ -21,6 +21,8 @@ import sys
 import traceback
 import xml.etree.ElementTree as ET  # noqa: N817
 
+import defusedxml.ElementTree as DefusedET
+
 from labview_fpga_hdl_tools import common
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
 from labview_fpga_hdl_tools.reporting import reporter
@@ -182,7 +184,7 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, clip_output_csv):
 
         # Parse XML
         try:
-            tree = ET.parse(input_xml_path)
+            tree = DefusedET.parse(input_xml_path)
             root = tree.getroot()
         except ET.ParseError as e:
             sys.exit(f"Error parsing XML file: {e}")
@@ -370,7 +372,7 @@ def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
 
         # Parse XML
         try:
-            tree = ET.parse(input_xml_path)
+            tree = DefusedET.parse(input_xml_path)
             root = tree.getroot()
         except ET.ParseError as e:
             reporter.error(f"Error parsing XML file: {e}")
