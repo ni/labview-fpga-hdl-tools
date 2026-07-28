@@ -224,11 +224,17 @@ def pre_all(context):
 | `set_lv_target_exclude_files(value)` | Exclusion list for plugin content copying (replaces the list). |
 | `add_lv_target_exclude_files(value)` | Append an exclusion list for plugin content copying. |
 | `set_num_hdl_registers(value)` | Number of HDL registers. |
-| `set_max_hdl_reg_offset(value)` | Maximum HDL register byte offset. |
-| `set_num_hdl_fifos(value)` | Number of user HDL DMA FIFOs reserved for the UserHdl block. |
+| `set_max_hdl_reg_offset(value)` | Maximum HDL register byte offset — the HDL's ceiling in the [shared register map](GeneratedVHDL.md#how-hdl-registers-share-the-labview-fpga-register-space); also becomes the LabVIEW FPGA register lower bound. |
+| `set_num_hdl_fifos(value)` | Number of user HDL DMA FIFOs reserved for the UserHdl block — see [how HDL FIFOs share the DMA stream channels](GeneratedVHDL.md#how-hdl-fifos-share-the-dma-stream-channels). |
 | `add_generated_vhdl_template(path)` | Append a generated VHDL Mako template (rendered in both the Vivado and ModelSim flows). |
 | `add_lv_target_xml_template(path)` | Append a target resource XML Mako template. |
 | `add_lv_target_constraints(path)` | Append a LV target constraints file. |
+
+> The `generated_vhdl_*`, `custom_io_csv`, `num_hdl_fifos`, and
+> `max_hdl_reg_offset` settings feed the tools' generated VHDL — and, for the same
+> values, the LabVIEW FPGA target resource XML. For what is generated and why (the
+> single-sourcing that keeps the HDL and the LabVIEW FPGA target in sync), see
+> [Generated VHDL](GeneratedVHDL.md).
 
 **CLIP Migration**
 

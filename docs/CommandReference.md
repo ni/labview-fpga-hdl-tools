@@ -73,6 +73,10 @@ flowchart LR
 - `compile-vivado` automatically runs `gen-lvbitx`.
 - `gen-window` brings a LabVIEW-authored window netlist into the Vivado compile flow; its output feeds `gen-vivado`.
 
+For what `gen-hdl` generates and why (the window wrappers and `PkgNiHdlSettings`,
+and how they single-source facts shared with the LabVIEW FPGA target), see
+[Generated VHDL](GeneratedVHDL.md).
+
 For how the window netlist is produced and consumed, and how `gen-vivado`/`gen-target`
 process XDC constraints (including the `current_instance` scoping and the marker rules),
 see [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.md).
@@ -87,6 +91,8 @@ see [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.
 
 ### Vivado compile flow
 
+> End-to-end walkthrough: [Vivado Compile Flow](VivadoCompileFlow.md).
+
 | Command | Purpose | Options |
 | --- | --- | --- |
 | gen-vivado | Create or update the Vivado project from settings + file lists. | --overwrite (-o), --update (-u), --config |
@@ -99,11 +105,13 @@ see [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.
 | Command | Purpose | Options |
 | --- | --- | --- |
 | gen-window | Extract TheWindow netlist/support files from a Vivado Project Export. | --config |
-| gen-hdl | Generate Window VHDL outputs only (automatically run in gen-vivado). | --config |
+| gen-hdl | Render the [generated VHDL](GeneratedVHDL.md) templates (Window VHDL wrappers + `PkgNiHdlSettings`) only (automatically run in gen-vivado). | --config |
 | gen-xdc | Generate XDC files from constraint templates/macros (automatically run in gen-vivado). | --config |
 | gen-lvbitx | Build a .lvbitx from Vivado implementation output (automatically run in compile-vivado). | --config |
 
 ### LabVIEW FPGA compile flow
+
+> End-to-end walkthrough: [LabVIEW FPGA Target and Compile Flow](LabVIEWFpgaTargetFlow.md).
 
 | Command | Purpose | Options |
 | --- | --- | --- |
@@ -112,6 +120,8 @@ see [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.
 | install-target | Install generated LabVIEW FPGA target plugin files. | --config |
 
 ### ModelSim
+
+> End-to-end walkthrough: [ModelSim Simulation Flow](ModelSimSimulationFlow.md).
 
 | Command | Purpose | Options |
 | --- | --- | --- |
@@ -141,12 +151,9 @@ see [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.
 - Use `set_skip_vivado(True)` / `set_skip_modelsim(True)` in `nihdlsettings.py` to validate settings without launching external tools.
 - install-deps and gen-guid do not need most settings (but still require `nihdlsettings.py`).
 - install-deps treats a pre-release specifier in dependencies.toml (for example, ~=26.2.0.dev0) as opting that dependency into pre-release matching even without global --pre.
-- gen-lvbitx is intended to run from VivadoProject/&lt;project&gt;.runs/impl_1 (it warns if run elsewhere).
-- gen-lvbitx locates createBitfile.exe from the LabVIEW install. By default it auto-discovers the latest installed LabVIEW (2023–2030) under Program Files; set `set_labview_path` in `nihdlsettings.py` to override (for example, "C:\Program Files\National Instruments\LabVIEW 2023").
-- gen-modelsim uses vcom -autoorder -2008 to compile all VHDL files in a single invocation with automatic dependency resolution. No manual compile-order file is needed.
-- launch-modelsim defaults to GUI mode; use --batch for headless simulation.
-- compile-modelsim-lib wraps Vivado's `compile_simlib` to build the Xilinx simulation libraries (unisim, secureip, ...) into `xilinx_sim_lib_folder`. It is idempotent: if the requested libraries already exist it returns immediately (no Vivado needed) unless `--force` is passed. The compiled libraries are simulator- and device-family specific, so they cannot be committed and must be built on the simulation machine. Narrow `set_xilinx_sim_family` to the target family (for example, "kintexu") so it does not build every Xilinx family, which can take hours. `compile_simlib` also compiles many bundled Xilinx IP/VIP libraries; failures in libraries you did not request (for example the Zynq/Versal processing-system VIPs, which ModelSim PE cannot parse) are reported as a warning and do not fail the command as long as the requested libraries were built.
-- gen-modelsim automatically runs compile-modelsim-lib (the idempotent fast-path) when `xilinx_sim_lib_folder` is configured, then maps the compiled libraries into modelsim.ini. The very first run launches Vivado to build those libraries, so it additionally requires `vivado_tools_folder` and can take many minutes; once the libraries exist, later runs skip the compile and do not need Vivado. In the normal FlexRIO simulation workflow Vivado is already configured, so this is usually transparent. To build the libraries ahead of time (or on a separate machine), run `nihdl compile-modelsim-lib` once.
+- gen-lvbitx is intended to run from VivadoProject/&lt;project&gt;.runs/impl_1 (it warns if run elsewhere); it packages Vivado's implementation output into a `.lvbitx`. See [Vivado Compile Flow](VivadoCompileFlow.md#from-bitstream-to-lvbitx).
+- gen-modelsim compiles all VHDL in a single `vcom -autoorder -2008` invocation (no manual compile-order file); launch-modelsim defaults to GUI mode (`--batch` for headless).
+- The Xilinx simulation libraries are built by compile-modelsim-lib (idempotent; auto-run by gen-modelsim when `xilinx_sim_lib_folder` is set, with the first run launching Vivado). Narrow `set_xilinx_sim_family` so it does not build every family. See [ModelSim Simulation Flow](ModelSimSimulationFlow.md#the-xilinx-simulation-libraries) for the full behavior.
 
 ## Per-Command Setting Requirements
 

@@ -27,9 +27,13 @@ LabVIEW FPGA drives Vivado for you. See
 | Doc | What's in it |
 | --- | --- |
 | [Theory of Operation](docs/TheoryOfOperation.md) | The architecture, the supported workflows, and how the pieces fit together. Start here. |
+| [Vivado Compile Flow](docs/VivadoCompileFlow.md) | End-to-end walkthrough: extend the HDL, generate a Vivado project, and compile a `.lvbitx` directly in Vivado. |
+| [LabVIEW FPGA Target and Compile Flow](docs/LabVIEWFpgaTargetFlow.md) | End-to-end walkthrough: build and install a custom LabVIEW FPGA target, then compile in LabVIEW FPGA. |
+| [ModelSim Simulation Flow](docs/ModelSimSimulationFlow.md) | End-to-end walkthrough: build the Xilinx sim libraries, create the ModelSim project, and run a testbench. |
 | [Command Reference](docs/CommandReference.md) | Every `nihdl` command, its options, the command flow, and per-command required settings. |
 | [Settings Reference](docs/SettingsReference.md) | The `nihdlsettings.py` model: hooks, context, `--set` overrides, and the full list of setters. |
 | [LVTargetCustomIO Reference](docs/LVTargetCustomIO-Reference.md) | The custom I/O CSV format used to define HDL ↔ LabVIEW FPGA signals. |
+| [Generated VHDL](docs/GeneratedVHDL.md) | What VHDL the tools generate (window wrappers, `PkgNiHdlSettings`) and why — single-sourcing the facts shared by the HDL and the LabVIEW FPGA target. |
 | [Window Netlist and Constraints](docs/WindowNetlistAndConstraints.md) | How the LabVIEW Window netlist is produced/consumed and how XDC constraints are processed for each compile flow (including the `current_instance` scoping rules). |
 
 ## Prerequisites
@@ -121,6 +125,8 @@ nihdl compile-vivado
 
 Open the project interactively at any point with `nihdl launch-vivado`.
 
+> **Full walkthrough:** [Vivado Compile Flow](docs/VivadoCompileFlow.md).
+
 ### The LabVIEW FPGA compile flow (custom target)
 
 To expose your HDL to LabVIEW FPGA as a custom target, define your I/O in the
@@ -134,18 +140,18 @@ nihdl gen-target
 nihdl install-target
 ```
 
+> **Full walkthrough:** [LabVIEW FPGA Target and Compile Flow](docs/LabVIEWFpgaTargetFlow.md).
+
 ### Simulating with ModelSim
 
 ```bash
-# Create the ModelSim project and compile all VHDL (vcom -autoorder -2008)
-# When XilinxSimLibFolder is configured, this also compiles the Xilinx
-# simulation libraries (unisim, secureip, ...) on the first run, which can
-# take several minutes. Run it standalone with: nihdl compile-modelsim-lib
-nihdl gen-modelsim
-
-# Launch the GUI, or run headless with --batch
-nihdl launch-modelsim
+# Create the ModelSim project and compile all VHDL, then run the testbench
+nihdl gen-modelsim --overwrite
+nihdl sim-modelsim        # or: nihdl launch-modelsim  (GUI; --batch for headless)
 ```
+
+> **Full walkthrough:** [ModelSim Simulation Flow](docs/ModelSimSimulationFlow.md)
+> — including the Xilinx simulation libraries and how the pass/fail verdict works.
 
 For the complete command list, options, and required settings, see the
 [Command Reference](docs/CommandReference.md).
