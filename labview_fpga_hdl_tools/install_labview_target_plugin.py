@@ -200,6 +200,11 @@ def install_lv_target_support(config=None):
         reporter.success(
             f"Successfully installed LabVIEW Target '{config.lv_target_name}' to {install_folder}"
         )
+        reporter.success(
+            "Reminder: close ALL open LabVIEW instances before installing, and (re)start "
+            "LabVIEW afterward. LabVIEW FPGA only scans for target plugins at startup, so a "
+            "running instance will not see this newly installed or updated target."
+        )
 
     except PermissionError:
         reporter.error("Error: Permission denied. Administrator privileges are required.")
