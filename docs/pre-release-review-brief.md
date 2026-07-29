@@ -1,8 +1,9 @@
 # Pre-Release Review Brief — labview-fpga-hdl-tools
 
 **Audience:** the reviewer doing the pre-release "second set of eyes" pass
+
 **Goal:** independent confirmation before release that the design is sound, the
-tool does what it claims, and it isn't doing anything **dumb or dangerous**.
+tool does what it claims, and it has no risky or unsafe behavior.
 This is a judgment review, not a rubber stamp and not a line-by-line rewrite.
 
 **What this is NOT:** it's not a full formal audit and not a security-only review.
@@ -47,7 +48,7 @@ It shells out to **Vivado, ModelSim, and git**, parses **CLIP XML**, and
 The reviewer knows the concepts (FPGA/HDL, LabVIEW FPGA) but has **not used
 `nihdl`** yet. Before judging the code, actually **use it**: work the
 getting-started walkthroughs end to end and read the core docs. Two payoffs — you
-can't spot "dumb or dangerous" behavior in a flow you've never exercised, and a
+can't spot risky or unsafe behavior in a flow you've never exercised, and a
 first-time user is the ideal person to judge whether the **docs and onboarding
 themselves** are release-ready.
 
@@ -97,7 +98,7 @@ is itself a release finding. Write it down.
 3. Version/format handling: `command_config.py` carries a `format_version` (e.g.
    "2.0"). Are older/newer INI format versions handled or rejected cleanly?
 
-## 4. "Nothing dumb or dangerous" (the risk pass)
+## 4. Safety & robustness (the risk pass)
 
 This is the part your architect most cares about. Concrete things to verify:
 
