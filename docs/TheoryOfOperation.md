@@ -26,6 +26,12 @@ communicates with your logic over registers and DMA FIFOs through the NI-RIO dri
 no LabVIEW required. Choose this when your design is HDL and you want to drive Vivado
 yourself.
 
+> **Talking to the bitfile from a LabVIEW FPGA host VI.** Open the `.lvbitx` with
+> **Open Dynamic Bitfile Reference** (wire in the bitfile path and a matching FPGA
+> Interface Dynamic Refnum), **not** **Open FPGA VI Reference** — that standard node does
+> not work with these custom targets. See
+> [Vivado Compile Flow → Opening the bitfile from a LabVIEW FPGA host VI](VivadoCompileFlow.md#opening-the-bitfile-from-a-labview-fpga-host-vi).
+
 > **Walkthrough:** [Vivado Compile Flow](VivadoCompileFlow.md).
 
 ### LabVIEW FPGA compile flow
