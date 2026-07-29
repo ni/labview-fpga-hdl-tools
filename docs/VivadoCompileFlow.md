@@ -99,6 +99,15 @@ nihdl launch-vivado
 nihdl compile-vivado
 ```
 
+> **Regenerating after you edit constraints.** The LabVIEW window netlist constraints and your
+> `add_custom_constraints(...)` files are processed **together** into a generated
+> `objects/xdc/constraints.xdc` (the file `add_vivado_project_constraints` adds to the project). That
+> generated file does **not** update on its own. After you change any constraints — a custom XDC or a
+> re-exported window netlist — refresh it with `nihdl gen-xdc`, or rebuild the project with
+> `nihdl gen-vivado --update` (or `--overwrite`, which also picks up HDL/source changes since
+> `gen-vivado` auto-runs `gen-xdc`). A plain `nihdl gen-vivado` on an existing project does **not**
+> reprocess — it stops and asks for `--update`/`--overwrite`.
+
 ### From bitstream to `.lvbitx`
 
 `compile-vivado` runs the Vivado compile to bitstream and then auto-runs

@@ -11,6 +11,12 @@ For the conceptual difference between this and the
 [Vivado compile flow](VivadoCompileFlow.md), see
 [Theory of Operation → The two compile flows](TheoryOfOperation.md#the-two-compile-flows).
 
+> **LabVIEW version requirement.** This flow compiles the bitfile **in LabVIEW FPGA**, so it needs
+> **LabVIEW 2026 or newer**.
+> If you only need a LabVIEW *window netlist* to bring into the
+> [Vivado compile flow](VivadoCompileFlow.md), LabVIEW 2023+ is fine. Details:
+> [Window Netlist and Constraints → LabVIEW version support](WindowNetlistAndConstraints.md#labview-version-support-2023-vs-2026).
+
 ## The two stages
 
 This flow has two stages. The `nihdl` tools own the **first**; LabVIEW FPGA owns the
@@ -105,9 +111,21 @@ nihdl gen-guid
 # 3. Generate the custom LabVIEW FPGA target plugin.
 nihdl gen-target
 
-# 4. Install it so LabVIEW FPGA can see it.
+# 4. Close all LabVIEW instances, then install so LabVIEW FPGA can see it.
 nihdl install-target
 ```
+
+> **Close LabVIEW around `install-target`.** LabVIEW FPGA only scans for target plugins **at
+> startup**. Close **all** open LabVIEW instances before running `install-target`, then start
+> LabVIEW afterward — a LabVIEW that was already running will not see the newly installed or updated
+> target until you restart it.
+
+> **Regenerate after any change.** The custom target plugin is a generated **export** under
+> `objects/` — the plugin folder, `boardio.xml` / `CustomClocks.xml`, the generated window VHDL, and
+> the processed `objects/lv_target_xdc/constraints.xdc`. It does **not** update on its own. After you
+> change *anything* the plugin depends on — the custom-I/O CSV, the constraints, the HDL, or
+> `nihdlsettings.py` — rerun `nihdl gen-target` and then `nihdl install-target` to rebuild and
+> reinstall it. When in doubt, regenerate.
 
 Then, in LabVIEW FPGA: create a project targeting your custom target, drop your
 custom I/O and host interfaces on the block diagram, write the VI, and compile.

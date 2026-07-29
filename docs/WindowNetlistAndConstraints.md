@@ -274,5 +274,11 @@ the inner restore could not silently clobber the outer save.
 | Constraints template + custom | `set_constraints_template`, `add_custom_constraints` | `gen-vivado`, `gen-target` |
 | Flow-specific constraint outputs | `add_vivado_project_constraints`, `add_lv_target_constraints` | `gen-vivado`, `gen-target` |
 
+> **Regenerating the processed output.** Constraint processing writes generated files —
+> `objects/xdc/constraints.xdc` (Vivado flow) and `objects/lv_target_xdc/constraints.xdc` (LabVIEW
+> FPGA target flow) — that do **not** refresh on their own. After you change the template or any
+> `add_custom_constraints` file, rerun `gen-xdc` (or `gen-vivado --update`/`--overwrite`) for the
+> Vivado flow, and `gen-target` for the LabVIEW FPGA target plugin.
+
 See the [Settings Reference](SettingsReference.md) for the full setter list and the
 [Command Reference](CommandReference.md) for command options and the build flow.

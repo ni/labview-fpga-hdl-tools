@@ -136,9 +136,12 @@ To expose your HDL to LabVIEW FPGA as a custom target, define your I/O in the
 # Generate target support files (BoardIO/Clock XML, Window VHDL, plugin content)
 nihdl gen-target
 
-# Install the generated plugin into your LabVIEW FPGA install
+# Close ALL LabVIEW instances, then install the generated plugin into your LabVIEW FPGA install
 nihdl install-target
 ```
+
+> **Close LabVIEW around `install-target`.** Close all LabVIEW instances before running it, and
+> (re)start LabVIEW afterward — LabVIEW only scans for target plugins at startup.
 
 > **Full walkthrough:** [LabVIEW FPGA Target and Compile Flow](docs/LabVIEWFpgaTargetFlow.md).
 
