@@ -117,6 +117,28 @@ install — by default it auto-discovers the latest installed LabVIEW (2023–20
 `set_labview_path(...)` to pin a specific one. You can also run `gen-lvbitx` on its
 own from the `VivadoProject/<project>.runs/impl_1` folder.
 
+### Opening the bitfile from a LabVIEW FPGA host VI
+
+> **Use _Open Dynamic Bitfile Reference_, not _Open FPGA VI Reference_.** With these
+> custom targets, the standard NI-RIO host node **Open FPGA VI Reference** does **not**
+> work — the custom-target plugin support does not yet integrate with the way that node
+> loads the `.lvbitx`, so opening the bitfile that way fails.
+
+To communicate with the compiled `.lvbitx` from a LabVIEW FPGA host VI (registers and
+DMA FIFOs), use the **Open Dynamic Bitfile Reference** node instead:
+
+1. Wire the **bitfile path** input to your `.lvbitx`.
+2. Wire the **device address** input to the FPGA target's RIO resource.
+3. Wire the **type** input to an **FPGA Interface Dynamic Refnum** constant that you
+   configure (right-click it → **Configure FPGA VI Reference**) to match the bitfile's
+   interface — its controls/registers and DMA FIFOs.
+
+The node returns a dynamic FPGA interface reference you then use with the Read/Write
+Control (registers), the DMA FIFO methods, and **Close FPGA VI Reference** — exactly as
+you would with a statically opened reference. (Only NI-RIO targets support this node.)
+For the per-target register and FIFO maps, see each target's `docs/HostInterfaces.md` in
+the `flexrio-custom` repository.
+
 ### Bridging in a LabVIEW window
 
 You can author part of the design as a LabVIEW FPGA VI, export it as a *Vivado
