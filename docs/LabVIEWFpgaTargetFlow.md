@@ -143,6 +143,16 @@ resolves everything up front. The `current_instance` scoping, marker rules, and 
 LabVIEW 2023 vs 2026 timing-group differences are covered in
 [The Window Netlist and Constraints Processing](WindowNetlistAndConstraints.md).
 
+## Communicating with the bitfile from a host VI
+
+> **Use _Open Dynamic Bitfile Reference_, not _Open FPGA VI Reference_.** To talk to the
+> compiled bitfile from a LabVIEW FPGA host VI, open it with **Open Dynamic Bitfile
+> Reference** — wire in the `.lvbitx` path and a matching FPGA Interface Dynamic Refnum.
+> The standard **Open FPGA VI Reference** node does **not** work with these custom
+> targets. See
+> [Vivado Compile Flow → Opening the bitfile from a LabVIEW FPGA host VI](VivadoCompileFlow.md#opening-the-bitfile-from-a-labview-fpga-host-vi)
+> for the full details.
+
 ## Related pages
 
 - [Vivado Compile Flow](VivadoCompileFlow.md) — compile a bitfile directly in Vivado

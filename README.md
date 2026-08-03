@@ -18,6 +18,12 @@ run Vivado in the end — they differ in what compiles the bitfile:
   target (`gen-target` → `install-target`), then write a VI and let LabVIEW FPGA
   compile the bitfile (it runs Vivado under the hood).
 
+> **Host-side note:** to communicate with the compiled `.lvbitx` from a LabVIEW FPGA
+> host VI, open it with **Open Dynamic Bitfile Reference** (wire in the bitfile path and
+> a matching FPGA Interface Dynamic Refnum) — the standard **Open FPGA VI Reference**
+> node does **not** work with these custom targets. See
+> [Vivado Compile Flow → Opening the bitfile from a LabVIEW FPGA host VI](docs/VivadoCompileFlow.md#opening-the-bitfile-from-a-labview-fpga-host-vi).
+
 In short: in the **Vivado flow** you drive Vivado; in the **LabVIEW FPGA flow**
 LabVIEW FPGA drives Vivado for you. See
 [Theory of Operation](docs/TheoryOfOperation.md) for the full story.

@@ -34,11 +34,20 @@ def _run_as_admin():
       privileges live and die with that child process. The elevated instance
       performs the install and then exits, so admin rights are never retained
       by any process after installation completes.
-    - The executable is always resolved to a fully-qualified path before being
-      handed to ShellExecuteW. Passing a bare program name (e.g. "nihdl") would
-      let Windows resolve it against the working directory / PATH in the
-      elevated context, allowing an attacker-planted binary to run as admin
+    - Re-launch through the current Python interpreter (``sys.executable``, an
+      absolute, trusted path) running the tool as a module (``-m
+      labview_fpga_hdl_tools``). We deliberately do NOT re-invoke ``sys.argv[0]``
+      (the console-script launcher, e.g. nihdl.exe): those launcher stubs are
+      resolved for the *current* user's environment (venv / pyenv shims) and do
+      not reliably re-bootstrap their interpreter under the elevated (admin)
+      account, so the elevated child would exit without doing any work. Passing
+      a bare program name (e.g. "nihdl") is likewise avoided because Windows
+      would resolve it against the working directory / PATH in the elevated
+      context, allowing an attacker-planted binary to run as admin
       (CWE-426/CWE-427, untrusted search path).
+    - The elevated child is launched with its working directory pinned to the
+      current working directory so it discovers the same ``nihdlsettings.py``
+      the user invoked against (config is resolved relative to the cwd).
     """
     import ctypes
     import subprocess
@@ -49,23 +58,21 @@ def _run_as_admin():
         reporter.detail("Admin elevation only supported on Windows")
         return
 
-    # Resolve the launcher to an absolute, trusted path. Never pass a bare
-    # program name to ShellExecuteW "runas".
-    launcher = os.path.abspath(sys.argv[0])
-    if launcher.lower().endswith(".exe") and os.path.isfile(launcher):
-        # pip-installed console entry point (e.g. nihdl.exe)
-        command = launcher
-        arguments = subprocess.list2cmdline(sys.argv[1:])
-    else:
-        # Running as a .py script under the current interpreter
-        command = os.path.abspath(sys.executable)
-        arguments = subprocess.list2cmdline([launcher, *sys.argv[1:]])
+    # Re-launch via the real interpreter running the package as a module. This
+    # is both trusted (absolute interpreter path, module named explicitly) and
+    # robust across launchers (venv exe, pyenv shim, editable install).
+    command = os.path.abspath(sys.executable)
+    arguments = subprocess.list2cmdline(["-m", "labview_fpga_hdl_tools", *sys.argv[1:]])
+
+    # Pin the elevated child's working directory to the current directory so it
+    # finds the same nihdlsettings.py the user invoked against.
+    working_dir = os.getcwd()
 
     reporter.detail("Requesting administrator privileges...")
 
     # Execute with elevation
     result = ctypes.windll.shell32.ShellExecuteW(  # type: ignore
-        None, "runas", command, arguments, None, 1
+        None, "runas", command, arguments, working_dir, 1
     )
 
     # Check if the elevation was successful
@@ -160,6 +167,14 @@ def install_lv_target_support(config=None):
 
     # If we need admin and don't have it, relaunch with elevated privileges
     if needs_admin and not _is_admin():
+        # Always-visible notice: the actual install runs in a separate elevated
+        # process (a UAC prompt will appear). Without this, the command appears
+        # to do nothing because the elevated child owns the success output.
+        reporter.success(
+            f"Installing '{config.lv_target_name}' to '{install_folder}' requires "
+            "administrator rights. Approve the Windows UAC prompt; the install "
+            "completes in a separate elevated window."
+        )
         _run_as_admin()
         return  # Exit current instance as the elevated instance will continue
 
