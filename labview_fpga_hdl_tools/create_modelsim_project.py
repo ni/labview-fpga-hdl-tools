@@ -472,51 +472,23 @@ def create_modelsim_project(overwrite=False, config=None):
 
     if config.skip_modelsim:
         reporter.detail(
-            "\nSKIP MODELSIM: Validation successful, skipping ModelSim project creation"
+            "\nSKIP MODELSIM: skipping ModelSim compilation "
+            "(will still validate sources and generate scripts)"
         )
-        return 0
 
-    # Step 0: Generate all configured VHDL from Mako templates (the
+    # Step 1: Generate all configured VHDL from Mako templates (the
     # PkgNiHdlSettings single-source-of-truth package and any other generated
-    # design sources). The simulation flow validates that every listed source
-    # file exists, so this must run before gathering source files.
-    reporter.detail("\nStep 0: Generating VHDL from templates...")
+    # design sources). These appear in the source lists validated below and need
+    # no ModelSim tools, so this runs in skip_modelsim (validation-only) mode too.
+    reporter.detail("\nStep 1: Generating VHDL from templates...")
     if generate_vhdl.gen_generated_vhdl(config=config) != 0:
         return 1
 
-    modelsim_install = config.modelsim_tools_folder
-    vlib_path = _get_modelsim_tool(modelsim_install, "vlib")
-    vcom_path = _get_modelsim_tool(modelsim_install, "vcom")
-
-    # Step 1: Create modelsim.ini
-    reporter.detail("\nStep 1: Creating modelsim.ini...")
-    ini_path = _create_modelsim_ini(modelsim_install, project_dir)
-
-    # Step 2: Add Xilinx simulation library mappings
-    xilinx_sim_lib = config.xilinx_sim_lib_folder
-    if xilinx_sim_lib:
-        reporter.detail("\nStep 2: Adding Xilinx simulation library mappings...")
-        # Ensure the Xilinx libraries exist before mapping them into the .ini.
-        # This is idempotent: once compiled it is a cheap no-op (and does not
-        # even require Vivado). Imported locally to avoid a circular import,
-        # since compile_modelsim_lib imports helpers from this module.
-        from labview_fpga_hdl_tools import compile_modelsim_lib
-
-        if compile_modelsim_lib.compile_modelsim_lib(config=config) != 0:
-            return 1
-        _add_xilinx_library_mappings(ini_path, xilinx_sim_lib)
-    else:
-        reporter.detail(
-            "\nStep 2: Skipping Xilinx library mappings (XilinxSimLibFolder not configured)"
-        )
-
-    # Step 3: Create work library
-    reporter.detail("\nStep 3: Creating work library...")
-    _run_modelsim_tool(vlib_path, ["work"], cwd=project_dir)
-    reporter.detail("  Created work library")
-
-    # Step 4: Gather VHDL source files
-    reporter.detail("\nStep 4: Gathering VHDL source files...")
+    # Step 2: Gather VHDL source files and validate that every listed file
+    # exists. Tool-independent, so this is the core project-integrity check that
+    # runs in skip_modelsim mode as well (it catches broken file lists / missing
+    # sources on a runner without ModelSim installed).
+    reporter.detail("\nStep 2: Gathering VHDL source files...")
 
     # ModelSim compiles its own file lists only (no fallback to the Vivado lists).
     file_lists = config.modelsim_file_lists
@@ -545,18 +517,62 @@ def create_modelsim_project(overwrite=False, config=None):
     reporter.detail(f"  Found {len(std_files)} standard VHDL files")
     reporter.detail(f"  Found {len(vhdl2008_files)} VHDL-2008 files")
 
-    # Step 5: Compile with vcom -autoorder (automatic dependency resolution)
-    reporter.detail("\nStep 5: Compiling VHDL files...")
+    # Step 3: Generate the load/sim .do scripts. These are static text scripts,
+    # so they are produced in skip_modelsim mode too. This is what lets a
+    # validation-only sim-modelsim confirm the project without ModelSim.
+    reporter.detail("\nStep 3: Generating simulation scripts...")
+    _generate_load_do_file(project_dir, entity_name)
+    _generate_sim_do_file(project_dir, entity_name)
+
+    # Everything below requires the ModelSim tools (vlib/vcom) and compiles the
+    # design. In skip_modelsim (validation-only) mode we stop here: settings,
+    # generated VHDL, source files, and .do scripts have all been validated or
+    # generated without needing ModelSim installed.
+    if config.skip_modelsim:
+        reporter.success(
+            "\nSKIP MODELSIM: Validation successful "
+            "(sources found, simulation scripts generated); skipping ModelSim compilation."
+        )
+        return 0
+
+    modelsim_install = config.modelsim_tools_folder
+    vlib_path = _get_modelsim_tool(modelsim_install, "vlib")
+    vcom_path = _get_modelsim_tool(modelsim_install, "vcom")
+
+    # Step 4: Create modelsim.ini
+    reporter.detail("\nStep 4: Creating modelsim.ini...")
+    ini_path = _create_modelsim_ini(modelsim_install, project_dir)
+
+    # Step 5: Add Xilinx simulation library mappings
+    xilinx_sim_lib = config.xilinx_sim_lib_folder
+    if xilinx_sim_lib:
+        reporter.detail("\nStep 5: Adding Xilinx simulation library mappings...")
+        # Ensure the Xilinx libraries exist before mapping them into the .ini.
+        # This is idempotent: once compiled it is a cheap no-op (and does not
+        # even require Vivado). Imported locally to avoid a circular import,
+        # since compile_modelsim_lib imports helpers from this module.
+        from labview_fpga_hdl_tools import compile_modelsim_lib
+
+        if compile_modelsim_lib.compile_modelsim_lib(config=config) != 0:
+            return 1
+        _add_xilinx_library_mappings(ini_path, xilinx_sim_lib)
+    else:
+        reporter.detail(
+            "\nStep 5: Skipping Xilinx library mappings (XilinxSimLibFolder not configured)"
+        )
+
+    # Step 6: Create work library
+    reporter.detail("\nStep 6: Creating work library...")
+    _run_modelsim_tool(vlib_path, ["work"], cwd=project_dir)
+    reporter.detail("  Created work library")
+
+    # Step 7: Compile with vcom -autoorder (automatic dependency resolution)
+    reporter.detail("\nStep 7: Compiling VHDL files...")
     try:
         _compile_vhdl_files(vcom_path, project_dir, std_files, vhdl2008_files, ini_path)
     except RuntimeError as e:
         reporter.error(f"\nCompilation failed: {e}")
         return 1
-
-    # Step 6: Generate .do files
-    reporter.detail("\nStep 6: Generating simulation scripts...")
-    _generate_load_do_file(project_dir, entity_name)
-    _generate_sim_do_file(project_dir, entity_name)
 
     total_files = len(std_files) + len(vhdl2008_files)
     reporter.success(f"\nModelSim project created successfully!")
