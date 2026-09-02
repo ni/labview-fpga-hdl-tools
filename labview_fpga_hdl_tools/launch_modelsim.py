@@ -20,15 +20,16 @@ def _validate_ini(config):
     missing_settings = []
     invalid_paths = []
 
-    if not config.modelsim_tools_folder:
-        missing_settings.append("ModelSimSettings.ModelSimToolsFolder")
-    else:
-        vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
-        if not vsim_exe or not os.path.exists(vsim_exe):
-            invalid_paths.append(
-                f"ModelSimSettings.ModelSimToolsFolder - vsim not found under: "
-                f"{config.modelsim_tools_folder}"
-            )
+    if not config.skip_modelsim:
+        if not config.modelsim_tools_folder:
+            missing_settings.append("ModelSimSettings.ModelSimToolsFolder")
+        else:
+            vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
+            if not vsim_exe or not os.path.exists(vsim_exe):
+                invalid_paths.append(
+                    f"ModelSimSettings.ModelSimToolsFolder - vsim not found under: "
+                    f"{config.modelsim_tools_folder}"
+                )
 
     if not common.get_modelsim_entity(config):
         missing_settings.append("ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)")
