@@ -90,6 +90,10 @@ def sim_modelsim(do_file=None, config=None):
             )
             return 1
 
+    if config.skip_modelsim:
+        reporter.success("SKIP MODELSIM: Validation successful, skipping simulation")
+        return 0
+
     vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
     if not vsim_exe or not os.path.exists(vsim_exe):
         reporter.error(f"Error: vsim executable not found at {vsim_exe}")
@@ -100,10 +104,6 @@ def sim_modelsim(do_file=None, config=None):
     reporter.detail(f"  Do file:      {do_file}")
     reporter.detail(f"  Working dir:  {project_dir}")
     reporter.detail(f"  Top entity:   {entity_name}")
-
-    if config.skip_modelsim:
-        reporter.success("SKIP MODELSIM: Validation successful, skipping simulation")
-        return 0
 
     # Build command: vsim in batch/command-line mode. Force the project
     # modelsim.ini so unisim/Xilinx library mappings are honored; an external
