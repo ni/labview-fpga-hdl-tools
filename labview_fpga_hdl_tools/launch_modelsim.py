@@ -71,6 +71,10 @@ def launch_modelsim(batch=False, config=None):
         )
         return 1
 
+    if config.skip_modelsim:
+        reporter.success("SKIP MODELSIM: Validation successful, skipping ModelSim launch")
+        return 0
+
     vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
     if not vsim_exe or not os.path.exists(vsim_exe):
         reporter.error(f"Error: vsim executable not found at {vsim_exe}")
@@ -79,10 +83,6 @@ def launch_modelsim(batch=False, config=None):
     reporter.detail(f"Launching ModelSim from: {vsim_exe}")
     reporter.detail(f"Do file: {do_file}")
     reporter.detail(f"Working directory: {project_dir}")
-
-    if config.skip_modelsim:
-        reporter.success("SKIP MODELSIM: Validation successful, skipping ModelSim launch")
-        return 0
 
     if batch:
         # Batch mode: run vsim -c -do <script> and wait for completion
