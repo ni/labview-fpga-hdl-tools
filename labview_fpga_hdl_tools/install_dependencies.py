@@ -80,6 +80,36 @@ def _get_commit_hash(repo_path):
         return None
 
 
+def _get_installed_version(repo_name, repo_path, deps_dir):
+    """Return the currently installed version of a cloned dependency, or None.
+
+    Prefers the version recorded in the ``.dep-info`` marker file, falling back
+    to ``git describe`` for repos cloned before markers were introduced.
+    """
+    for marker in sorted(deps_dir.glob(f"{repo_name}-*{_DEP_INFO_SUFFIX}")):
+        try:
+            for line in marker.read_text(encoding="utf-8").splitlines():
+                if line.startswith("Version:"):
+                    return line.split(":", 1)[1].strip()
+        except OSError:
+            continue
+
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_path), "describe", "--tags", "--always"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        described = result.stdout.strip()
+        if described:
+            return _normalize_tag(described)
+    except (subprocess.CalledProcessError, OSError):
+        pass
+
+    return None
+
+
 def _write_dep_marker(repo, repo_name, tag, requested, repo_url, repo_path, deps_dir):
     """Write a version marker file next to a cloned dependency.
 
@@ -354,14 +384,22 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
 
     # Check if already exists and prompt user
     if repo_path.exists():
-        reporter.detail(f"  [INFO] Repository {repo_name} already exists at {repo_path}")
+        installed_version = _get_installed_version(repo_name, repo_path, base_dir)
+        present_desc = (
+            f"{repo_name} version {installed_version}" if installed_version else repo_name
+        )
+        reporter.detail(f"  [INFO] {present_desc} already present at {repo_path}")
 
         if delete_allowed:
             response = "y"
             reporter.detail(f"    Auto-deleting and re-cloning (--delete flag set)")
         else:
             try:
-                response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
+                response = (
+                    input(f"    {present_desc} already present. Delete and re-clone? (y/N): ")
+                    .strip()
+                    .lower()
+                )
             except EOFError:
                 # Non-interactive/CI run: there is no stdin to prompt on. Default
                 # to the safe "keep existing clone" choice instead of crashing;
@@ -397,7 +435,7 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
             text=True,
             check=True,
         )
-        reporter.success(f"  [OK] Successfully cloned {repo_name}")
+        reporter.success(f"  [OK] Installed {repo_name} version {_normalize_tag(tag)}")
         _write_dep_marker(repo, repo_name, tag, tag_or_spec, repo_url, repo_path, base_dir)
         return True
 
