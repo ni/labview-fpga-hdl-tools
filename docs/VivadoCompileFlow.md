@@ -124,6 +124,14 @@ own from the `VivadoProject/<project>.runs/impl_1` folder.
 > work — the custom-target plugin support does not yet integrate with the way that node
 > loads the `.lvbitx`, so opening the bitfile that way fails.
 
+> **Symptom:** when you run the host VI, LabVIEW prompts you to locate
+> `niLvFpga_Open_<target>.vi` (for example `niLvFpga_Open_PXIe-7912Custom.vi`) and the file
+> is not present under `objects/`. That prompt means the bitfile was opened with **Open
+> FPGA VI Reference** — switch to **Open Dynamic Bitfile Reference** and the prompt goes
+> away.
+
+![Open FPGA VI Reference (wrong) versus Open Dynamic Bitfile Reference (right)](OpenDynamicBitfileReference.png)
+
 To communicate with the compiled `.lvbitx` from a LabVIEW FPGA host VI (registers and
 DMA FIFOs), use the **Open Dynamic Bitfile Reference** node instead:
 
