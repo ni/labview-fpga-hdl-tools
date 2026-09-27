@@ -18,25 +18,6 @@ can also bring a **LabVIEW-authored window** into this flow as a netlist (see
 
 ## The commands at a glance
 
-```mermaid
-flowchart LR
-    deps[install-deps] --> genv[gen-vivado]
-    win["gen-window<br/><i>optional LV netlist</i>"] -.-> genv
-    genv --> check[check-vivado]
-    check --> launch[launch-vivado]
-    check --> comp[compile-vivado]
-    comp --> bitx[(.lvbitx)]
-
-    subgraph auto [runs automatically]
-        genhdl[gen-hdl]
-        genxdc[gen-xdc]
-        genlvbitx[gen-lvbitx]
-    end
-    genv -.-> genhdl
-    genv -.-> genxdc
-    comp -.-> genlvbitx
-```
-
 | Command | What it does |
 | --- | --- |
 | [`install-deps`](CommandReference.md#workspace-setup) | Clone the dependency repos named in `dependencies.toml` into `deps/`. |
