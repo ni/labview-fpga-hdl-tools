@@ -86,21 +86,6 @@ is the hub: it is generated from your HDL sources, checked, and then compiled.
 Building a hybrid LabVIEW FPGA target and simulating in ModelSim branch off from
 the same configured target.
 
-```mermaid
-flowchart TD
-    deps[install-deps] --> genv[gen-vivado]
-    win[gen-window<br/><i>hybrid LV netlist</i>] -.-> genv
-    genv --> check[check-vivado]
-    check --> comp[compile-vivado]
-    comp --> bitx[(LabVIEW FPGA bitfile)]
-
-    genv --> tgt[gen-target] --> inst[install-target<br/><i>custom LV FPGA target</i>]
-    genv --> sim[gen-modelsim] --> simrun[launch-modelsim / sim-modelsim]
-    simlib[compile-modelsim-lib<br/><i>Xilinx sim libraries</i>] -.auto.-> sim
-
-    clip[migrate-clip<br/><i>port existing CLIP</i>] -.-> genv
-```
-
 `gen-vivado` automatically generates the design's
 [VHDL](GeneratedVHDL.md) and XDC along the way, and
 `compile-vivado` produces the LabVIEW FPGA bitfile at the end. The

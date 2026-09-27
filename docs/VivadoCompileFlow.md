@@ -119,6 +119,11 @@ own from the `VivadoProject/<project>.runs/impl_1` folder.
 
 ### Opening the bitfile from a LabVIEW FPGA host VI
 
+> **flexrio-custom users:** the task-oriented version of this — with the Refnum
+> *Import from bitfile* steps and how to link the example's helper VIs — is
+> [Talk to the bitfile from a host VI](https://github.com/ni/flexrio-custom/blob/main/docs/HostVIsAndBitfiles.md).
+> The reference below is the tool-side summary.
+
 > **Use _Open Dynamic Bitfile Reference_, not _Open FPGA VI Reference_.** With these
 > custom targets, the standard NI-RIO host node **Open FPGA VI Reference** does **not**
 > work — the custom-target plugin support does not yet integrate with the way that node
