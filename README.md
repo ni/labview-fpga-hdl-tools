@@ -1,9 +1,15 @@
 ﻿# LabVIEW FPGA HDL Tools
 
-Pre-release command-line tools (`nihdl`) for building customized FPGA designs
+Command-line tools (`nihdl`) for building customized FPGA designs
 for use with the ni/flexrio repository. They move, generate, and process the
 files needed to take a top-level HDL design to a LabVIEW FPGA bitfile through
 either of two compile flows (see below).
+
+> **Customizing a FlexRIO board? Start at [flexrio-custom](https://github.com/ni/flexrio-custom), not here.**
+> That repo is the front door — supported devices, machine setup, and the step-by-step
+> exercises. **This page is the tool reference** for the `nihdl` toolchain (commands,
+> settings, and the concepts behind them); use it to look things up while following the
+> flexrio-custom workflows.
 
 ## The two compile flows
 
@@ -107,7 +113,12 @@ step-by-step status with warnings and errors also shown inline; the end summary
 still appears, so verbose is additive to the default. See the
 [Command Reference](docs/CommandReference.md#output-and-verbosity) for details.
 
-## Quickstart: the Vivado compile flow
+## Quickstart: the Vivado compile flow (tool-only)
+
+> **Using `flexrio-custom`?** Follow its
+> [Getting Started exercises](https://github.com/ni/flexrio-custom/blob/main/docs/GettingStarted.md)
+> instead — they are the canonical command sequence for that repo. This quickstart is for
+> driving `nihdl` standalone (installed via `pip`, outside a flexrio-custom checkout).
 
 Run these from your target folder (the one with `nihdlsettings.py`), with the
 Python environment active (run `nisetup` once per terminal — see

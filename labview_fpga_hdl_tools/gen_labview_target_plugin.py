@@ -227,6 +227,26 @@ def _create_clocklist_structure():
     return clock_list_top
 
 
+def _normalize_clock_domain_name(clock_domain_name):
+    """Return the canonical LabVIEW clock-domain name used in generated XML.
+
+    LabVIEW FPGA resource and clock names use dot-separated paths. CSV LVName
+    values use backslashes for hierarchy, so any hierarchical clock-domain
+    reference must be normalized before it is written to XML or compared to a
+    clock row defined elsewhere in the CSV.
+    """
+    return clock_domain_name.strip().replace("\\", ".")
+
+
+def _collect_defined_input_clock_domains(rows):
+    """Collect canonical clock-domain names defined by input clock rows."""
+    return {
+        _normalize_clock_domain_name(row["LVName"])
+        for row in rows
+        if row["SignalType"].lower() == "clock" and row["Direction"].lower() == "input"
+    }
+
+
 def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
     """Generate boardio XML and clock XML files from CSV data.
 
@@ -254,9 +274,10 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
 
         with open(csv_path, "r", newline="", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
+            rows = list(reader)
+            defined_input_clock_domains = _collect_defined_input_clock_domains(rows)
 
-            for row in reader:
-                row_count += 1
+            for row_count, row in enumerate(rows, start=1):
                 lv_name = row["LVName"]
                 hdl_name = row["HDLName"]
                 direction = row["Direction"]
@@ -266,6 +287,11 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                 zero_sync_regs = row["ZeroSyncRegs"]
                 output_readback = row["OutputReadback"]
                 required_clock_domain = row["RequiredClockDomain"]
+                normalized_required_clock_domain = (
+                    _normalize_clock_domain_name(required_clock_domain)
+                    if required_clock_domain
+                    else ""
+                )
 
                 # Replace the '\' in the names with '.' to create a dot-separated hierarchy
                 # that is used to make a resource folder hierarchy in the BoardIO XML.  The
@@ -317,9 +343,22 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                     )
                     ET.SubElement(io_resource, "VHDLName").text = hdl_name
 
-                    if required_clock_domain:
+                    if normalized_required_clock_domain:
+                        if (
+                            normalized_required_clock_domain not in defined_input_clock_domains
+                            and ("." in required_clock_domain or "\\" in required_clock_domain)
+                        ):
+                            valid_clock_domains = ", ".join(sorted(defined_input_clock_domains))
+                            error = (
+                                f"Row {row_count}: RequiredClockDomain='"
+                                f"{required_clock_domain}' for signal '{lv_name}' does not match "
+                                f"any input clock LVName defined in this CSV after the '\\' to '.' "
+                                f"name conversion. Use one of: {valid_clock_domains}"
+                            )
+                            validation_errors.append(error)
+
                         ET.SubElement(io_resource, "RequiredClockDomain").text = (
-                            required_clock_domain
+                            normalized_required_clock_domain
                         )
 
                     if use_in_scl:

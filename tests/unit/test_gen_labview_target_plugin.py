@@ -21,11 +21,56 @@ def _write_csv(tmp_path, rows):
     return str(csv_path)
 
 
-def _data_row(lv_name, hdl_name, direction, data_type, zero_sync_regs, output_readback):
+def _clock_row(lv_name, hdl_name):
+    return ",".join(
+        [
+            lv_name,
+            hdl_name,
+            "input",
+            "clock",
+            "Boolean",
+            "",
+            "TRUE",
+            "",
+            "",
+            "50",
+            "50",
+            "100",
+            "150",
+            "400.000000M",
+            "1.000000M",
+        ]
+    )
+
+
+def _data_row(
+    lv_name,
+    hdl_name,
+    direction,
+    data_type,
+    zero_sync_regs,
+    output_readback,
+    required_clock_domain="",
+):
     """Build a single data-signal CSV row string."""
-    return (
-        f"{lv_name},{hdl_name},{direction},data,{data_type},"
-        f"Allowed,{zero_sync_regs},{output_readback},,,,,,,"
+    return ",".join(
+        [
+            lv_name,
+            hdl_name,
+            direction,
+            "data",
+            data_type,
+            "Allowed",
+            zero_sync_regs,
+            output_readback,
+            required_clock_domain,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ]
     )
 
 
@@ -129,6 +174,81 @@ class TestGenerateXmlFromCsvOutput:
         assert errors is None
         assert ET.parse(str(boardio_path)).getroot().tag.lower() == "boardio"
         assert ET.parse(str(clock_path)).getroot().tag.lower() == "clocklist"
+
+
+class TestRequiredClockDomainValidation:
+    """Tests for RequiredClockDomain normalization and validation."""
+
+    @pytest.mark.parametrize(
+        "required_clock_domain",
+        ["IO Socket.Port0 User Clock", r"IO Socket\Port0 User Clock"],
+    )
+    def test_given_defined_user_clock_reference__when_generated__then_normalized_and_allowed(
+        self, tmp_path, required_clock_domain
+    ):
+        rows = [
+            _clock_row(r"IO Socket\Port0 User Clock", "UserClkPort0"),
+            _data_row(
+                r"IO Socket\Port0\Tx\TData0",
+                "uPort0AxiTxTData0",
+                "output",
+                "Boolean",
+                "TRUE",
+                "FALSE",
+                required_clock_domain,
+            ),
+        ]
+        csv_path = _write_csv(tmp_path, rows)
+        boardio_path = tmp_path / "boardio.xml"
+        clock_path = tmp_path / "CustomClocks.xml"
+
+        errors = gen._generate_xml_from_csv(csv_path, str(boardio_path), str(clock_path))
+
+        assert errors is None
+        boardio_xml = ET.parse(str(boardio_path))
+        required_clock_domain_value = boardio_xml.find(".//RequiredClockDomain")
+        assert required_clock_domain_value is not None
+        assert required_clock_domain_value.text == "IO Socket.Port0 User Clock"
+
+    def test_given_builtin_clock_name__when_generated__then_no_validation_error(self, tmp_path):
+        rows = [
+            _data_row(
+                r"IO Socket\IO Ready",
+                "xIoModuleReady",
+                "input",
+                "Boolean",
+                "TRUE",
+                "",
+                "80 MHz Clock",
+            )
+        ]
+
+        errors = _generate(tmp_path, rows)
+
+        assert errors is None
+
+    def test_given_unknown_hierarchical_clock_reference__when_generated__then_errors(
+        self, tmp_path
+    ):
+        rows = [
+            _clock_row(r"IO Socket\Port0 User Clock", "UserClkPort0"),
+            _data_row(
+                r"IO Socket\Port0\Tx\TData0",
+                "uPort0AxiTxTData0",
+                "output",
+                "Boolean",
+                "TRUE",
+                "FALSE",
+                "IO Socket.Port99 User Clock",
+            ),
+        ]
+
+        errors = _generate(tmp_path, rows)
+
+        assert errors is not None
+        assert len(errors) == 1
+        assert "RequiredClockDomain='IO Socket.Port99 User Clock'" in errors[0]
+        assert "IO Socket.Port0 User Clock" in errors[0]
 
 
 class TestParseRegisterOffset:

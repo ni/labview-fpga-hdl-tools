@@ -19,18 +19,6 @@ is the fastest way to verify functional behavior.
 
 ## The commands at a glance
 
-```mermaid
-flowchart LR
-    simlib["compile-modelsim-lib<br/><i>Xilinx sim libraries</i>"]
-    gen["gen-modelsim<br/><i>create project + compile</i>"]
-    run["sim-modelsim<br/><i>batch run + verdict</i>"]
-    gui["launch-modelsim<br/><i>interactive GUI</i>"]
-
-    simlib -. "auto (first run) " .-> gen
-    gen --> run
-    gen --> gui
-```
-
 | Command | What it does |
 | --- | --- |
 | [`compile-modelsim-lib`](CommandReference.md#modelsim) | Builds the Xilinx simulation libraries (unisim, secureip, ...) with Vivado's `compile_simlib`. Usually you don't call it directly — `gen-modelsim` auto-runs it the first time. |

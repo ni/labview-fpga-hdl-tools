@@ -29,7 +29,8 @@ yourself.
 > **Talking to the bitfile from a LabVIEW FPGA host VI.** Open the `.lvbitx` with
 > **Open Dynamic Bitfile Reference** (wire in the bitfile path and a matching FPGA
 > Interface Dynamic Refnum), **not** **Open FPGA VI Reference** — that standard node does
-> not work with these custom targets. See
+> not work with these custom targets. If LabVIEW prompts you to find a missing
+> `niLvFpga_Open_<target>.vi`, that is the symptom of using the wrong node. See
 > [Vivado Compile Flow → Opening the bitfile from a LabVIEW FPGA host VI](VivadoCompileFlow.md#opening-the-bitfile-from-a-labview-fpga-host-vi).
 
 > **Walkthrough:** [Vivado Compile Flow](VivadoCompileFlow.md).
@@ -84,21 +85,6 @@ The commands form a pipeline from dependencies to a bitfile. The Vivado project
 is the hub: it is generated from your HDL sources, checked, and then compiled.
 Building a hybrid LabVIEW FPGA target and simulating in ModelSim branch off from
 the same configured target.
-
-```mermaid
-flowchart TD
-    deps[install-deps] --> genv[gen-vivado]
-    win[gen-window<br/><i>hybrid LV netlist</i>] -.-> genv
-    genv --> check[check-vivado]
-    check --> comp[compile-vivado]
-    comp --> bitx[(LabVIEW FPGA bitfile)]
-
-    genv --> tgt[gen-target] --> inst[install-target<br/><i>custom LV FPGA target</i>]
-    genv --> sim[gen-modelsim] --> simrun[launch-modelsim / sim-modelsim]
-    simlib[compile-modelsim-lib<br/><i>Xilinx sim libraries</i>] -.auto.-> sim
-
-    clip[migrate-clip<br/><i>port existing CLIP</i>] -.-> genv
-```
 
 `gen-vivado` automatically generates the design's
 [VHDL](GeneratedVHDL.md) and XDC along the way, and
