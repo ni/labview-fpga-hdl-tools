@@ -1,8 +1,67 @@
 """Unit tests for ModelSim project creation helpers."""
 
 import os
+from types import SimpleNamespace
+
+import pytest
 
 from labview_fpga_hdl_tools import create_modelsim_project
+
+
+def _make_config(modelsim_project_folder):
+    return SimpleNamespace(
+        modelsim_entity="tb_top",
+        modelsim_project_folder=modelsim_project_folder,
+        modelsim_file_lists=[],
+        vhdl2008_file_lists=[],
+        skip_modelsim=True,
+    )
+
+
+class TestModelSimProjectFolderValidation:
+    """Tests that create_modelsim_project refuses unsafe project folders."""
+
+    @pytest.mark.parametrize("folder", [None, ""])
+    def test_given_no_project_folder__when_creating__then_errors_without_deleting(
+        self, tmp_path, monkeypatch, folder
+    ):
+        keep = tmp_path / "keep.txt"
+        keep.write_text("keep")
+        monkeypatch.chdir(tmp_path)
+
+        result = create_modelsim_project.create_modelsim_project(
+            overwrite=True, config=_make_config(folder)
+        )
+
+        assert result == 1
+        assert keep.exists()
+
+    @pytest.mark.parametrize("folder", [".", "..", "sub/.."])
+    def test_given_project_folder_is_cwd_or_parent__when_creating__then_errors_without_deleting(
+        self, tmp_path, monkeypatch, folder
+    ):
+        work = tmp_path / "work"
+        work.mkdir()
+        keep = work / "keep.txt"
+        keep.write_text("keep")
+        monkeypatch.chdir(work)
+
+        result = create_modelsim_project.create_modelsim_project(
+            overwrite=True, config=_make_config(folder)
+        )
+
+        assert result == 1
+        assert keep.exists()
+
+    def test_given_subfolder__when_validating__then_no_project_folder_error(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            create_modelsim_project._validate_ini(_make_config("ModelSimProject"))
+
+        assert "ModelSimProjectFolder" not in str(exc_info.value)
 
 
 class TestAddXilinxLibraryMappings:

@@ -479,6 +479,16 @@ def validate_path(path, setting_name, required_type=None):
     return None
 
 
+def is_same_or_parent_dir(path, other):
+    """Return True if ``path`` is ``other`` or one of its parent directories."""
+    path = os.path.normcase(os.path.realpath(path))
+    other = os.path.normcase(os.path.realpath(other))
+    try:
+        return os.path.commonpath([path, other]) == path
+    except ValueError:
+        return False  # different drives
+
+
 def get_missing_settings_error(missing_settings):
     """Generate error message for missing settings."""
     error_msg = ""

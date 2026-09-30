@@ -117,6 +117,17 @@ def _validate_ini(config):
         if invalid_path:
             invalid_paths.append(invalid_path)
 
+    # The install folder <root>/<name> gets rmtree'd (possibly elevated), so name
+    # must resolve to a direct child of root
+    if config.lv_target_install_folder and config.lv_target_name:
+        install_root = os.path.abspath(config.lv_target_install_folder)
+        install_folder = os.path.abspath(os.path.join(install_root, config.lv_target_name))
+        if os.path.normcase(os.path.dirname(install_folder)) != os.path.normcase(install_root):
+            invalid_paths.append(
+                f"LVFPGATargetSettings.LVTargetName - must be a plain folder name "
+                f"(no path separators, '.' or '..'): {config.lv_target_name}"
+            )
+
     if not config.lv_target_plugin_output_folder:
         missing_settings.append("LVFPGATargetSettings.LVTargetPluginOutputFolder")
     else:

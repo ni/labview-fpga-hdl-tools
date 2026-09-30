@@ -35,6 +35,11 @@ def _validate_ini(config):
     if not common.get_modelsim_entity(config):
         missing_settings.append("ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)")
 
+    if not config.modelsim_project_folder:
+        missing_settings.append(
+            "ModelSimSettings.ModelSimProjectFolder (set via set_modelsim_project_folder)"
+        )
+
     error = common.build_settings_error(missing_settings, invalid_paths)
     if error:
         raise ValueError(error)
@@ -60,7 +65,9 @@ def sim_modelsim(do_file=None, config=None):
         reporter.error(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
+    if not config.modelsim_project_folder:
+        raise ValueError("ModelSimProjectFolder setting is missing from configuration")
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder)
 
     if not os.path.isdir(project_dir):
         reporter.error(

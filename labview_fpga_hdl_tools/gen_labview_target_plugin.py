@@ -783,6 +783,17 @@ def _validate_ini(config):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
+    # gen-target rmtree's the output folder, so it must not contain the settings or cwd
+    output_folder = config.lv_target_plugin_output_folder
+    if output_folder:
+        protected_dirs = [os.getcwd()] + ([config.base_dir] if config.base_dir else [])
+        if any(common.is_same_or_parent_dir(output_folder, d) for d in protected_dirs):
+            invalid_paths.append(
+                f"LVFPGATargetSettings.LVTargetPluginOutputFolder - must not be the current "
+                f"directory, the nihdlsettings.py directory, or a parent of either: "
+                f"{output_folder}"
+            )
+
     error = common.build_settings_error(missing_settings, invalid_paths)
     if error:
         raise ValueError(error)

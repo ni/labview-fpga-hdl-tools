@@ -26,6 +26,20 @@ def _validate_ini(config):
     if not modelsim_entity:
         missing_settings.append("ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)")
 
+    if not config.modelsim_project_folder:
+        missing_settings.append(
+            "ModelSimSettings.ModelSimProjectFolder (set via set_modelsim_project_folder)"
+        )
+    else:
+        # --overwrite rmtree's this folder, so never let it be the cwd or one of its parents
+        project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder)
+        if common.is_same_or_parent_dir(project_dir, os.getcwd()):
+            invalid_paths.append(
+                f"ModelSimSettings.ModelSimProjectFolder - must be a subfolder of the current "
+                f"directory, not the current directory or a parent of it: "
+                f"{config.modelsim_project_folder}"
+            )
+
     # gen-modelsim compiles the ModelSim file lists only. There is intentionally
     # no fallback to the Vivado HDL file lists: a simulation project must declare
     # its own sources via add_modelsim_file_list so ModelSim is independent of
@@ -435,7 +449,9 @@ def create_modelsim_project(overwrite=False, config=None):
         reporter.error(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
+    if not config.modelsim_project_folder:
+        raise ValueError("ModelSimProjectFolder setting is missing from configuration")
+    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder)
     entity_name = common.get_modelsim_entity(config)
 
     # Check for existing project
