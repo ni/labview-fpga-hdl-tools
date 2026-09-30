@@ -10,12 +10,36 @@ files, so they are fast and deterministic.
 # SPDX-License-Identifier: MIT
 #
 
+import pytest
+
 from labview_fpga_hdl_tools.install_dependencies import (
+    _clone_repo_at_tag,
     _dependency_requests_prerelease,
     _filter_tags_by_specifier,
     _normalize_tag,
     _parse_dependency,
 )
+
+
+class TestCloneRepoRejectsUnsafeNames:
+    """Repo names that would resolve outside deps/ must fail before anything is deleted."""
+
+    @pytest.mark.parametrize(
+        "repo", ["owner/..", "owner/.", "owner/", "owner", "owner\\..", "a/b/c", "../.."]
+    )
+    def test_given_unsafe_repo__when_cloning_with_delete__then_fails_without_deleting(
+        self, tmp_path, repo
+    ):
+        deps_dir = tmp_path / "deps"
+        deps_dir.mkdir()
+        keep = deps_dir / "keep.txt"
+        keep.write_text("keep")
+
+        # A bare tag skips the network tag lookup and goes straight to the delete step
+        result = _clone_repo_at_tag(repo, "v1.0.0", deps_dir, delete_allowed=True)
+
+        assert result is False
+        assert keep.exists()
 
 
 class TestParseDependency:

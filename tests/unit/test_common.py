@@ -11,6 +11,25 @@ from labview_fpga_hdl_tools import common
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
 
 
+class TestIsSameOrParentDir:
+    """Tests for is_same_or_parent_dir, used to keep rmtree targets away from the work tree."""
+
+    def test_given_same_dir__when_checked__then_true(self, tmp_path):
+        assert common.is_same_or_parent_dir(str(tmp_path), str(tmp_path))
+
+    def test_given_parent_dir__when_checked__then_true(self, tmp_path):
+        assert common.is_same_or_parent_dir(str(tmp_path), str(tmp_path / "a" / "b"))
+
+    def test_given_dot_dot_path__when_checked__then_true(self, tmp_path):
+        assert common.is_same_or_parent_dir(str(tmp_path / "a" / ".."), str(tmp_path / "a"))
+
+    def test_given_child_dir__when_checked__then_false(self, tmp_path):
+        assert not common.is_same_or_parent_dir(str(tmp_path / "a"), str(tmp_path))
+
+    def test_given_sibling_dir__when_checked__then_false(self, tmp_path):
+        assert not common.is_same_or_parent_dir(str(tmp_path / "a"), str(tmp_path / "ab"))
+
+
 class TestRunCommandCheck:
     """Tests for run_command exit-code handling via the ``check`` flag."""
 

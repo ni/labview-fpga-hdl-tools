@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET  # noqa: N817
 import pytest
 
 from labview_fpga_hdl_tools import gen_labview_target_plugin as gen
+from labview_fpga_hdl_tools.command_config import CommandConfiguration
 
 CSV_HEADER = (
     "LVName,HDLName,Direction,SignalType,DataType,"
@@ -80,6 +81,33 @@ def _generate(tmp_path, rows):
     boardio_path = str(tmp_path / "boardio.xml")
     clock_path = str(tmp_path / "CustomClocks.xml")
     return gen._generate_xml_from_csv(csv_path, boardio_path, clock_path)
+
+
+class TestPluginOutputFolderValidation:
+    """gen-target rmtree's the plugin output folder, so it must not contain the work tree."""
+
+    @pytest.mark.parametrize("folder", [".", ".."])
+    def test_given_output_folder_contains_settings_dir__when_validating__then_error(
+        self, tmp_path, monkeypatch, folder
+    ):
+        monkeypatch.chdir(tmp_path)
+        config = CommandConfiguration(base_dir=str(tmp_path))
+        config.set_lv_target_plugin_output_folder(folder)
+
+        with pytest.raises(ValueError, match="LVTargetPluginOutputFolder - must not be"):
+            gen._validate_ini(config)
+
+    def test_given_output_folder_is_subfolder__when_validating__then_no_folder_error(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.chdir(tmp_path)
+        config = CommandConfiguration(base_dir=str(tmp_path))
+        config.set_lv_target_plugin_output_folder("objects/LVTargetPlugin/X")
+
+        with pytest.raises(ValueError) as exc_info:
+            gen._validate_ini(config)
+
+        assert "LVTargetPluginOutputFolder - must not be" not in str(exc_info.value)
 
 
 class TestGetSupportedPrototypeSuffixes:

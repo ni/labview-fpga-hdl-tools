@@ -38,6 +38,7 @@ Command-line options:
 
 import datetime
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -58,6 +59,8 @@ from labview_fpga_hdl_tools.reporting import reporter
 # cloned repo. Mirrors the discoverability of Python's "<pkg>-<ver>.dist-info"
 # directories, but as a single lightweight text file instead of a folder.
 _DEP_INFO_SUFFIX = ".dep-info"
+
+_REPO_PATTERN = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 
 
 def _remove_readonly(func, path, exc_info):
@@ -309,6 +312,11 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
     """
     # Normalize repo path (handle both / and \)
     repo = repo.replace("\\", "/")
+    # repo_name becomes a folder under base_dir that may be rmtree'd, so reject
+    # anything that isn't a plain owner/name (e.g. "owner/.." or "owner/")
+    if not _REPO_PATTERN.fullmatch(repo) or repo.split("/")[-1] in (".", ".."):
+        reporter.error(f"  [FAIL] Invalid repository name '{repo}'; expected 'owner/repo'")
+        return False
     repo_name = repo.split("/")[-1]
     repo_path = base_dir / repo_name
     repo_url = f"https://github.com/{repo}.git"
