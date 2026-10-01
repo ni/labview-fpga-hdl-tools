@@ -55,7 +55,7 @@ def launch_modelsim(batch=False, config=None):
 
     if not config.modelsim_project_folder:
         raise ValueError("ModelSimProjectFolder setting is missing from configuration")
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder)
+    project_dir = os.path.join(config.root_dir, config.modelsim_project_folder)
 
     if not os.path.isdir(project_dir):
         reporter.error(

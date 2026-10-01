@@ -84,7 +84,11 @@ def _create_lv_bitfile(config=None):
         reporter.detail("Creating .lvbitx files is only supported on Windows")
         return 0
 
-    vivado_impl_folder = os.getcwd()
+    if config is None:
+        config = CommandConfiguration()
+
+    # Vivado's post-bitstream TCL runs gen-lvbitx from the impl_1 run folder
+    vivado_impl_folder = config.root_dir
 
     path_parts = [part.lower() for part in os.path.normpath(vivado_impl_folder).split(os.sep)]
     if "impl_1" not in path_parts:
@@ -108,13 +112,9 @@ def _create_lv_bitfile(config=None):
         )
 
     # This script is run by a TCL script in Vivado after the bitstream is generated and the
-    # directory that Vivado is in is the implementation run directory. So we must go up a
-    # few directories to the PXIe-7xxx folder where these scripts normally run
-    os.chdir("../../..")
-
-    # Load configuration
-    if config is None:
-        config = CommandConfiguration()
+    # directory that Vivado is in is the implementation run directory. The project root
+    # (where objects/ lives) is three levels up.
+    root_dir = os.path.abspath(os.path.join(vivado_impl_folder, "..", "..", ".."))
 
     # Determine path to CodeGenerationResults.lvtxt from TheWindow folder
     if not config.lv_window_netlist_folder:
@@ -124,7 +124,7 @@ def _create_lv_bitfile(config=None):
         )
         return 1
 
-    window_folder = os.path.abspath(config.lv_window_netlist_folder)
+    window_folder = os.path.abspath(os.path.join(root_dir, config.lv_window_netlist_folder))
     reporter.detail(f"Window folder resolved to: {window_folder}")
 
     code_gen_results_path = os.path.join(window_folder, "CodeGenerationResults.lvtxt")
@@ -138,7 +138,9 @@ def _create_lv_bitfile(config=None):
     vivado_bitstream_path = os.path.join(vivado_impl_folder, f"{config.top_level_entity}.bin")
     reporter.detail(f"Vivado bitstream path: {vivado_bitstream_path}")
 
-    lvbitx_output_path = os.path.abspath(f"objects/bitfiles/{config.top_level_entity}.lvbitx")
+    lvbitx_output_path = os.path.join(
+        root_dir, "objects", "bitfiles", f"{config.top_level_entity}.lvbitx"
+    )
     reporter.detail(f"Output .lvbitx path: {lvbitx_output_path}")
 
     # In skip_vivado mode, create a mock file without needing createBitfile.exe

@@ -252,7 +252,7 @@ def process_lv_target_constraints_template(config):
         reporter.detail("No constraints template specified in configuration.")
         return
 
-    output_folder = os.path.join(os.getcwd(), "objects", "lv_target_xdc")
+    output_folder = os.path.join(config.root_dir, "objects", "lv_target_xdc")
     os.makedirs(output_folder, exist_ok=True)
 
     template_basename = os.path.basename(template_path)
@@ -294,7 +294,7 @@ def process_constraints_template(config):
         config (CommandConfiguration): Configuration settings object with path information
     """
     # Define output directory
-    output_folder = os.path.join(os.getcwd(), "objects", "xdc")
+    output_folder = os.path.join(config.root_dir, "objects", "xdc")
     os.makedirs(output_folder, exist_ok=True)
     period_content = ""
     clip_content = ""
@@ -429,12 +429,16 @@ def process_constraints(config=None):
     """Load config and process XDC constraint templates.
 
     Args:
-        config_path (str | None): Optional path to INI settings file.
+        config (CommandConfiguration | None): Configuration object.
 
     Returns:
-        int: 0 on success.
+        int: 0 on success, 1 on error.
     """
     if config is None:
         config = CommandConfiguration()
-    process_constraints_template(config)
+    try:
+        process_constraints_template(config)
+    except Exception as e:
+        reporter.error(f"Error: {e}")
+        return 1
     return 0

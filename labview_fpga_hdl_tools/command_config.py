@@ -58,9 +58,12 @@ class CommandConfiguration:
     # ----- FORMAT VERSION -----
     format_version: Optional[str] = None  # INI format version (e.g., "2.0")
     # ----- PATH RESOLUTION -----
+    # Project root: the directory nihdl was invoked from, captured once when the
+    # config is created. Commands write their outputs (objects/, project folders)
+    # under it instead of reading the process working directory.
+    root_dir: str = field(default_factory=os.getcwd)
     # Directory that relative-path setters resolve against. The hook system sets
-    # this to the nihdlsettings.py file's directory so path resolution does not
-    # depend on the process working directory. None -> resolve against cwd.
+    # this to the nihdlsettings.py file's directory. None -> resolve against root_dir.
     base_dir: Optional[str] = None
     # ----- GENERAL SETTINGS -----
     target_family: Optional[str] = None  # Target family (e.g., "FlexRIO")
@@ -183,8 +186,8 @@ class CommandConfiguration:
     # --- Path resolution helper ---
 
     def _resolve(self, value):
-        """Resolve a relative path against this config's base_dir (or cwd if unset)."""
-        return resolve_path(value, self.base_dir)
+        """Resolve a relative path against this config's base_dir (or root_dir if unset)."""
+        return resolve_path(value, self.base_dir if self.base_dir is not None else self.root_dir)
 
     # --- General Settings setters ---
 

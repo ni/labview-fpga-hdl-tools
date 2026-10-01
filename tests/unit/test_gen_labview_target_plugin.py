@@ -88,20 +88,18 @@ class TestPluginOutputFolderValidation:
 
     @pytest.mark.parametrize("folder", [".", ".."])
     def test_given_output_folder_contains_settings_dir__when_validating__then_error(
-        self, tmp_path, monkeypatch, folder
+        self, tmp_path, folder
     ):
-        monkeypatch.chdir(tmp_path)
-        config = CommandConfiguration(base_dir=str(tmp_path))
+        config = CommandConfiguration(root_dir=str(tmp_path), base_dir=str(tmp_path))
         config.set_lv_target_plugin_output_folder(folder)
 
         with pytest.raises(ValueError, match="LVTargetPluginOutputFolder - must not be"):
             gen._validate_ini(config)
 
     def test_given_output_folder_is_subfolder__when_validating__then_no_folder_error(
-        self, tmp_path, monkeypatch
+        self, tmp_path
     ):
-        monkeypatch.chdir(tmp_path)
-        config = CommandConfiguration(base_dir=str(tmp_path))
+        config = CommandConfiguration(root_dir=str(tmp_path), base_dir=str(tmp_path))
         config.set_lv_target_plugin_output_folder("objects/LVTargetPlugin/X")
 
         with pytest.raises(ValueError) as exc_info:

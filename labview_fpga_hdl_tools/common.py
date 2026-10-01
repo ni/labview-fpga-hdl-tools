@@ -8,7 +8,6 @@
 import os
 import re
 import subprocess
-import traceback
 import uuid
 from typing import Optional
 
@@ -155,90 +154,85 @@ def _parse_vhdl_entity(vhdl_path):
 
     Returns:
         tuple: (entity_name, ports_list)
-            - entity_name (str or None): The name of the entity if found, None otherwise
-            - ports_list (list): List of port names, empty if none found or on error
+            - entity_name (str): The name of the entity
+            - ports_list (list): List of port names, empty if the entity has no ports
+
+    Raises:
+        FileNotFoundError: If the VHDL file does not exist
+        ValueError: If no entity declaration is found or the port list is unterminated
     """
     # Handle long paths
     long_path = handle_long_path(vhdl_path)
 
     if not os.path.exists(long_path):
-        reporter.error(f"Error: VHDL file not found: {vhdl_path}")
-        return None, []
+        raise FileNotFoundError(f"VHDL file not found: {vhdl_path}")
 
-    try:
-        # Read the entire file as a single string
-        with open(long_path, "r", encoding="utf-8") as f:
-            content = f.read()
+    # Read the entire file as a single string
+    with open(long_path, "r", encoding="utf-8") as f:
+        content = f.read()
 
-        # Step 1: Find the entity declaration
-        # Use regex to look for "entity <name> is" pattern, case-insensitive
-        entity_pattern = re.compile(r"entity\s+(\w+)\s+is", re.IGNORECASE)
-        entity_match = entity_pattern.search(content)
-        if not entity_match:
-            reporter.error(f"Error: Could not find entity declaration in {vhdl_path}")
-            return None, []
+    # Step 1: Find the entity declaration
+    # Use regex to look for "entity <name> is" pattern, case-insensitive
+    entity_pattern = re.compile(r"entity\s+(\w+)\s+is", re.IGNORECASE)
+    entity_match = entity_pattern.search(content)
+    if not entity_match:
+        raise ValueError(f"Could not find entity declaration in {vhdl_path}")
 
-        entity_name = entity_match.group(1)
+    entity_name = entity_match.group(1)
 
-        # Step 2: Find the entire port section
-        # First, find the start position of "port ("
-        port_start_pattern = re.compile(r"port\s*\(", re.IGNORECASE)
-        port_start_match = port_start_pattern.search(content, entity_match.end())
-        if not port_start_match:
-            reporter.error(f"Error: Could not find port declaration in {vhdl_path}")
-            return entity_name, []
+    # Step 2: Find the entire port section
+    # First, find the start position of "port ("
+    port_start_pattern = re.compile(r"port\s*\(", re.IGNORECASE)
+    port_start_match = port_start_pattern.search(content, entity_match.end())
+    if not port_start_match:
+        # A portless entity is legal VHDL
+        reporter.warn(f"No port declaration found in {vhdl_path}")
+        return entity_name, []
 
-        port_start = port_start_match.end()
+    port_start = port_start_match.end()
 
-        # Now find the matching closing parenthesis by counting open/close parentheses
-        # This handles nested parentheses in port declarations correctly
-        paren_level = 1
-        port_end = port_start
-        for i in range(port_start, len(content)):
-            if content[i] == "(":
-                paren_level += 1
-            elif content[i] == ")":
-                paren_level -= 1
-                if paren_level == 0:
-                    port_end = i
-                    break
+    # Now find the matching closing parenthesis by counting open/close parentheses
+    # This handles nested parentheses in port declarations correctly
+    paren_level = 1
+    port_end = port_start
+    for i in range(port_start, len(content)):
+        if content[i] == "(":
+            paren_level += 1
+        elif content[i] == ")":
+            paren_level -= 1
+            if paren_level == 0:
+                port_end = i
+                break
 
-        if paren_level != 0:
-            reporter.error(f"Error: Could not find end of port declaration")
-            return entity_name, []
+    if paren_level != 0:
+        raise ValueError(f"Could not find end of port declaration in {vhdl_path}")
 
-        # Extract port section
-        port_section = content[port_start:port_end]
+    # Extract port section
+    port_section = content[port_start:port_end]
 
-        # Clean up port section - remove comments
-        port_section = re.sub(r"--.*?$", "", port_section, flags=re.MULTILINE)
+    # Clean up port section - remove comments
+    port_section = re.sub(r"--.*?$", "", port_section, flags=re.MULTILINE)
 
-        # Split by semicolons to get individual port declarations
-        ports = []
-        port_declarations = port_section.split(";")
+    # Split by semicolons to get individual port declarations
+    ports = []
+    port_declarations = port_section.split(";")
 
-        # Process each port declaration
-        for decl in port_declarations:
-            decl = decl.strip()
-            if not decl or ":" not in decl:
-                continue
+    # Process each port declaration
+    for decl in port_declarations:
+        decl = decl.strip()
+        if not decl or ":" not in decl:
+            continue
 
-            # Extract port names from before the colon
-            names_part = decl.split(":", 1)[0].strip()
+        # Extract port names from before the colon
+        names_part = decl.split(":", 1)[0].strip()
 
-            # Handle multiple comma-separated port names
-            for name in names_part.split(","):
-                name = name.strip()
-                if name:
-                    ports.append(name)
+        # Handle multiple comma-separated port names
+        for name in names_part.split(","):
+            name = name.strip()
+            if name:
+                ports.append(name)
 
-        return entity_name, ports
-
-    except Exception as e:
-        reporter.error(f"Error parsing VHDL file: {str(e)}")
-        if reporter.verbose:
-            traceback.print_exc()
-        return None, []
+    return entity_name, ports
 
 
 def generate_hdl_instantiation_example(

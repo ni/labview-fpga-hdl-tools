@@ -7,6 +7,8 @@
 
 import os
 
+import pytest
+
 from labview_fpga_hdl_tools import get_window_netlist as gwn
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
 
@@ -61,11 +63,10 @@ class TestExtractLvWindowConstraints:
         assert reporter.warning_count == 1
         assert not (out / "TheWindowConstraints.xdc").exists()
 
-    def test_given_missing_source__when_extracted__then_error(self, tmp_path, reporter):
+    def test_given_missing_source__when_extracted__then_raises(self, tmp_path):
         out = tmp_path / "window"
         # No NIProtectedFiles/constraints.xdc created.
         config = _make_config(str(tmp_path / "missing-export"), str(out), xdc_content=None)
 
-        gwn._extract_lv_window_constraints(config)
-
-        assert reporter.error_count == 1
+        with pytest.raises(FileNotFoundError):
+            gwn._extract_lv_window_constraints(config)

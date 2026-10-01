@@ -31,12 +31,13 @@ def _validate_ini(config):
             "ModelSimSettings.ModelSimProjectFolder (set via set_modelsim_project_folder)"
         )
     else:
-        # --overwrite rmtree's this folder, so never let it be the cwd or one of its parents
-        project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder)
-        if common.is_same_or_parent_dir(project_dir, os.getcwd()):
+        # --overwrite rmtree's this folder, so it must not contain the settings or root dir
+        project_dir = os.path.join(config.root_dir, config.modelsim_project_folder)
+        protected_dirs = [config.root_dir] + ([config.base_dir] if config.base_dir else [])
+        if any(common.is_same_or_parent_dir(project_dir, d) for d in protected_dirs):
             invalid_paths.append(
-                f"ModelSimSettings.ModelSimProjectFolder - must be a subfolder of the current "
-                f"directory, not the current directory or a parent of it: "
+                f"ModelSimSettings.ModelSimProjectFolder - must not be the current "
+                f"directory, the nihdlsettings.py directory, or a parent of either: "
                 f"{config.modelsim_project_folder}"
             )
 
@@ -174,12 +175,12 @@ def _create_modelsim_ini(modelsim_install_path, project_dir):
     shutil.copy2(src_ini, dst_ini)
 
     # shutil.copy2 preserves the source file's mode. The source modelsim.ini is
-    # often read-only (for example when it is copied from a read-only EDA tools
-    # mount on a Linux build agent), which would make the patch-write below fail
-    # with PermissionError. Ensure the copy is writable on every platform.
+    # often read-only (for example on a shared, read-only tools install), which
+    # would make the patch-write below fail with PermissionError. Ensure the
+    # copy is writable on every platform.
     os.chmod(dst_ini, os.stat(dst_ini).st_mode | stat.S_IWUSR)
 
-    # Patch settings for simulation (matching vsmake behavior)
+    # Patch settings for simulation
     with open(dst_ini, "r") as f:
         content = f.read()
 
@@ -451,7 +452,7 @@ def create_modelsim_project(overwrite=False, config=None):
 
     if not config.modelsim_project_folder:
         raise ValueError("ModelSimProjectFolder setting is missing from configuration")
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder)
+    project_dir = os.path.join(config.root_dir, config.modelsim_project_folder)
     entity_name = common.get_modelsim_entity(config)
 
     # Check for existing project
