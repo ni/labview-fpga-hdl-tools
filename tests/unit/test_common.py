@@ -267,21 +267,29 @@ class TestParseVhdlEntity:
         assert name == "MyEntity"
         assert ports == ["clk", "a", "b", "result"]
 
-    def test_given_missing_file__when_parsed__then_none_and_empty(self, tmp_path):
-        name, ports = common._parse_vhdl_entity(str(tmp_path / "missing.vhd"))
-        assert name is None
-        assert ports == []
+    def test_given_missing_file__when_parsed__then_raises(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            common._parse_vhdl_entity(str(tmp_path / "missing.vhd"))
 
-    def test_given_no_entity_declaration__when_parsed__then_none_and_empty(self, tmp_path):
+    def test_given_no_entity_declaration__when_parsed__then_raises(self, tmp_path):
         vhdl = tmp_path / "NotAnEntity.vhd"
         vhdl.write_text("architecture rtl of Foo is\nbegin\nend rtl;\n")
-        name, ports = common._parse_vhdl_entity(str(vhdl))
-        assert name is None
-        assert ports == []
+        with pytest.raises(ValueError):
+            common._parse_vhdl_entity(str(vhdl))
 
-    def test_given_entity_without_ports__when_parsed__then_name_and_empty_ports(self, tmp_path):
+    def test_given_unterminated_port_list__when_parsed__then_raises(self, tmp_path):
+        vhdl = tmp_path / "Broken.vhd"
+        vhdl.write_text("entity Broken is\n  port (\n    clk : in std_logic;\n")
+        with pytest.raises(ValueError):
+            common._parse_vhdl_entity(str(vhdl))
+
+    def test_given_entity_without_ports__when_parsed__then_name_and_empty_ports(
+        self, tmp_path, reporter
+    ):
         vhdl = tmp_path / "NoPorts.vhd"
         vhdl.write_text("entity NoPorts is\nend NoPorts;\n")
         name, ports = common._parse_vhdl_entity(str(vhdl))
         assert name == "NoPorts"
         assert ports == []
+        assert reporter.warning_count == 1
+        assert reporter.error_count == 0

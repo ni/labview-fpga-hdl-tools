@@ -17,7 +17,6 @@ helps in integrating CLIP IP into LabVIEW FPGA projects.
 import csv
 import os
 import re
-import sys
 import traceback
 import xml.etree.ElementTree as ET  # noqa: N817
 
@@ -172,128 +171,121 @@ def _generate_board_io_csv_from_clip_xml(input_xml_path, clip_output_csv):
         None
 
     Raises:
-        SystemExit: If input file not found or XML parsing fails
+        FileNotFoundError: If the input file is not found
+        ValueError: If XML parsing fails or no LabVIEW interface is present
     """
+    # Validate input file
+    if not os.path.exists(input_xml_path):
+        raise FileNotFoundError(f"Input file not found: {input_xml_path}")
+
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(clip_output_csv), exist_ok=True)
+
+    # Parse XML
     try:
-        # Validate input file
-        if not os.path.exists(input_xml_path):
-            sys.exit(f"Error: Input file not found: {input_xml_path}")
+        tree = DefusedET.parse(input_xml_path)
+        root = tree.getroot()
+    except ET.ParseError as e:
+        raise ValueError(f"Failed to parse XML file {input_xml_path}: {e}") from e
 
-        # Ensure output directory exists
-        os.makedirs(os.path.dirname(clip_output_csv), exist_ok=True)
+    # Find LabVIEW interface
+    lv_interface = _find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
+    if lv_interface is None:
+        raise ValueError(f"No LabVIEW interface found in {input_xml_path}")
 
-        # Parse XML
-        try:
-            tree = DefusedET.parse(input_xml_path)
-            root = tree.getroot()
-        except ET.ParseError as e:
-            sys.exit(f"Error parsing XML file: {e}")
+    # Open CSV for writing
+    with open(clip_output_csv, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
 
-        # Find LabVIEW interface
-        lv_interface = _find_case_insensitive(root, ".//Interface[@Name='LabVIEW']")
-        if lv_interface is None:
-            sys.exit(f"No LabVIEW interface found in {input_xml_path}")
+        # Write header
+        writer.writerow(
+            [
+                "LVName",
+                "HDLName",
+                "Direction",
+                "SignalType",
+                "DataType",
+                "UseInLabVIEWSingleCycleTimedLoop",
+                "RequiredClockDomain",
+                "ZeroSyncRegs",
+                "OutputReadback",
+                "DutyCycleHighMax",
+                "DutyCycleHighMin",
+                "AccuracyInPPM",
+                "JitterInPicoSeconds",
+                "FreqMaxInHertz",
+                "FreqMinInHertz",
+            ]
+        )
 
-        # Open CSV for writing
-        with open(clip_output_csv, "w", newline="", encoding="utf-8") as csvfile:
-            writer = csv.writer(csvfile)
+        # Find signals
+        signals = _findall_case_insensitive(lv_interface, ".//SignalList/Signal")
+        if not signals:
+            reporter.warn("Warning: No signals found in the LabVIEW interface")
 
-            # Write header
+        # Process each signal
+        for signal in signals:
+            # Get signal name - try both "Name" and "name" attributes
+            name = _get_attribute_case_insensitive(signal, "Name")
+            if not name:
+                reporter.warn("Warning: Signal without a name found, skipping")
+                continue
+
+            # Format LabVIEW name
+            lv_name = "IO Socket\\" + name.replace(".", "\\")
+
+            # Get signal properties using case-insensitive matching
+            hdl_name = _get_element_text(signal, "HDLName", "N/A")
+            raw_direction = _get_element_text(signal, "Direction", "N/A")
+            direction = {"ToCLIP": "output", "FromCLIP": "input"}.get(raw_direction, raw_direction)
+            signal_type = _get_element_text(signal, "SignalType", "N/A")
+            data_type = _extract_data_type(
+                signal.find("DataType") or _find_case_insensitive(signal, "DataType")
+            )
+            use_in_scl = _get_element_text(signal, "UseInLabVIEWSingleCycleTimedLoop")
+            clock_domain = _get_element_text(signal, "RequiredClockDomain")
+
+            if direction == "input" or use_in_scl == "Required":
+                zero_sync_regs = "TRUE"
+            else:
+                zero_sync_regs = "FALSE"
+
+            if direction == "output":
+                output_readback = "FALSE"
+            else:
+                output_readback = ""
+
+            # Extract clock-related information
+            clock_params = _extract_clock_parameters(signal)
+            duty_cycle_max = clock_params["duty_cycle_max"]
+            duty_cycle_min = clock_params["duty_cycle_min"]
+            accuracy_ppm = clock_params["accuracy_ppm"]
+            jitter_ps = clock_params["jitter_ps"]
+            freq_max = clock_params["freq_max"]
+            freq_min = clock_params["freq_min"]
+
+            # And write them to CSV as before
             writer.writerow(
                 [
-                    "LVName",
-                    "HDLName",
-                    "Direction",
-                    "SignalType",
-                    "DataType",
-                    "UseInLabVIEWSingleCycleTimedLoop",
-                    "RequiredClockDomain",
-                    "ZeroSyncRegs",
-                    "OutputReadback",
-                    "DutyCycleHighMax",
-                    "DutyCycleHighMin",
-                    "AccuracyInPPM",
-                    "JitterInPicoSeconds",
-                    "FreqMaxInHertz",
-                    "FreqMinInHertz",
+                    lv_name,
+                    hdl_name,
+                    direction,
+                    signal_type,
+                    data_type,
+                    use_in_scl,
+                    clock_domain,
+                    zero_sync_regs,
+                    output_readback,
+                    duty_cycle_max,
+                    duty_cycle_min,
+                    accuracy_ppm,
+                    jitter_ps,
+                    freq_max,
+                    freq_min,
                 ]
             )
 
-            # Find signals
-            signals = _findall_case_insensitive(lv_interface, ".//SignalList/Signal")
-            if not signals:
-                reporter.warn("Warning: No signals found in the LabVIEW interface")
-
-            # Process each signal
-            for signal in signals:
-                # Get signal name - try both "Name" and "name" attributes
-                name = _get_attribute_case_insensitive(signal, "Name")
-                if not name:
-                    reporter.warn("Warning: Signal without a name found, skipping")
-                    continue
-
-                # Format LabVIEW name
-                lv_name = "IO Socket\\" + name.replace(".", "\\")
-
-                # Get signal properties using case-insensitive matching
-                hdl_name = _get_element_text(signal, "HDLName", "N/A")
-                raw_direction = _get_element_text(signal, "Direction", "N/A")
-                direction = {"ToCLIP": "output", "FromCLIP": "input"}.get(
-                    raw_direction, raw_direction
-                )
-                signal_type = _get_element_text(signal, "SignalType", "N/A")
-                data_type = _extract_data_type(
-                    signal.find("DataType") or _find_case_insensitive(signal, "DataType")
-                )
-                use_in_scl = _get_element_text(signal, "UseInLabVIEWSingleCycleTimedLoop")
-                clock_domain = _get_element_text(signal, "RequiredClockDomain")
-
-                if direction == "input" or use_in_scl == "Required":
-                    zero_sync_regs = "TRUE"
-                else:
-                    zero_sync_regs = "FALSE"
-
-                if direction == "output":
-                    output_readback = "FALSE"
-                else:
-                    output_readback = ""
-
-                # Extract clock-related information
-                clock_params = _extract_clock_parameters(signal)
-                duty_cycle_max = clock_params["duty_cycle_max"]
-                duty_cycle_min = clock_params["duty_cycle_min"]
-                accuracy_ppm = clock_params["accuracy_ppm"]
-                jitter_ps = clock_params["jitter_ps"]
-                freq_max = clock_params["freq_max"]
-                freq_min = clock_params["freq_min"]
-
-                # And write them to CSV as before
-                writer.writerow(
-                    [
-                        lv_name,
-                        hdl_name,
-                        direction,
-                        signal_type,
-                        data_type,
-                        use_in_scl,
-                        clock_domain,
-                        zero_sync_regs,
-                        output_readback,
-                        duty_cycle_max,
-                        duty_cycle_min,
-                        accuracy_ppm,
-                        jitter_ps,
-                        freq_max,
-                        freq_min,
-                    ]
-                )
-
-        reporter.detail(f"Processed XML file: {input_xml_path}")
-
-    except Exception as e:
-        reporter.error(f"Error processing XML: {str(e)}")
-        if reporter.verbose:
-            traceback.print_exc()
+    reporter.detail(f"Processed XML file: {input_xml_path}")
 
 
 def _process_constraint_file(input_xml_path, output_folder, instance_path):
@@ -311,41 +303,35 @@ def _process_constraint_file(input_xml_path, output_folder, instance_path):
     Returns:
         None
     """
-    try:
-        # Handle potential long paths (Windows path length limitations)
-        long_input_xml_path = common.handle_long_path(input_xml_path)
-        long_output_folder = common.handle_long_path(output_folder)
+    # Handle potential long paths (Windows path length limitations)
+    long_input_xml_path = common.handle_long_path(input_xml_path)
+    long_output_folder = common.handle_long_path(output_folder)
 
-        # Create output directory if needed
-        os.makedirs(os.path.dirname(long_output_folder), exist_ok=True)
+    # Create output directory if needed
+    os.makedirs(os.path.dirname(long_output_folder), exist_ok=True)
 
-        # Extract the original filename
-        file_name = os.path.basename(input_xml_path)
-        clip_output_csv = os.path.join(output_folder, file_name)
-        long_clip_output_csv = common.handle_long_path(clip_output_csv)
+    # Extract the original filename
+    file_name = os.path.basename(input_xml_path)
+    clip_output_csv = os.path.join(output_folder, file_name)
+    long_clip_output_csv = common.handle_long_path(clip_output_csv)
 
-        # Read the input file
-        with open(long_input_xml_path, "r", encoding="utf-8") as infile:
-            content = infile.read()
+    # Read the input file
+    with open(long_input_xml_path, "r", encoding="utf-8") as infile:
+        content = infile.read()
 
-        # Replace all instances of %ClipInstancePath%
-        # This placeholder is used in XDC files to indicate where the CLIP
-        # will be instantiated in the FPGA design hierarchy
-        updated_content = content.replace("%ClipInstancePath%", instance_path)
+    # Replace all instances of %ClipInstancePath%
+    # This placeholder is used in XDC files to indicate where the CLIP
+    # will be instantiated in the FPGA design hierarchy
+    updated_content = content.replace("%ClipInstancePath%", instance_path)
 
-        # Ensure the output directory exists
-        os.makedirs(os.path.dirname(long_clip_output_csv), exist_ok=True)
+    # Ensure the output directory exists
+    os.makedirs(os.path.dirname(long_clip_output_csv), exist_ok=True)
 
-        # Write the updated content to the output file
-        with open(long_clip_output_csv, "w", encoding="utf-8") as outfile:
-            outfile.write(updated_content)
+    # Write the updated content to the output file
+    with open(long_clip_output_csv, "w", encoding="utf-8") as outfile:
+        outfile.write(updated_content)
 
-        reporter.detail(f"Processed XDC file: {file_name}")
-
-    except Exception as e:
-        reporter.error(f"Error processing XDC file {os.path.basename(input_xml_path)}: {str(e)}")
-        if reporter.verbose:
-            traceback.print_exc()
+    reporter.detail(f"Processed XDC file: {file_name}")
 
 
 def _generate_clip_to_window_signals(input_xml_path, output_vhdl_path):
@@ -654,16 +640,30 @@ def migrate_clip(config=None):
     long_input_xml_path = common.handle_long_path(config.clip_input_xml)
 
     # Process XML
-    _generate_board_io_csv_from_clip_xml(long_input_xml_path, config.clip_output_csv)
+    try:
+        _generate_board_io_csv_from_clip_xml(long_input_xml_path, config.clip_output_csv)
+    except Exception as e:
+        reporter.error(f"Error: Failed to generate board IO CSV from CLIP XML: {e}")
+        return 1
 
     # Generate entity instantiation
-    common.generate_hdl_instantiation_example(
-        config.clip_top_hdl, config.clip_inst_example, use_component=False
-    )
+    try:
+        common.generate_hdl_instantiation_example(
+            config.clip_top_hdl, config.clip_inst_example, use_component=False
+        )
+    except Exception as e:
+        reporter.error(f"Error: Failed to generate HDL instantiation example: {e}")
+        return 1
 
     # Process all constraint files
     for xdc_path in config.clip_constraints:
-        _process_constraint_file(xdc_path, config.clip_output_xdc_folder, config.clip_entity_path)
+        try:
+            _process_constraint_file(
+                xdc_path, config.clip_output_xdc_folder, config.clip_entity_path
+            )
+        except Exception as e:
+            reporter.error(f"Error: Failed to process XDC file {os.path.basename(xdc_path)}: {e}")
+            return 1
 
     # Generate CLIP to Window signal definitions
     _, errors = _generate_clip_to_window_signals(

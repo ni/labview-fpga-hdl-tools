@@ -78,7 +78,7 @@ def _validate_ini(config):
 
         if config.vivado_project_folder:
             project_file_path = os.path.join(
-                os.getcwd(), config.vivado_project_folder, f"{config.top_level_entity}.xpr"
+                config.root_dir, config.vivado_project_folder, f"{config.top_level_entity}.xpr"
             )
             invalid_path = common.validate_path(project_file_path, "Vivado project file", "file")
             if invalid_path:
@@ -109,7 +109,7 @@ def _run_check_syntax(config, generated_tcl_path):
     """Run the generated check-syntax TCL script in Vivado batch mode."""
     vivado_abs = common.resolve_vivado_executable_abs(config)
 
-    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_folder)
+    vivado_project_dir = os.path.join(config.root_dir, config.vivado_project_folder)
     log_path = os.path.join(vivado_project_dir, "check_syntax.log")
     journal_path = os.path.join(vivado_project_dir, "check_syntax.jou")
 
@@ -187,7 +187,7 @@ def check_syntax(config=None):
         reporter.error(f"Error: {e}")
         return 1
 
-    generated_tcl_path = os.path.join(os.getcwd(), "objects", "TCL", "CheckSyntax.tcl")
+    generated_tcl_path = os.path.join(config.root_dir, "objects", "TCL", "CheckSyntax.tcl")
 
     try:
         _generate_check_syntax_tcl(config, generated_tcl_path)

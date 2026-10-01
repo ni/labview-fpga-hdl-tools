@@ -67,7 +67,7 @@ def _validate_ini(config):
 
         if config.vivado_project_folder:
             project_file_path = os.path.join(
-                os.getcwd(), config.vivado_project_folder, f"{config.top_level_entity}.xpr"
+                config.root_dir, config.vivado_project_folder, f"{config.top_level_entity}.xpr"
             )
             invalid_path = common.validate_path(project_file_path, "Vivado project file", "file")
             if invalid_path:
@@ -103,8 +103,7 @@ def _run_compile_project(config, generated_tcl_path):
     """Run the generated compile-project TCL script in Vivado batch mode."""
     vivado_abs = common.resolve_vivado_executable_abs(config)
 
-    current_dir = os.getcwd()
-    vivado_project_dir = os.path.join(current_dir, config.vivado_project_folder)
+    vivado_project_dir = os.path.join(config.root_dir, config.vivado_project_folder)
     log_path = os.path.join(vivado_project_dir, "compile_project.log")
     journal_path = os.path.join(vivado_project_dir, "compile_project.jou")
 
@@ -162,8 +161,7 @@ def _run_compile_project(config, generated_tcl_path):
 
 def _compile_project(config):
     """Generate CompileProject TCL script and run Vivado in batch mode."""
-    current_dir = os.getcwd()
-    generated_tcl_path = os.path.join(current_dir, "objects", "TCL", "CompileProject.tcl")
+    generated_tcl_path = os.path.join(config.root_dir, "objects", "TCL", "CompileProject.tcl")
 
     _generate_compile_project_tcl(config, generated_tcl_path)
 

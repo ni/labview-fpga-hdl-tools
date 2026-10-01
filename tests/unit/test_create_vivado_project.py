@@ -66,22 +66,22 @@ class TestGetTclSetVhdl2008FilesText:
 class TestFindAndLogDuplicates:
     """Tests for _find_and_log_duplicates() deduplication and conflict detection."""
 
-    def test_given_unique_files__when_checked__then_list_returned(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
+    def test_given_unique_files__when_checked__then_list_returned(self, tmp_path):
         file_list = ["dir1/a.vhd", "dir2/b.vhd"]
-        assert create_vivado_project._find_and_log_duplicates(file_list) == file_list
+        assert create_vivado_project._find_and_log_duplicates(file_list, str(tmp_path)) == file_list
 
-    def test_given_identical_paths__when_checked__then_collapsed(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        result = create_vivado_project._find_and_log_duplicates(["dir/a.vhd", "dir/a.vhd"])
+    def test_given_identical_paths__when_checked__then_collapsed(self, tmp_path):
+        result = create_vivado_project._find_and_log_duplicates(
+            ["dir/a.vhd", "dir/a.vhd"], str(tmp_path)
+        )
         assert result == ["dir/a.vhd"]
 
-    def test_given_same_name_different_paths__when_checked__then_raises(
-        self, tmp_path, monkeypatch
-    ):
-        monkeypatch.chdir(tmp_path)
+    def test_given_same_name_different_paths__when_checked__then_raises(self, tmp_path):
         with pytest.raises(ValueError):
-            create_vivado_project._find_and_log_duplicates(["dir1/x.vhd", "dir2/x.vhd"])
+            create_vivado_project._find_and_log_duplicates(
+                ["dir1/x.vhd", "dir2/x.vhd"], str(tmp_path)
+            )
+        assert (tmp_path / "duplicate_files.log").exists()
 
 
 class TestOverrideLvWindowFiles:

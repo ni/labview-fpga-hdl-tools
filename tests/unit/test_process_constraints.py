@@ -52,16 +52,14 @@ class TestProcessLvTargetConstraintsTemplate:
     def _make_config(self, tmp_path, template_body, custom=None, wrapper=None):
         template = tmp_path / "constraints.xdc_template"
         template.write_text(template_body)
-        config = CommandConfiguration()
+        config = CommandConfiguration(root_dir=str(tmp_path))
         config.constraints_template = str(template)
         for order, path in custom or []:
             config.custom_constraints[order] = str(path)
         config.entity_path_to_window_wrapper = wrapper
         return config
 
-    def test_given_github_macro__when_processed__then_custom_substituted(
-        self, tmp_path, monkeypatch
-    ):
+    def test_given_github_macro__when_processed__then_custom_substituted(self, tmp_path):
         custom_file = tmp_path / "custom.xdc"
         custom_file.write_text("set_property PACKAGE_PIN A1 [get_ports clk]")
         config = self._make_config(
@@ -69,7 +67,6 @@ class TestProcessLvTargetConstraintsTemplate:
             f"# Header\n{self._GITHUB_MACRO}\n# Footer\n",
             custom=[(1, custom_file)],
         )
-        monkeypatch.chdir(tmp_path)
 
         process_lv_target_constraints_template(config)
 
@@ -79,16 +76,13 @@ class TestProcessLvTargetConstraintsTemplate:
         assert "# Header" in result
         assert "# Footer" in result
 
-    def test_given_period_and_clip_macros__when_processed__then_left_intact(
-        self, tmp_path, monkeypatch
-    ):
+    def test_given_period_and_clip_macros__when_processed__then_left_intact(self, tmp_path):
         body = (
             "#LabVIEWFPGA_Macro macro_periodConstraints\n"
             "#LabVIEWFPGA_Macro macro_ClipConstraints\n"
             f"{self._GITHUB_MACRO}\n"
         )
         config = self._make_config(tmp_path, body)
-        monkeypatch.chdir(tmp_path)
 
         process_lv_target_constraints_template(config)
 
@@ -97,11 +91,10 @@ class TestProcessLvTargetConstraintsTemplate:
         assert "macro_ClipConstraints" in result
 
     def test_given_from_to_block_and_wrapper__when_processed__then_wrapped_outside_markers(
-        self, tmp_path, monkeypatch
+        self, tmp_path
     ):
         body = f"{self._FROM_TO_BLOCK}{self._GITHUB_MACRO}\n"
         config = self._make_config(tmp_path, body, wrapper="TheLvWindowWrapper")
-        monkeypatch.chdir(tmp_path)
 
         process_lv_target_constraints_template(config)
 
@@ -121,12 +114,9 @@ class TestProcessLvTargetConstraintsTemplate:
         # The markers and macro token are preserved for LabVIEW FPGA to replace later.
         assert self._FROM_TO_MACRO in result
 
-    def test_given_no_wrapper__when_processed__then_from_to_block_unwrapped(
-        self, tmp_path, monkeypatch
-    ):
+    def test_given_no_wrapper__when_processed__then_from_to_block_unwrapped(self, tmp_path):
         body = f"{self._FROM_TO_BLOCK}{self._GITHUB_MACRO}\n"
         config = self._make_config(tmp_path, body, wrapper=None)
-        monkeypatch.chdir(tmp_path)
 
         process_lv_target_constraints_template(config)
 
@@ -135,26 +125,23 @@ class TestProcessLvTargetConstraintsTemplate:
         assert self._FROM_TO_MACRO in result
 
     def test_given_template_suffix__when_processed__then_output_name_strips_template(
-        self, tmp_path, monkeypatch
+        self, tmp_path
     ):
         config = self._make_config(tmp_path, f"{self._GITHUB_MACRO}\n")
-        monkeypatch.chdir(tmp_path)
 
         process_lv_target_constraints_template(config)
 
         assert self._output_path(tmp_path).exists()
 
-    def test_given_missing_github_macro__when_processed__then_raises(self, tmp_path, monkeypatch):
+    def test_given_missing_github_macro__when_processed__then_raises(self, tmp_path):
         config = self._make_config(tmp_path, "# no macros here\n")
-        monkeypatch.chdir(tmp_path)
 
         with pytest.raises(ValueError):
             process_lv_target_constraints_template(config)
 
-    def test_given_no_template__when_processed__then_no_output_written(self, tmp_path, monkeypatch):
-        config = CommandConfiguration()
+    def test_given_no_template__when_processed__then_no_output_written(self, tmp_path):
+        config = CommandConfiguration(root_dir=str(tmp_path))
         config.constraints_template = None
-        monkeypatch.chdir(tmp_path)
 
         process_lv_target_constraints_template(config)
 
@@ -198,7 +185,7 @@ class TestProcessConstraintsTemplateVivadoFlow:
         (window_folder / "TheWindowConstraints.xdc").write_text(window_file_text)
         template = tmp_path / "constraints.xdc"
         template.write_text(self._TEMPLATE)
-        config = CommandConfiguration()
+        config = CommandConfiguration(root_dir=str(tmp_path))
         config.lv_window_netlist_folder = str(window_folder)
         config.constraints_template = str(template)
         config.entity_path_to_window_wrapper = "TheLvWindowWrapper"
@@ -208,13 +195,10 @@ class TestProcessConstraintsTemplateVivadoFlow:
     def _output(tmp_path):
         return (tmp_path / "objects" / "xdc" / "constraints.xdc").read_text()
 
-    def test_given_pristine_from_to__when_processed__then_single_vivado_wrap(
-        self, tmp_path, monkeypatch
-    ):
+    def test_given_pristine_from_to__when_processed__then_single_vivado_wrap(self, tmp_path):
         config = self._make_config(
             tmp_path, self._window_constraints("set_max_delay 5 -from A -to B\n")
         )
-        monkeypatch.chdir(tmp_path)
 
         process_constraints_template(config)
 
@@ -223,7 +207,7 @@ class TestProcessConstraintsTemplateVivadoFlow:
         assert "set_max_delay 5 -from A -to B" in result
 
     def test_given_from_to_with_stray_outer_wrap__when_processed__then_not_duplicated(
-        self, tmp_path, monkeypatch
+        self, tmp_path
     ):
         # Simulate a constraints file that round-tripped through the LabVIEW FPGA target
         # flow: its save/restore sits OUTSIDE the FROM_TO markers, so gen-window copied it
@@ -243,7 +227,6 @@ class TestProcessConstraintsTemplateVivadoFlow:
             "current_instance $TopInstanceLvTargetFromTo\n"
         )
         config = self._make_config(tmp_path, window_text)
-        monkeypatch.chdir(tmp_path)
 
         process_constraints_template(config)
 

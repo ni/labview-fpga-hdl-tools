@@ -6,7 +6,6 @@
 #
 import os  # For file and directory operations
 import shutil  # For file copying and directory removal
-import sys  # For command-line arguments and error handling
 
 from labview_fpga_hdl_tools import common  # For shared utilities across tools
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
@@ -26,8 +25,15 @@ def _is_admin():
         return False
 
 
-def _run_as_admin():
+def _run_as_admin(working_dir):
     """Re-launch the command with administrator privileges.
+
+    On success the current process exits so the elevated instance owns the
+    install. Returns only if elevation could not be started (error reported).
+
+    Args:
+        working_dir (str): Directory nihdl was invoked from; the elevated child
+            starts there so it resolves the same nihdlsettings.py.
 
     Security notes:
     - Elevation spawns a *separate* short-lived process via UAC; the elevated
@@ -46,8 +52,8 @@ def _run_as_admin():
       context, allowing an attacker-planted binary to run as admin
       (CWE-426/CWE-427, untrusted search path).
     - The elevated child is launched with its working directory pinned to the
-      current working directory so it discovers the same ``nihdlsettings.py``
-      the user invoked against (config is resolved relative to the cwd).
+      invocation directory so it discovers the same ``nihdlsettings.py``
+      the user invoked against (config is resolved relative to that directory).
     """
     import ctypes
     import subprocess
@@ -55,7 +61,7 @@ def _run_as_admin():
 
     # Skip on non-Windows platforms
     if sys.platform != "win32":
-        reporter.detail("Admin elevation only supported on Windows")
+        reporter.error("Error: Admin elevation only supported on Windows")
         return
 
     # Re-launch via the real interpreter running the package as a module. This
@@ -63,10 +69,6 @@ def _run_as_admin():
     # robust across launchers (venv exe, pyenv shim, editable install).
     command = os.path.abspath(sys.executable)
     arguments = subprocess.list2cmdline(["-m", "labview_fpga_hdl_tools", *sys.argv[1:]])
-
-    # Pin the elevated child's working directory to the current directory so it
-    # finds the same nihdlsettings.py the user invoked against.
-    working_dir = os.getcwd()
 
     reporter.detail("Requesting administrator privileges...")
 
@@ -78,10 +80,12 @@ def _run_as_admin():
     # Check if the elevation was successful
     if result <= 32:  # Error codes are 32 or below
         reporter.error(f"Error elevating privileges. Error code: {result}")
-        sys.exit(1)
+        return
 
     # The original (non-elevated) process exits after launching the elevated
-    # one, so no admin privileges are held by a lingering process.
+    # one, so no admin privileges are held by a lingering process. This must be
+    # a hard exit: returning would let the CLI run post-hooks in this process
+    # while the elevated child is still installing.
     reporter.detail("Elevated process launched. This process will now exit.")
     sys.exit(0)
 
@@ -186,8 +190,10 @@ def install_lv_target_support(config=None):
             "administrator rights. Approve the Windows UAC prompt; the install "
             "completes in a separate elevated window."
         )
-        _run_as_admin()
-        return  # Exit current instance as the elevated instance will continue
+        # On success this exits the process (the elevated instance continues);
+        # it only returns if elevation could not be started.
+        _run_as_admin(config.root_dir)
+        return 1
 
     reporter.detail(f"Installing LabVIEW Target '{config.lv_target_name}' files...")
     reporter.detail(f"From: {config.lv_target_plugin_output_folder}")
@@ -235,10 +241,12 @@ def install_lv_target_support(config=None):
     except PermissionError:
         reporter.error("Error: Permission denied. Administrator privileges are required.")
         reporter.error("Try running this script as Administrator.")
-        sys.exit(1)
+        return 1
     except Exception as e:
         reporter.error(f"Error during installation: {e}")
-        sys.exit(1)
+        return 1
+
+    return 0
 
 
 def main():

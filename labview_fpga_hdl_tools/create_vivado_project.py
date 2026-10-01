@@ -164,7 +164,7 @@ def _render_project_template(
     )
 
 
-def _find_and_log_duplicates(file_list):
+def _find_and_log_duplicates(file_list, root_dir):
     """Finds duplicate file names in the file list and logs their full paths to a file.
 
     Duplicate files can cause compilation issues in Vivado projects, as the tool may
@@ -184,6 +184,7 @@ def _find_and_log_duplicates(file_list):
 
     Args:
         file_list (list): List of file paths to check
+        root_dir (str): Folder where duplicate_files.log is written
 
     Returns:
         list: Deduplicated file list with identical paths collapsed
@@ -214,7 +215,7 @@ def _find_and_log_duplicates(file_list):
             duplicates_found = True
             break
 
-    output_file_path = os.path.join(os.getcwd(), "duplicate_files.log")
+    output_file_path = os.path.join(root_dir, "duplicate_files.log")
 
     # Delete any existing log file
     if os.path.exists(output_file_path):
@@ -234,7 +235,7 @@ def _find_and_log_duplicates(file_list):
     return unique_file_list
 
 
-def _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir):
+def _copy_long_path_files(file_list, root_dir, vivado_project_dir, tcl_base_dir):
     """Copies files that would exceed Vivado's path limit into "objects/gatheredfiles".
 
     Vivado does not use a source file's absolute path to decide whether it can open
@@ -250,6 +251,7 @@ def _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir):
 
     Args:
         file_list (list): Original list of file paths
+        root_dir (str): Folder that holds objects/gatheredfiles
         vivado_project_dir (str): Absolute path of the Vivado project folder, which
             Vivado uses as its working directory when the generated TCL runs
         tcl_base_dir (str): Folder that the add_files paths are made relative to
@@ -260,7 +262,7 @@ def _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir):
     Raises:
         IOError: If any file copy operation fails
     """
-    target_folder = os.path.join(os.getcwd(), "objects/gatheredfiles")
+    target_folder = os.path.join(root_dir, "objects", "gatheredfiles")
     os.makedirs(target_folder, exist_ok=True)
 
     new_file_list = []
@@ -582,15 +584,15 @@ def _create_project(mode: ProjectMode, config):
         ValueError: If an unsupported mode is specified
         FileNotFoundError: If any required files are missing
     """
-    current_dir = os.getcwd()
+    root_dir = config.root_dir
     new_proj_template_path = os.path.join(
         config.vivado_tcl_scripts_folder, "CreateNewProject.tcl.mako"
     )
-    new_proj_path = os.path.join(current_dir, "objects/TCL/CreateNewProject.tcl")
+    new_proj_path = os.path.join(root_dir, "objects/TCL/CreateNewProject.tcl")
     update_proj_template_path = os.path.join(
         config.vivado_tcl_scripts_folder, "UpdateProjectFiles.tcl.mako"
     )
-    update_proj_path = os.path.join(current_dir, "objects/TCL/UpdateProjectFiles.tcl")
+    update_proj_path = os.path.join(root_dir, "objects/TCL/UpdateProjectFiles.tcl")
 
     # Get the lists of Vivado project files from the configuration
     file_list = common.get_vivado_project_files(config.hdl_file_lists)
@@ -615,10 +617,12 @@ def _create_project(mode: ProjectMode, config):
     # Returns the file list with the files from old long path locations having
     # new locations in gatheredfiles. The Vivado project folder and TCL folder are
     # needed to reproduce the exact path length Vivado resolves at add_files time.
-    tcl_base_dir = os.path.join(current_dir, "TCL")
-    vivado_project_dir = os.path.join(current_dir, config.vivado_project_folder)
-    file_list = _copy_long_path_files(file_list, vivado_project_dir, tcl_base_dir)
-    vhdl2008_file_list = _copy_long_path_files(vhdl2008_file_list, vivado_project_dir, tcl_base_dir)
+    tcl_base_dir = os.path.join(root_dir, "TCL")
+    vivado_project_dir = os.path.join(root_dir, config.vivado_project_folder)
+    file_list = _copy_long_path_files(file_list, root_dir, vivado_project_dir, tcl_base_dir)
+    vhdl2008_file_list = _copy_long_path_files(
+        vhdl2008_file_list, root_dir, vivado_project_dir, tcl_base_dir
+    )
 
     # Override default LV generated files with extracted window files
     if config.lv_window_netlist_folder:
@@ -628,12 +632,10 @@ def _create_project(mode: ProjectMode, config):
     combined_file_list = file_list + vhdl2008_file_list
 
     # Check for duplicate file names and log them; collapse identical paths
-    combined_file_list = _find_and_log_duplicates(combined_file_list)
+    combined_file_list = _find_and_log_duplicates(combined_file_list, root_dir)
 
-    add_files = _get_tcl_add_files_text(combined_file_list, os.path.join(current_dir, "TCL"))
-    set_vhdl2008_files = _get_tcl_set_vhdl2008_files_text(
-        vhdl2008_file_list, os.path.join(current_dir, "TCL")
-    )
+    add_files = _get_tcl_add_files_text(combined_file_list, tcl_base_dir)
+    set_vhdl2008_files = _get_tcl_set_vhdl2008_files_text(vhdl2008_file_list, tcl_base_dir)
 
     # Get settings from VivadoProjectSettings section
     project_name = config.top_level_entity
@@ -672,15 +674,9 @@ def _create_project(mode: ProjectMode, config):
 
     vivado_abs = os.path.abspath(vivado_executable)
 
-    vivado_project_path = os.path.join(os.getcwd(), config.vivado_project_folder)
-    if not os.path.exists(vivado_project_path):
-        os.makedirs(vivado_project_path)
+    os.makedirs(vivado_project_dir, exist_ok=True)
 
-    # Vivado expects to be run from within the project directory
-    os.chdir(config.vivado_project_folder)
-
-    # Check if the project file exists
-    project_file_path = os.path.join(os.getcwd(), project_name + ".xpr")
+    project_file_path = os.path.join(vivado_project_dir, project_name + ".xpr")
     reporter.detail(f"Project file path: {project_file_path}")
 
     reporter.detail(f"Vivado executable absolute path: {vivado_abs}")
@@ -713,19 +709,19 @@ def _create_project(mode: ProjectMode, config):
     if config.skip_vivado:
         reporter.detail("SKIP VIVADO: Validation successful, skipping Vivado launch")
         # Create an empty project file for testing
-        mock_project_path = os.path.join(vivado_project_path, f"{project_name}.xpr")
-        with open(mock_project_path, "w") as f:
+        with open(project_file_path, "w") as f:
             f.write("# Mock Vivado project file created for testing\n")
-        reporter.detail(f"Created mock project file: {mock_project_path}")
+        reporter.detail(f"Created mock project file: {project_file_path}")
         return 0
 
     try:
         # Stream Vivado output live (capture_output=False) so the user sees
         # progress during the slow compile and so the failure message below
-        # actually has output "above" to point at.
+        # actually has output "above" to point at. Vivado expects to be run from
+        # within the project directory.
         common.run_command(
             command,
-            cwd=os.getcwd(),
+            cwd=vivado_project_dir,
             capture_output=False,
             check=True,
         )
@@ -735,10 +731,6 @@ def _create_project(mode: ProjectMode, config):
             f"Vivado exited with a non-zero status ({e.returncode}) while {action} the "
             f"project. Review the Vivado output above and vivado.log for details."
         ) from e
-    finally:
-        # Always restore the working directory, even if Vivado raised, so later
-        # relative-path resolution in the same run is not corrupted.
-        os.chdir(current_dir)
 
 
 def _create_project_handler(config, overwrite=False, update=False):
@@ -768,7 +760,7 @@ def _create_project_handler(config, overwrite=False, update=False):
     """
     # Get project file path from VivadoProjectSettings section
     project_file_path = os.path.join(
-        os.getcwd(), config.vivado_project_folder, f"{config.top_level_entity}.xpr"
+        config.root_dir, config.vivado_project_folder, f"{config.top_level_entity}.xpr"
     )
     reporter.detail(f"Project file path: {project_file_path}")
 
@@ -818,7 +810,7 @@ def create_project(overwrite=False, update=False, config=None):
     if result == 0:
         reporter.success("Vivado project created successfully.")
     else:
-        reporter.success("Vivado project creation FAILED.")
+        reporter.error("Vivado project creation FAILED.")
 
     return result
 
@@ -844,7 +836,11 @@ def _run_create_project_steps(overwrite, update, config):
         return 1
 
     # Process the xdc_template to ensure that we have one for the Vivado project
-    process_constraints.process_constraints_template(config)
+    try:
+        process_constraints.process_constraints_template(config)
+    except Exception as e:
+        reporter.error(f"Error: {e}")
+        return 1
 
     # Validate that all constraints files exist - do this after processing the templates
     try:

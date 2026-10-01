@@ -61,7 +61,9 @@ def launch_vivado(config=None):
         return 1
 
     # Change to the VivadoProject directory
-    vivado_project_dir = os.path.join(os.getcwd(), config.vivado_project_folder or "")
+    if not config.vivado_project_folder:
+        raise ValueError("VivadoProjectFolder setting is missing from configuration")
+    vivado_project_dir = os.path.join(config.root_dir, config.vivado_project_folder)
 
     # Check vivado_tools_folder before using
     if not config.vivado_tools_folder:

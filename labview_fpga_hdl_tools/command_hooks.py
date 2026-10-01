@@ -44,7 +44,7 @@ class CommandContext:
         self.command_name = command_name
         self.command_kwargs = dict(command_kwargs)
         self.result = None
-        self.invocation_dir = os.getcwd()
+        self.invocation_dir = self.config.root_dir
         self.settings = dict(settings_args or {})
 
 
@@ -162,16 +162,17 @@ def run_with_hooks(
     # reflects only this invocation (matters when commands chain in-process).
     reporter.reset()
 
-    # Resolve the config module path
-    if command_config_path is None:
-        command_config_path = os.path.join(os.getcwd(), "nihdlsettings.py")
-
     # Build context
     context = CommandContext(command_name, command_kwargs, settings_args=settings_args)
 
+    # Resolve the config module path
+    command_config_path = os.path.normpath(
+        os.path.join(context.invocation_dir, command_config_path or "nihdlsettings.py")
+    )
+
     # All hooks run from the settings file's directory so relative paths
     # passed to setters resolve correctly.
-    config_dir = os.path.dirname(os.path.abspath(command_config_path))
+    config_dir = os.path.dirname(command_config_path)
     original_dir = os.getcwd()
     # Path setters resolve relative paths against the config's base_dir, so config
     # resolution no longer depends on the process working directory. The chdir
