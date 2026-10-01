@@ -89,6 +89,19 @@ A complete default template is provided at
 `labview_fpga_hdl_tools/nihdlsettings_default.py`. Copy it to your target folder
 as `nihdlsettings.py` and customize as needed.
 
+## Choosing a Vivado Version
+
+`set_vivado_tools_folder(...)` can point at either:
+
+- **The Vivado that ships with the LabVIEW FPGA compile tools** (recommended). That Vivado
+  version is tied to the LabVIEW FPGA release — for example, LabVIEW FPGA 2026 uses the
+  Vivado 2021.1 compile tools, installed at `C:/NIFPGA/programs/Vivado2021_1`.
+- **Your own Vivado install**, at any version you like.
+
+> **Tested versions.** The NI custom FPGA device examples and the LabVIEW FPGA HDL Tools are
+> only tested with the Vivado versions that ship with official LabVIEW FPGA releases. Other
+> Vivado versions may work, but they are not tested or supported.
+
 ## Per-Command Overrides
 
 Use per-command hooks to override settings for specific commands:
@@ -154,7 +167,7 @@ def pre_all(context):
 
 | Setter | Description |
 | --- | --- |
-| `set_vivado_tools_folder(value)` | Vivado installation root containing bin/vivado(.bat). |
+| `set_vivado_tools_folder(value)` | Vivado installation root containing bin/vivado(.bat). Either the Vivado from the LabVIEW FPGA compile tools or your own install — see [Choosing a Vivado Version](#choosing-a-vivado-version). |
 | `set_vivado_tcl_scripts_folder(value)` | Folder with Vivado TCL Mako templates/scripts. |
 | `set_modelsim_tools_folder(value)` | ModelSim installation root directory. |
 | `set_xilinx_sim_lib_folder(value)` | Pre-compiled Xilinx simulation libraries path. Output of compile-modelsim-lib and input to gen-modelsim. |

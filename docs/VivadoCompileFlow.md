@@ -35,7 +35,7 @@ Configure these in the target's `nihdlsettings.py` (see the
 
 | Setter | Purpose |
 | --- | --- |
-| `set_vivado_tools_folder(path)` | Vivado install root (contains `bin/vivado`). |
+| `set_vivado_tools_folder(path)` | Vivado install root (contains `bin/vivado`). Use the Vivado from the LabVIEW FPGA compile tools (the tested version) or your own install — see [Choosing a Vivado Version](SettingsReference.md#choosing-a-vivado-version). |
 | `set_vivado_tcl_scripts_folder(path)` | Folder of Vivado TCL Mako templates the tools drive. |
 | `set_vivado_top_entity(name)` | Top-level entity/module (for example `MacallanTop`). |
 | `set_fpga_part(value)` | FPGA part string (for example `xcku040-ffva1156-2-e`). |
