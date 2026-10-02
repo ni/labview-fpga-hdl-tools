@@ -25,7 +25,18 @@ class TestCloneRepoRejectsUnsafeNames:
     """Repo names that would resolve outside deps/ must fail before anything is deleted."""
 
     @pytest.mark.parametrize(
-        "repo", ["owner/..", "owner/.", "owner/", "owner", "owner\\..", "a/b/c", "../.."]
+        "repo",
+        [
+            "owner/..",
+            "owner/.",
+            "owner/",
+            "owner",
+            "owner\\..",
+            "a/b/c",
+            "../..",
+            "../repo",
+            "./repo",
+        ],
     )
     def test_given_unsafe_repo__when_cloning_with_delete__then_fails_without_deleting(
         self, tmp_path, repo
@@ -34,12 +45,16 @@ class TestCloneRepoRejectsUnsafeNames:
         deps_dir.mkdir()
         keep = deps_dir / "keep.txt"
         keep.write_text("keep")
+        existing_dep = deps_dir / "repo" / "keep.txt"
+        existing_dep.parent.mkdir()
+        existing_dep.write_text("keep")
 
         # A bare tag skips the network tag lookup and goes straight to the delete step
         result = _clone_repo_at_tag(repo, "v1.0.0", deps_dir, delete_allowed=True)
 
         assert result is False
         assert keep.exists()
+        assert existing_dep.exists()
 
 
 class TestParseDependency:

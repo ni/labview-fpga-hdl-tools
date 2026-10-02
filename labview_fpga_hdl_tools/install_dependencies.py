@@ -313,8 +313,8 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
     # Normalize repo path (handle both / and \)
     repo = repo.replace("\\", "/")
     # repo_name becomes a folder under base_dir that may be rmtree'd, so reject
-    # anything that isn't a plain owner/name (e.g. "owner/.." or "owner/")
-    if not _REPO_PATTERN.fullmatch(repo) or repo.split("/")[-1] in (".", ".."):
+    # anything that isn't a plain owner/name (e.g. "owner/..", "../repo", "owner/")
+    if not _REPO_PATTERN.fullmatch(repo) or any(part in (".", "..") for part in repo.split("/")):
         reporter.error(f"  [FAIL] Invalid repository name '{repo}'; expected 'owner/repo'")
         return False
     repo_name = repo.split("/")[-1]
