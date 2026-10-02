@@ -227,6 +227,26 @@ def _create_clocklist_structure():
     return clock_list_top
 
 
+def _normalize_clock_domain_name(clock_domain_name):
+    """Return the canonical LabVIEW clock-domain name used in generated XML.
+
+    LabVIEW FPGA resource and clock names use dot-separated paths. CSV LVName
+    values use backslashes for hierarchy, so any hierarchical clock-domain
+    reference must be normalized before it is written to XML or compared to a
+    clock row defined elsewhere in the CSV.
+    """
+    return clock_domain_name.strip().replace("\\", ".")
+
+
+def _collect_defined_input_clock_domains(rows):
+    """Collect canonical clock-domain names defined by input clock rows."""
+    return {
+        _normalize_clock_domain_name(row["LVName"])
+        for row in rows
+        if row["SignalType"].lower() == "clock" and row["Direction"].lower() == "input"
+    }
+
+
 def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
     """Generate boardio XML and clock XML files from CSV data.
 
@@ -254,9 +274,10 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
 
         with open(csv_path, "r", newline="", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
+            rows = list(reader)
+            defined_input_clock_domains = _collect_defined_input_clock_domains(rows)
 
-            for row in reader:
-                row_count += 1
+            for row_count, row in enumerate(rows, start=1):
                 lv_name = row["LVName"]
                 hdl_name = row["HDLName"]
                 direction = row["Direction"]
@@ -266,6 +287,11 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                 zero_sync_regs = row["ZeroSyncRegs"]
                 output_readback = row["OutputReadback"]
                 required_clock_domain = row["RequiredClockDomain"]
+                normalized_required_clock_domain = (
+                    _normalize_clock_domain_name(required_clock_domain)
+                    if required_clock_domain
+                    else ""
+                )
 
                 # Replace the '\' in the names with '.' to create a dot-separated hierarchy
                 # that is used to make a resource folder hierarchy in the BoardIO XML.  The
@@ -317,9 +343,22 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                     )
                     ET.SubElement(io_resource, "VHDLName").text = hdl_name
 
-                    if required_clock_domain:
+                    if normalized_required_clock_domain:
+                        if (
+                            normalized_required_clock_domain not in defined_input_clock_domains
+                            and ("." in required_clock_domain or "\\" in required_clock_domain)
+                        ):
+                            valid_clock_domains = ", ".join(sorted(defined_input_clock_domains))
+                            error = (
+                                f"Row {row_count}: RequiredClockDomain='"
+                                f"{required_clock_domain}' for signal '{lv_name}' does not match "
+                                f"any input clock LVName defined in this CSV after the '\\' to '.' "
+                                f"name conversion. Use one of: {valid_clock_domains}"
+                            )
+                            validation_errors.append(error)
+
                         ET.SubElement(io_resource, "RequiredClockDomain").text = (
-                            required_clock_domain
+                            normalized_required_clock_domain
                         )
 
                     if use_in_scl:
@@ -408,8 +447,9 @@ def _generate_xml_from_csv(csv_path, boardio_output_path, clock_output_path):
                                         "true" if "Unsigned" in data_type else "false",
                                     )
                                 except Exception as e:
-                                    reporter.error(
-                                        f"Error parsing FXP parameters for {lv_name}: {e}"
+                                    validation_errors.append(
+                                        f"Row {row_count}: Error parsing FXP parameters "
+                                        f"for {lv_name}: {e}"
                                     )
                     else:
                         # Add validation error for invalid signal type
@@ -670,8 +710,8 @@ def _copy_targetinfo_ini(plugin_folder, targetinfo_path):
         try:
             shutil.copy2(targetinfo_src, targetinfo_dst)
             reporter.detail(f"Copied TargetInfo.ini to {plugin_folder}")
-        except Exception as e:
-            reporter.error(f"Error copying TargetInfo.ini: {e}")
+        except OSError as e:
+            raise RuntimeError(f"Failed to copy TargetInfo.ini: {e}") from e
     else:
         reporter.warn("Warning: Could not resolve path to TargetInfo.ini")
 
@@ -744,6 +784,17 @@ def _validate_ini(config):
             if invalid_path:
                 invalid_paths.append(invalid_path)
 
+    # gen-target rmtree's the output folder, so it must not contain the settings or cwd
+    output_folder = config.lv_target_plugin_output_folder
+    if output_folder:
+        protected_dirs = [config.root_dir] + ([config.base_dir] if config.base_dir else [])
+        if any(common.is_same_or_parent_dir(output_folder, d) for d in protected_dirs):
+            invalid_paths.append(
+                f"LVFPGATargetSettings.LVTargetPluginOutputFolder - must not be the current "
+                f"directory, the nihdlsettings.py directory, or a parent of either: "
+                f"{output_folder}"
+            )
+
     error = common.build_settings_error(missing_settings, invalid_paths)
     if error:
         raise ValueError(error)
@@ -776,62 +827,67 @@ def gen_lv_target_support(config=None):
         reporter.error(f"Error: {e}")
         return 1
 
-    # Clean fpga plugins folder
-    if config.lv_target_plugin_output_folder:
-        shutil.rmtree(config.lv_target_plugin_output_folder, ignore_errors=True)
+    try:
+        # Clean fpga plugins folder
+        if config.lv_target_plugin_output_folder:
+            shutil.rmtree(config.lv_target_plugin_output_folder, ignore_errors=True)
 
-    # Only generate custom IO files if the plugin is configured to include them
-    if config.include_custom_io_on_lv_window:
-        errors = _generate_xml_from_csv(
-            config.custom_io_csv, config.boardio_output, config.clock_output
-        )
-        if errors:
-            has_validation_errors = True
-            validation_errors.extend(errors)
+        # Only generate custom IO files if the plugin is configured to include them
+        if config.include_custom_io_on_lv_window:
+            errors = _generate_xml_from_csv(
+                config.custom_io_csv, config.boardio_output, config.clock_output
+            )
+            if errors:
+                has_validation_errors = True
+                validation_errors.extend(errors)
 
-    generate_vhdl._render_generated_vhdl(
-        config.generated_vhdl_templates,
-        config.generated_vhdl_output_folder,
-        generate_vhdl._build_generated_vhdl_context(config),
-    )
-
-    # Always generate the board IO signal assignments example in the generated VHDL output folder
-    if config.generated_vhdl_output_folder:
-        board_io_example_path = os.path.join(
-            config.generated_vhdl_output_folder, "BoardIOSignalAssignmentsExample.vhd"
-        )
-        generate_vhdl._generate_board_io_signal_assignments_example(
-            config.custom_io_csv, board_io_example_path
+        generate_vhdl._render_generated_vhdl(
+            config.generated_vhdl_templates,
+            config.generated_vhdl_output_folder,
+            generate_vhdl._build_generated_vhdl_context(config),
         )
 
-    register_space_warnings, register_space_errors = _generate_target_xml(
-        config.lv_target_xml_templates,
-        config.lv_target_plugin_output_folder,
-        config.include_board_io_on_lv_window,
-        config.include_custom_io_on_lv_window,
-        config.boardio_output,
-        config.clock_output,
-        config.lv_target_name,
-        config.lv_target_guid,
-        config.max_hdl_reg_offset,
-        config.num_hdl_fifos,
-        generate_vhdl._get_num_fixed_logic_dma_streams(config.target_family),
-        config.entity_path_to_window,
-        config.entity_path_to_window_wrapper,
-    )
+        # Always generate the board IO signal assignments example in the generated VHDL
+        # output folder
+        if config.generated_vhdl_output_folder:
+            board_io_example_path = os.path.join(
+                config.generated_vhdl_output_folder, "BoardIOSignalAssignmentsExample.vhd"
+            )
+            generate_vhdl._generate_board_io_signal_assignments_example(
+                config.custom_io_csv, board_io_example_path
+            )
 
-    _copy_fpgafiles(
-        config.hdl_file_lists,
-        config.lv_target_constraints,
-        config.lv_target_plugin_output_folder,
-        config.target_family,
-        config.base_target,
-        config.lv_target_exclude_files,
-    )
+        register_space_warnings, register_space_errors = _generate_target_xml(
+            config.lv_target_xml_templates,
+            config.lv_target_plugin_output_folder,
+            config.include_board_io_on_lv_window,
+            config.include_custom_io_on_lv_window,
+            config.boardio_output,
+            config.clock_output,
+            config.lv_target_name,
+            config.lv_target_guid,
+            config.max_hdl_reg_offset,
+            config.num_hdl_fifos,
+            generate_vhdl._get_num_fixed_logic_dma_streams(config.target_family),
+            config.entity_path_to_window,
+            config.entity_path_to_window_wrapper,
+        )
 
-    _copy_menu_files(config.lv_target_plugin_output_folder, config.lv_target_menus_folder)
+        _copy_fpgafiles(
+            config.hdl_file_lists,
+            config.lv_target_constraints,
+            config.lv_target_plugin_output_folder,
+            config.target_family,
+            config.base_target,
+            config.lv_target_exclude_files,
+        )
 
-    _copy_targetinfo_ini(config.lv_target_plugin_output_folder, config.lv_target_info_ini)
+        _copy_menu_files(config.lv_target_plugin_output_folder, config.lv_target_menus_folder)
+
+        _copy_targetinfo_ini(config.lv_target_plugin_output_folder, config.lv_target_info_ini)
+    except Exception as e:
+        reporter.error(f"Error: {e}")
+        return 1
 
     if register_space_warnings:
         reporter.warn("\n" + "!" * 80)

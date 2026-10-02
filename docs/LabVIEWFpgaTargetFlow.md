@@ -134,6 +134,12 @@ custom I/O and host interfaces on the block diagram, write the VI, and compile.
 those macros unresolved. See
 [Window Netlist and Constraints → constraints processing](WindowNetlistAndConstraints.md#part-2--constraints-processing).
 
+> **When you open the bitfile, use _Open Dynamic Bitfile Reference_, not _Open FPGA VI
+> Reference_.** If LabVIEW prompts you to locate a missing `niLvFpga_Open_<target>.vi`
+> (for example `niLvFpga_Open_PXIe-7912Custom.vi`) when you run the VI, you used the wrong
+> open node — custom targets do not support it. See
+> [Communicating with the bitfile from a host VI](#communicating-with-the-bitfile-from-a-host-vi).
+
 ## How the constraints differ from the Vivado flow
 
 Both flows process the **same** constraints template and custom constraints, but the
@@ -149,9 +155,29 @@ LabVIEW 2023 vs 2026 timing-group differences are covered in
 > compiled bitfile from a LabVIEW FPGA host VI, open it with **Open Dynamic Bitfile
 > Reference** — wire in the `.lvbitx` path and a matching FPGA Interface Dynamic Refnum.
 > The standard **Open FPGA VI Reference** node does **not** work with these custom
-> targets. See
-> [Vivado Compile Flow → Opening the bitfile from a LabVIEW FPGA host VI](VivadoCompileFlow.md#opening-the-bitfile-from-a-labview-fpga-host-vi)
-> for the full details.
+> targets ([Feature 3736233](https://ni.visualstudio.com/DevCentral/_workitems/edit/3736233)).
+
+> **Symptom:** when you run the host VI, LabVIEW prompts you to locate
+> `niLvFpga_Open_<target>.vi` (for example `niLvFpga_Open_PXIe-7912Custom.vi`) and the file
+> is not present under `objects/`. That prompt means you opened the bitfile with **Open
+> FPGA VI Reference** — switch to **Open Dynamic Bitfile Reference** and the prompt goes
+> away.
+
+![Open FPGA VI Reference (wrong) versus Open Dynamic Bitfile Reference (right)](OpenDynamicBitfileReference.png)
+
+To communicate with the compiled `.lvbitx` (registers and DMA FIFOs):
+
+1. Wire the **bitfile path** input to your `.lvbitx`.
+2. Wire the **device address** input to the FPGA target's RIO resource.
+3. Wire the **type** input to an **FPGA Interface Dynamic Refnum** constant that you
+   configure (right-click it → **Configure FPGA VI Reference**) to match the bitfile's
+   interface — its controls/registers and DMA FIFOs.
+
+The node returns a dynamic FPGA interface reference you use with the Read/Write Control
+(registers), the DMA FIFO methods, and **Close FPGA VI Reference** — exactly as you would
+with a statically opened reference. See
+[Vivado Compile Flow → Opening the bitfile from a LabVIEW FPGA host VI](VivadoCompileFlow.md#opening-the-bitfile-from-a-labview-fpga-host-vi)
+for the full details.
 
 ## Related pages
 

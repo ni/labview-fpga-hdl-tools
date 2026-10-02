@@ -49,26 +49,6 @@ side-by-side captured output.
 
 Most commands chain into a build flow. Some commands run others automatically:
 
-```mermaid
-flowchart LR
-    deps[install-deps] --> genv[gen-vivado]
-    win[gen-window] -.netlist.-> genv
-    genv --> check[check-vivado]
-    check --> comp[compile-vivado]
-    comp --> bitx[(.lvbitx)]
-
-    subgraph auto1 [gen-vivado auto-runs]
-        genhdl[gen-hdl]
-        genxdc[gen-xdc]
-    end
-    genv -.-> auto1
-
-    subgraph auto2 [compile-vivado auto-runs]
-        genlvbitx[gen-lvbitx]
-    end
-    comp -.-> auto2
-```
-
 - `gen-vivado` automatically runs `gen-hdl` and `gen-xdc`.
 - `compile-vivado` automatically runs `gen-lvbitx`.
 - `gen-window` brings a LabVIEW-authored window netlist into the Vivado compile flow; its output feeds `gen-vivado`.

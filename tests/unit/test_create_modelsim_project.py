@@ -1,8 +1,81 @@
 """Unit tests for ModelSim project creation helpers."""
 
 import os
+from types import SimpleNamespace
+
+import pytest
 
 from labview_fpga_hdl_tools import create_modelsim_project
+
+
+def _make_config(modelsim_project_folder, root_dir, base_dir=None):
+    return SimpleNamespace(
+        modelsim_entity="tb_top",
+        modelsim_project_folder=modelsim_project_folder,
+        modelsim_file_lists=[],
+        vhdl2008_file_lists=[],
+        skip_modelsim=True,
+        root_dir=root_dir,
+        base_dir=base_dir,
+    )
+
+
+class TestModelSimProjectFolderValidation:
+    """Tests that create_modelsim_project refuses unsafe project folders."""
+
+    @pytest.mark.parametrize("folder", [None, ""])
+    def test_given_no_project_folder__when_creating__then_errors_without_deleting(
+        self, tmp_path, folder
+    ):
+        keep = tmp_path / "keep.txt"
+        keep.write_text("keep")
+
+        result = create_modelsim_project.create_modelsim_project(
+            overwrite=True, config=_make_config(folder, str(tmp_path))
+        )
+
+        assert result == 1
+        assert keep.exists()
+
+    @pytest.mark.parametrize("folder", [".", "..", "sub/.."])
+    def test_given_project_folder_is_cwd_or_parent__when_creating__then_errors_without_deleting(
+        self, tmp_path, folder
+    ):
+        work = tmp_path / "work"
+        work.mkdir()
+        keep = work / "keep.txt"
+        keep.write_text("keep")
+
+        result = create_modelsim_project.create_modelsim_project(
+            overwrite=True, config=_make_config(folder, str(work))
+        )
+
+        assert result == 1
+        assert keep.exists()
+
+    def test_given_project_folder_is_settings_dir__when_creating__then_errors_without_deleting(
+        self, tmp_path
+    ):
+        work = tmp_path / "work"
+        work.mkdir()
+        settings = tmp_path / "settings"
+        settings.mkdir()
+        keep = settings / "nihdlsettings.py"
+        keep.write_text("keep")
+
+        result = create_modelsim_project.create_modelsim_project(
+            overwrite=True,
+            config=_make_config("../settings", str(work), base_dir=str(settings)),
+        )
+
+        assert result == 1
+        assert keep.exists()
+
+    def test_given_subfolder__when_validating__then_no_project_folder_error(self, tmp_path):
+        with pytest.raises(ValueError) as exc_info:
+            create_modelsim_project._validate_ini(_make_config("ModelSimProject", str(tmp_path)))
+
+        assert "ModelSimProjectFolder" not in str(exc_info.value)
 
 
 class TestAddXilinxLibraryMappings:

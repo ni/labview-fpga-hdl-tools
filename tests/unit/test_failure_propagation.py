@@ -9,7 +9,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from labview_fpga_hdl_tools import generate_vhdl, get_window_netlist, process_constraints
+from labview_fpga_hdl_tools import (
+    gen_labview_target_plugin,
+    generate_vhdl,
+    get_window_netlist,
+    migrate_clip,
+    process_constraints,
+)
 from labview_fpga_hdl_tools.reporting import reporter
 from labview_fpga_hdl_tools.sim_modelsim import _print_simulation_summary
 
@@ -62,9 +68,27 @@ class TestProcessConstraintsTemplateRaises:
     def test_given_missing_constraints_file__when_process__then_raises(self, tmp_path):
         window_folder = tmp_path / "TheWindow"
         window_folder.mkdir()
-        config = SimpleNamespace(lv_window_netlist_folder=str(window_folder))
+        config = SimpleNamespace(
+            lv_window_netlist_folder=str(window_folder), root_dir=str(tmp_path)
+        )
         with pytest.raises(RuntimeError):
             process_constraints.process_constraints_template(config)
+
+
+class TestHelpersRaiseInsteadOfLogging:
+    """Helpers that used to log-and-continue must raise so the command fails."""
+
+    def test_given_missing_xdc__when_process_clip_constraint__then_raises(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            migrate_clip._process_constraint_file(
+                str(tmp_path / "missing.xdc"), str(tmp_path / "out"), "top/clip"
+            )
+
+    def test_given_missing_targetinfo__when_copy__then_raises(self, tmp_path):
+        with pytest.raises(RuntimeError, match="TargetInfo.ini"):
+            gen_labview_target_plugin._copy_targetinfo_ini(
+                str(tmp_path), str(tmp_path / "missing" / "TargetInfo.ini")
+            )
 
 
 class TestSimulationSummaryFailure:

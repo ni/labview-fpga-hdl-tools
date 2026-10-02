@@ -165,3 +165,28 @@ class TestConfigBaseDirWiring:
         command_hooks.run_with_hooks("gen_hdl", cmd, command_config_path=str(settings))
 
         assert captured["base_dir"] == os.path.dirname(os.path.abspath(str(settings)))
+
+    def test_given_relative_settings_path__when_run__then_root_dir_is_invocation_dir(
+        self, tmp_path, monkeypatch
+    ):
+        settings_dir = tmp_path / "target"
+        settings_dir.mkdir()
+        (settings_dir / "nihdlsettings.py").write_text("# empty\n")
+        work = tmp_path / "work"
+        work.mkdir()
+        monkeypatch.chdir(work)
+
+        captured = {}
+
+        def cmd(config=None, **kwargs):
+            assert config is not None
+            captured["root_dir"] = config.root_dir
+            captured["base_dir"] = config.base_dir
+            return 0
+
+        command_hooks.run_with_hooks(
+            "gen_hdl", cmd, command_config_path=os.path.join("..", "target", "nihdlsettings.py")
+        )
+
+        assert captured["root_dir"] == str(work)
+        assert captured["base_dir"] == str(settings_dir)

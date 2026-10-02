@@ -372,7 +372,9 @@ def get_test_set_errors():
             "command": f"{nihdl_cmd} gen-modelsim --config=badsettings.py",
             "working_dir": paths["target_dir"],
             "disable_test": False,
-            "expected_exit_code": 0,  # skip_modelsim is set, ModelSim path validation is skipped
+            # skip_modelsim still validates settings/generated VHDL/sources (only
+            # ModelSim compilation is skipped), so incomplete badsettings errors.
+            "expected_exit_code": 1,
         },
         {
             "name": "launch-modelsim with bad settings",

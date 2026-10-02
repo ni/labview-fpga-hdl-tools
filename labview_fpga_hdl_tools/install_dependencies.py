@@ -38,6 +38,7 @@ Command-line options:
 
 import datetime
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -59,6 +60,8 @@ from labview_fpga_hdl_tools.reporting import reporter
 # directories, but as a single lightweight text file instead of a folder.
 _DEP_INFO_SUFFIX = ".dep-info"
 
+_REPO_PATTERN = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+
 
 def _remove_readonly(func, path, exc_info):
     """Error handler for shutil.rmtree to handle read-only files on Windows."""
@@ -78,6 +81,36 @@ def _get_commit_hash(repo_path):
         return result.stdout.strip()
     except (subprocess.CalledProcessError, OSError):
         return None
+
+
+def _get_installed_version(repo_name, repo_path, deps_dir):
+    """Return the currently installed version of a cloned dependency, or None.
+
+    Prefers the version recorded in the ``.dep-info`` marker file, falling back
+    to ``git describe`` for repos cloned before markers were introduced.
+    """
+    for marker in sorted(deps_dir.glob(f"{repo_name}-*{_DEP_INFO_SUFFIX}")):
+        try:
+            for line in marker.read_text(encoding="utf-8").splitlines():
+                if line.startswith("Version:"):
+                    return line.split(":", 1)[1].strip()
+        except OSError:
+            continue
+
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_path), "describe", "--tags", "--always"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        described = result.stdout.strip()
+        if described:
+            return _normalize_tag(described)
+    except (subprocess.CalledProcessError, OSError):
+        pass
+
+    return None
 
 
 def _write_dep_marker(repo, repo_name, tag, requested, repo_url, repo_path, deps_dir):
@@ -279,6 +312,11 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
     """
     # Normalize repo path (handle both / and \)
     repo = repo.replace("\\", "/")
+    # repo_name becomes a folder under base_dir that may be rmtree'd, so reject
+    # anything that isn't a plain owner/name (e.g. "owner/..", "../repo", "owner/")
+    if not _REPO_PATTERN.fullmatch(repo) or any(part in (".", "..") for part in repo.split("/")):
+        reporter.error(f"  [FAIL] Invalid repository name '{repo}'; expected 'owner/repo'")
+        return False
     repo_name = repo.split("/")[-1]
     repo_path = base_dir / repo_name
     repo_url = f"https://github.com/{repo}.git"
@@ -354,14 +392,22 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
 
     # Check if already exists and prompt user
     if repo_path.exists():
-        reporter.detail(f"  [INFO] Repository {repo_name} already exists at {repo_path}")
+        installed_version = _get_installed_version(repo_name, repo_path, base_dir)
+        present_desc = (
+            f"{repo_name} version {installed_version}" if installed_version else repo_name
+        )
+        reporter.detail(f"  [INFO] {present_desc} already present at {repo_path}")
 
         if delete_allowed:
             response = "y"
             reporter.detail(f"    Auto-deleting and re-cloning (--delete flag set)")
         else:
             try:
-                response = input(f"    Delete and re-clone? (y/N): ").strip().lower()
+                response = (
+                    input(f"    {present_desc} already present. Delete and re-clone? (y/N): ")
+                    .strip()
+                    .lower()
+                )
             except EOFError:
                 # Non-interactive/CI run: there is no stdin to prompt on. Default
                 # to the safe "keep existing clone" choice instead of crashing;
@@ -397,7 +443,7 @@ def _clone_repo_at_tag(repo, tag_or_spec, base_dir, delete_allowed=False, allow_
             text=True,
             check=True,
         )
-        reporter.success(f"  [OK] Successfully cloned {repo_name}")
+        reporter.success(f"  [OK] Installed {repo_name} version {_normalize_tag(tag)}")
         _write_dep_marker(repo, repo_name, tag, tag_or_spec, repo_url, repo_path, base_dir)
         return True
 

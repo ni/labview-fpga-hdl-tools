@@ -90,6 +90,7 @@ def pre_all(context):
     config = context.config
 
     # --- Tools ---
+    # LabVIEW FPGA compile tools' Vivado (tested); any other Vivado install may also work.
     config.set_vivado_tools_folder("C:/NIFPGA/programs/Vivado2021_1")
     config.set_vivado_tcl_scripts_folder("../common/TCL")
     # config.set_modelsim_tools_folder("")

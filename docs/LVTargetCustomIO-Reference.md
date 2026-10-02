@@ -42,6 +42,7 @@ The `LVName` column uses backslash (`\`) as a hierarchy separator. When the tool
 - Backslashes are converted to dots (`.`) for the XML resource hierarchy
 - The dot-separated path creates nested `ResourceList` folders in the BoardIO XML
 - LabVIEW FPGA presents these as nested I/O folders in the project tree
+- The dot-separated form is the canonical name used in generated XML for resource names and user clock-domain names
 
 For example, `IO Socket\Port0\Tx\TData0` becomes the hierarchy:
 ```
@@ -50,6 +51,10 @@ IO Socket
        └── Tx
             └── TData0
 ```
+
+The same normalization applies to clock rows. For example, a clock row with `LVName`
+`IO Socket\Port0 User Clock` is emitted to the Clock XML and referenced by other signals as
+`IO Socket.Port0 User Clock`.
 
 ---
 
@@ -258,7 +263,8 @@ If you supply an unsupported combination, the tool reports an error naming the o
 
 **Purpose:** Specifies which clock domain this signal belongs to. Used by LabVIEW FPGA to enforce timing constraints.
 
-**Format:** A clock domain name string that matches an `LVName` of a clock signal (with `\` replaced by `.`).
+**Format:** A clock domain name string. For user clocks defined in this CSV, use the clock row's
+`LVName` after replacing `\` with `.`.
 
 **Valid Values:**
 
@@ -270,8 +276,21 @@ If you supply an unsupported combination, the tool reports an error naming the o
 
 **Notes:**
 - Written into the `<RequiredClockDomain>` element in the BoardIO XML
-- The clock name must correspond to a clock signal defined elsewhere in this CSV (or a built-in system clock like `80 MHz Clock`)
-- Uses dot (`.`) as hierarchy separator in the value (not backslash)
+- Hierarchical user clock names are validated against input clock rows defined elsewhere in this CSV
+- That validation is done using the clock row `LVName` after converting `\` to `.`
+- Values written with `\` are normalized to `.` in generated XML before they are emitted
+- Simple non-hierarchical names such as `80 MHz Clock` are treated as built-in LabVIEW FPGA clock names and are allowed even though they are not defined as rows in this CSV
+- Uses dot (`.`) as hierarchy separator in the canonical value stored in XML
+
+**Examples:**
+
+| Clock row `LVName` | Valid `RequiredClockDomain` value |
+|--------------------|-----------------------------------|
+| `IO Socket\Port0 User Clock` | `IO Socket.Port0 User Clock` |
+| `IO Socket\Port1 User Clock` | `IO Socket.Port1 User Clock` |
+
+If you accidentally write `IO Socket\Port0 User Clock` in the `RequiredClockDomain` column, the
+tool normalizes it to `IO Socket.Port0 User Clock` before writing XML.
 
 ---
 

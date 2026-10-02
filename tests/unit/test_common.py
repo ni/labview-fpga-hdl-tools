@@ -11,6 +11,25 @@ from labview_fpga_hdl_tools import common
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
 
 
+class TestIsSameOrParentDir:
+    """Tests for is_same_or_parent_dir, used to keep rmtree targets away from the work tree."""
+
+    def test_given_same_dir__when_checked__then_true(self, tmp_path):
+        assert common.is_same_or_parent_dir(str(tmp_path), str(tmp_path))
+
+    def test_given_parent_dir__when_checked__then_true(self, tmp_path):
+        assert common.is_same_or_parent_dir(str(tmp_path), str(tmp_path / "a" / "b"))
+
+    def test_given_dot_dot_path__when_checked__then_true(self, tmp_path):
+        assert common.is_same_or_parent_dir(str(tmp_path / "a" / ".."), str(tmp_path / "a"))
+
+    def test_given_child_dir__when_checked__then_false(self, tmp_path):
+        assert not common.is_same_or_parent_dir(str(tmp_path / "a"), str(tmp_path))
+
+    def test_given_sibling_dir__when_checked__then_false(self, tmp_path):
+        assert not common.is_same_or_parent_dir(str(tmp_path / "a"), str(tmp_path / "ab"))
+
+
 class TestRunCommandCheck:
     """Tests for run_command exit-code handling via the ``check`` flag."""
 
@@ -248,21 +267,29 @@ class TestParseVhdlEntity:
         assert name == "MyEntity"
         assert ports == ["clk", "a", "b", "result"]
 
-    def test_given_missing_file__when_parsed__then_none_and_empty(self, tmp_path):
-        name, ports = common._parse_vhdl_entity(str(tmp_path / "missing.vhd"))
-        assert name is None
-        assert ports == []
+    def test_given_missing_file__when_parsed__then_raises(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            common._parse_vhdl_entity(str(tmp_path / "missing.vhd"))
 
-    def test_given_no_entity_declaration__when_parsed__then_none_and_empty(self, tmp_path):
+    def test_given_no_entity_declaration__when_parsed__then_raises(self, tmp_path):
         vhdl = tmp_path / "NotAnEntity.vhd"
         vhdl.write_text("architecture rtl of Foo is\nbegin\nend rtl;\n")
-        name, ports = common._parse_vhdl_entity(str(vhdl))
-        assert name is None
-        assert ports == []
+        with pytest.raises(ValueError):
+            common._parse_vhdl_entity(str(vhdl))
 
-    def test_given_entity_without_ports__when_parsed__then_name_and_empty_ports(self, tmp_path):
+    def test_given_unterminated_port_list__when_parsed__then_raises(self, tmp_path):
+        vhdl = tmp_path / "Broken.vhd"
+        vhdl.write_text("entity Broken is\n  port (\n    clk : in std_logic;\n")
+        with pytest.raises(ValueError):
+            common._parse_vhdl_entity(str(vhdl))
+
+    def test_given_entity_without_ports__when_parsed__then_name_and_empty_ports(
+        self, tmp_path, reporter
+    ):
         vhdl = tmp_path / "NoPorts.vhd"
         vhdl.write_text("entity NoPorts is\nend NoPorts;\n")
         name, ports = common._parse_vhdl_entity(str(vhdl))
         assert name == "NoPorts"
         assert ports == []
+        assert reporter.warning_count == 1
+        assert reporter.error_count == 0

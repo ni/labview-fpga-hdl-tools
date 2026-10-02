@@ -20,30 +20,27 @@ _WINDOW_FLAT_WRAPPER_FILE = "TheLvWindowFlatWrapper.v"
 
 def _get_window_netlist(config):
     """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
-    get_netlist_tcl_path = os.path.join(
-        os.getcwd(), config.vivado_tcl_scripts_folder, "GetWindowNetlist.tcl"
+    get_netlist_tcl_path = os.path.abspath(
+        os.path.join(config.vivado_tcl_scripts_folder, "GetWindowNetlist.tcl")
     )
     reporter.detail(f"Using TCL script at: {get_netlist_tcl_path}")
-    current_dir = os.getcwd()
 
     # Extract project directory and name from the XPR path
-    vivado_project_path = os.path.dirname(config.lv_window_vivado_project_export_xpr)
+    vivado_project_path = os.path.dirname(
+        os.path.abspath(config.lv_window_vivado_project_export_xpr)
+    )
     project_name = os.path.splitext(os.path.basename(config.lv_window_vivado_project_export_xpr))[0]
 
     reporter.detail(f"Vivado project path: {vivado_project_path}")
     reporter.detail(f"Vivado project name: {project_name}")
 
-    os.chdir(vivado_project_path)
-
     # Determine Vivado executable from either direct executable path or tools dir.
     vivado_executable = common.get_vivado_executable(config.vivado_tools_folder)
     if not vivado_executable:
-        os.chdir(current_dir)
         raise ValueError("Unable to resolve Vivado executable from configuration")
 
     vivado_abs = os.path.abspath(vivado_executable)
     if not config.skip_vivado and not os.path.exists(vivado_abs):
-        os.chdir(current_dir)
         raise FileNotFoundError(
             f"Vivado executable not found at: {vivado_abs}\n"
             f"Please check your --vivado argument or VivadoToolsFolder setting in nihdlsettings.py"
@@ -65,8 +62,6 @@ def _get_window_netlist(config):
                 f.write("// Mock Verilog netlist file created for testing\n")
             reporter.detail(f"Created mock Verilog netlist file for testing: {source_file}")
     else:
-        reporter.detail(f"Current working directory: {os.getcwd()}")
-
         # Remove any stale netlist from a previous run so that the post-run
         # existence check below cannot be satisfied by leftover output. Without
         # this, a failed Vivado run would still look like a success.
@@ -84,12 +79,11 @@ def _get_window_netlist(config):
                     "-source",
                     get_netlist_tcl_path,
                 ],
-                cwd=os.getcwd(),
+                cwd=vivado_project_path,
                 capture_output=False,
                 check=True,
             )
         except subprocess.CalledProcessError as e:
-            os.chdir(current_dir)
             raise RuntimeError(
                 f"Vivado exited with a non-zero status ({e.returncode}) while extracting the "
                 f"Window netlist. Synthesis or netlist generation likely failed; review the "
@@ -97,46 +91,37 @@ def _get_window_netlist(config):
             ) from e
 
         # Check for success marker in vivado.log file
-        vivado_log_path = os.path.join(os.getcwd(), "vivado.log")
+        vivado_log_path = os.path.join(vivado_project_path, "vivado.log")
         if not os.path.exists(vivado_log_path):
-            os.chdir(current_dir)
             raise RuntimeError("Vivado log file not found. TCL script execution may have failed.")
 
-        # Read the log file and check for success marker
         try:
             with open(vivado_log_path, "r", encoding="utf-8", errors="replace") as log_file:
                 log_content = log_file.read()
-                # This GET_WINDOW=FAILED constant is set in the GetWindowNetlist.tcl file
-                # We have not found a better way to surface an error from Vivado executing a
-                # TCL script up to Python
-                if "GET_WINDOW=FAILED" in log_content:
-                    os.chdir(current_dir)
-                    raise RuntimeError("Window netlist extraction failed.")
-        except Exception as e:
-            os.chdir(current_dir)
-            raise RuntimeError(f"Errors found in Vivado log file: {str(e)}")
+        except OSError as e:
+            raise RuntimeError(f"Failed to read Vivado log file: {e}") from e
+
+        # This GET_WINDOW=FAILED constant is set in the GetWindowNetlist.tcl file
+        # We have not found a better way to surface an error from Vivado executing a
+        # TCL script up to Python
+        if "GET_WINDOW=FAILED" in log_content:
+            raise RuntimeError("Window netlist extraction failed. See vivado.log for details.")
 
         # Check if the expected output file was generated
         if not os.path.exists(source_file):
-            os.chdir(current_dir)
             raise RuntimeError(
                 f"Vivado TCL script execution failed: Expected output file {source_file} was not generated."
             )
 
     destination_file = os.path.join(destination_folder, _WINDOW_FLAT_WRAPPER_FILE)
 
+    if not os.path.exists(source_file):
+        raise FileNotFoundError(f"Source file {source_file} not found")
     try:
-        if os.path.exists(source_file):
-            shutil.copy(source_file, destination_file)
-            reporter.detail(f"Copied {source_file} to {destination_file}")
-        else:
-            os.chdir(current_dir)
-            raise FileNotFoundError(f"Source file {source_file} not found")
-    except Exception as e:
-        os.chdir(current_dir)
-        raise RuntimeError(f"Error copying file: {str(e)}")
-
-    os.chdir(current_dir)
+        shutil.copy(source_file, destination_file)
+    except OSError as e:
+        raise RuntimeError(f"Failed to copy {source_file} to {destination_file}: {e}") from e
+    reporter.detail(f"Copied {source_file} to {destination_file}")
 
 
 def _copy_lv_generated_files(config):
@@ -193,6 +178,9 @@ def _extract_lv_window_constraints(config):
 
     Args:
         config (CommandConfiguration): Configuration settings object
+
+    Raises:
+        FileNotFoundError: If NIProtectedFiles/constraints.xdc does not exist
     """
     # Extract the parent directory path from the XPR path
     # The NIProtectedFiles folder is typically at the same level as VivadoProject
@@ -209,39 +197,36 @@ def _extract_lv_window_constraints(config):
     os.makedirs(destination_folder, exist_ok=True)
 
     # Extract constraints between markers
-    try:
-        if os.path.exists(source_file):
-            with open(source_file, "r", encoding="utf-8") as f_in:
-                lines = f_in.readlines()
+    if not os.path.exists(source_file):
+        raise FileNotFoundError(f"Source file {source_file} not found")
 
-            # Find the marker lines
-            start_idx = None
-            end_idx = None
+    with open(source_file, "r", encoding="utf-8") as f_in:
+        lines = f_in.readlines()
 
-            for i, line in enumerate(lines):
-                if "# BEGIN_LV_FPGA_CONSTRAINTS" in line:
-                    start_idx = i
-                if "# END_LV_FPGA_CONSTRAINTS" in line:
-                    end_idx = i
-                    break
+    # Find the marker lines
+    start_idx = None
+    end_idx = None
 
-            # Check if markers were found
-            if start_idx is None or end_idx is None:
-                reporter.warn("Warning: Could not find constraint markers in constraints.xdc")
-                return
+    for i, line in enumerate(lines):
+        if "# BEGIN_LV_FPGA_CONSTRAINTS" in line:
+            start_idx = i
+        if "# END_LV_FPGA_CONSTRAINTS" in line:
+            end_idx = i
+            break
 
-            # Extract the constraints EXCLUDING the marker lines
-            lv_constraints = lines[start_idx + 1 : end_idx]
+    # Check if markers were found
+    if start_idx is None or end_idx is None:
+        reporter.warn("Warning: Could not find constraint markers in constraints.xdc")
+        return
 
-            # Write the constraints to the destination file
-            with open(destination_file, "w", encoding="utf-8") as f_out:
-                f_out.writelines(lv_constraints)
+    # Extract the constraints EXCLUDING the marker lines
+    lv_constraints = lines[start_idx + 1 : end_idx]
 
-            reporter.success(f"Successfully extracted LV FPGA constraints to {destination_file}")
-        else:
-            reporter.error(f"Error: Source file {source_file} not found")
-    except Exception as e:
-        reporter.error(f"Error extracting constraints: {str(e)}")
+    # Write the constraints to the destination file
+    with open(destination_file, "w", encoding="utf-8") as f_out:
+        f_out.writelines(lv_constraints)
+
+    reporter.success(f"Successfully extracted LV FPGA constraints to {destination_file}")
 
 
 def _validate_ini(config):
@@ -315,11 +300,19 @@ def get_window(config=None):
         reporter.error(f"Error: {e}")
         return 1
 
-    _get_window_netlist(config)
+    try:
+        _get_window_netlist(config)
+    except Exception as e:
+        reporter.error(f"Error: {e}")
+        return 1
     if not _copy_lv_generated_files(config):
         reporter.error("Error: Failed to copy one or more LabVIEW-generated files.")
         return 1
-    _extract_lv_window_constraints(config)
+    try:
+        _extract_lv_window_constraints(config)
+    except Exception as e:
+        reporter.error(f"Error extracting constraints: {e}")
+        return 1
 
     reporter.success("Window netlist extraction completed successfully.")
 

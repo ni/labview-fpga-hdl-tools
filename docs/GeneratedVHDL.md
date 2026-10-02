@@ -299,18 +299,7 @@ move together — single-sourced, so they can't disagree.
 > (`DmaChannelBaseAddress` in `PkgNiSharedFifo.vhd`). That register address space is
 > its own mapping — don't confuse it with the stream index above.
 
-## Where this fits in the flow
-
-```mermaid
-flowchart LR
-    settings["nihdlsettings.py<br/>+ custom-I/O CSV"]
-    settings --> genhdl["gen-hdl<br/>(auto-run by gen-vivado,<br/>also in gen-modelsim)"]
-    settings --> gentgt["gen-target"]
-    genhdl --> vhd["Generated VHDL<br/>(TheWindow, flat wrappers,<br/>PkgNiHdlSettings)"]
-    gentgt --> xml["LabVIEW FPGA target XML<br/>(boardio.xml, CustomClocks.xml,<br/>reserved regs/DMA)"]
-    vhd --> build["Vivado / ModelSim build"]
-    xml --> lv["LabVIEW FPGA project"]
-```
+## References
 
 See the [Command Reference](CommandReference.md) for exactly which commands render
 the templates and the [Settings Reference](SettingsReference.md) for every setter

@@ -18,25 +18,6 @@ can also bring a **LabVIEW-authored window** into this flow as a netlist (see
 
 ## The commands at a glance
 
-```mermaid
-flowchart LR
-    deps[install-deps] --> genv[gen-vivado]
-    win["gen-window<br/><i>optional LV netlist</i>"] -.-> genv
-    genv --> check[check-vivado]
-    check --> launch[launch-vivado]
-    check --> comp[compile-vivado]
-    comp --> bitx[(.lvbitx)]
-
-    subgraph auto [runs automatically]
-        genhdl[gen-hdl]
-        genxdc[gen-xdc]
-        genlvbitx[gen-lvbitx]
-    end
-    genv -.-> genhdl
-    genv -.-> genxdc
-    comp -.-> genlvbitx
-```
-
 | Command | What it does |
 | --- | --- |
 | [`install-deps`](CommandReference.md#workspace-setup) | Clone the dependency repos named in `dependencies.toml` into `deps/`. |
@@ -54,7 +35,7 @@ Configure these in the target's `nihdlsettings.py` (see the
 
 | Setter | Purpose |
 | --- | --- |
-| `set_vivado_tools_folder(path)` | Vivado install root (contains `bin/vivado`). |
+| `set_vivado_tools_folder(path)` | Vivado install root (contains `bin/vivado`). Use the Vivado from the LabVIEW FPGA compile tools (the tested version) or your own install — see [Choosing a Vivado Version](SettingsReference.md#choosing-a-vivado-version). |
 | `set_vivado_tcl_scripts_folder(path)` | Folder of Vivado TCL Mako templates the tools drive. |
 | `set_vivado_top_entity(name)` | Top-level entity/module (for example `MacallanTop`). |
 | `set_fpga_part(value)` | FPGA part string (for example `xcku040-ffva1156-2-e`). |
@@ -119,10 +100,23 @@ own from the `VivadoProject/<project>.runs/impl_1` folder.
 
 ### Opening the bitfile from a LabVIEW FPGA host VI
 
+> **flexrio-custom users:** the task-oriented version of this — with the Refnum
+> *Import from bitfile* steps and how to link the example's helper VIs — is
+> [Talk to the bitfile from a host VI](https://github.com/ni/flexrio-custom/blob/main/docs/HostVIsAndBitfiles.md).
+> The reference below is the tool-side summary.
+
 > **Use _Open Dynamic Bitfile Reference_, not _Open FPGA VI Reference_.** With these
 > custom targets, the standard NI-RIO host node **Open FPGA VI Reference** does **not**
 > work — the custom-target plugin support does not yet integrate with the way that node
 > loads the `.lvbitx`, so opening the bitfile that way fails.
+
+> **Symptom:** when you run the host VI, LabVIEW prompts you to locate
+> `niLvFpga_Open_<target>.vi` (for example `niLvFpga_Open_PXIe-7912Custom.vi`) and the file
+> is not present under `objects/`. That prompt means the bitfile was opened with **Open
+> FPGA VI Reference** — switch to **Open Dynamic Bitfile Reference** and the prompt goes
+> away.
+
+![Open FPGA VI Reference (wrong) versus Open Dynamic Bitfile Reference (right)](OpenDynamicBitfileReference.png)
 
 To communicate with the compiled `.lvbitx` from a LabVIEW FPGA host VI (registers and
 DMA FIFOs), use the **Open Dynamic Bitfile Reference** node instead:

@@ -20,18 +20,24 @@ def _validate_ini(config):
     missing_settings = []
     invalid_paths = []
 
-    if not config.modelsim_tools_folder:
-        missing_settings.append("ModelSimSettings.ModelSimToolsFolder")
-    else:
-        vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
-        if not vsim_exe or not os.path.exists(vsim_exe):
-            invalid_paths.append(
-                f"ModelSimSettings.ModelSimToolsFolder - vsim not found under: "
-                f"{config.modelsim_tools_folder}"
-            )
+    if not config.skip_modelsim:
+        if not config.modelsim_tools_folder:
+            missing_settings.append("ModelSimSettings.ModelSimToolsFolder")
+        else:
+            vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
+            if not vsim_exe or not os.path.exists(vsim_exe):
+                invalid_paths.append(
+                    f"ModelSimSettings.ModelSimToolsFolder - vsim not found under: "
+                    f"{config.modelsim_tools_folder}"
+                )
 
     if not common.get_modelsim_entity(config):
         missing_settings.append("ModelSimSettings.ModelSimEntity (set via set_modelsim_top_entity)")
+
+    if not config.modelsim_project_folder:
+        missing_settings.append(
+            "ModelSimSettings.ModelSimProjectFolder (set via set_modelsim_project_folder)"
+        )
 
     common.raise_for_missing_settings(missing_settings, invalid_paths)
 
@@ -47,7 +53,9 @@ def launch_modelsim(batch=False, config=None):
         reporter.error(f"Error: {e}")
         return 1
 
-    project_dir = os.path.join(os.getcwd(), config.modelsim_project_folder or "")
+    if not config.modelsim_project_folder:
+        raise ValueError("ModelSimProjectFolder setting is missing from configuration")
+    project_dir = os.path.join(config.root_dir, config.modelsim_project_folder)
 
     if not os.path.isdir(project_dir):
         reporter.error(
@@ -71,6 +79,10 @@ def launch_modelsim(batch=False, config=None):
         )
         return 1
 
+    if config.skip_modelsim:
+        reporter.success("SKIP MODELSIM: Validation successful, skipping ModelSim launch")
+        return 0
+
     vsim_exe = _get_vsim_executable(config.modelsim_tools_folder)
     if not vsim_exe or not os.path.exists(vsim_exe):
         reporter.error(f"Error: vsim executable not found at {vsim_exe}")
@@ -79,10 +91,6 @@ def launch_modelsim(batch=False, config=None):
     reporter.detail(f"Launching ModelSim from: {vsim_exe}")
     reporter.detail(f"Do file: {do_file}")
     reporter.detail(f"Working directory: {project_dir}")
-
-    if config.skip_modelsim:
-        reporter.success("SKIP MODELSIM: Validation successful, skipping ModelSim launch")
-        return 0
 
     if batch:
         # Batch mode: run vsim -c -do <script> and wait for completion
