@@ -17,6 +17,55 @@ from labview_fpga_hdl_tools.reporting import reporter
 # Generated flat wrapper file produced by the GetWindowNetlist TCL script.
 _WINDOW_FLAT_WRAPPER_FILE = "TheLvWindowFlatWrapper.v"
 
+# =============================================================================
+# HACK: per-family lists of LabVIEW-generated files that gen-window pulls from
+# the export's NIProtectedFiles folder.
+#
+# These vary by target family (for example, PkgLvFpgaConst.vhd only exists in
+# FlexRIO exports, and cRIO names its constraints file after the top level), so
+# they do NOT belong in the tool. Refactor this out into nihdlsettings.py (for
+# example, config.add_lv_window_generated_file(...) and
+# config.set_lv_window_constraints_source(...)) and delete this table.
+# Until then, every new target family needs an entry here.
+# =============================================================================
+_LV_GENERATED_FILES_BY_FAMILY = {
+    "FlexRIO": {
+        "files": [
+            "CodeGenerationResults.lvtxt",
+            "PkgLvFpgaConst.vhd",
+            "PkgCommIntConfiguration.vhd",
+            "PkgDmaPortCommIfcRegs.vhd",
+            "PkgDmaPortDmaFifos.vhd",
+        ],
+        "constraints_xdc": "constraints.xdc",
+    },
+    "CompactRIO": {
+        "files": [
+            "CodeGenerationResults.lvtxt",
+            "PkgCommIntConfiguration.vhd",
+            "PkgDmaPortCommIfcRegs.vhd",
+            "PkgDmaPortDmaFifos.vhd",
+        ],
+        "constraints_xdc": "toplevel_gen.xdc",
+    },
+}
+
+
+def _get_lv_generated_files(target_family):
+    """Return the HACK per-family gen-window file settings (see _LV_GENERATED_FILES_BY_FAMILY).
+
+    Raises:
+        ValueError: If the target family has no entry.
+    """
+    try:
+        return _LV_GENERATED_FILES_BY_FAMILY[target_family]
+    except KeyError:
+        raise ValueError(
+            f"gen-window does not know which LabVIEW-generated files to copy for target "
+            f"family '{target_family}'. Supported families: "
+            f"{', '.join(_LV_GENERATED_FILES_BY_FAMILY)}."
+        ) from None
+
 
 def _get_window_netlist(config):
     """Gets the Window netlist from the Vivado Project as well as other HDL Files."""
@@ -138,17 +187,7 @@ def _copy_lv_generated_files(config):
     )
     protected_files_folder = os.path.join(project_export_base, "NIProtectedFiles")
 
-    # This list is hardcoded for now
-    #
-    # As we expand to future target support, we may need to make the list of LV FPGA generated
-    # files to copy more dynamic based on the target
-    files_to_copy = [
-        "CodeGenerationResults.lvtxt",
-        "PkgLvFpgaConst.vhd",
-        "PkgCommIntConfiguration.vhd",
-        "PkgDmaPortCommIfcRegs.vhd",
-        "PkgDmaPortDmaFifos.vhd",
-    ]
+    files_to_copy = _get_lv_generated_files(config.target_family)["files"]
 
     success = True
     for file_name in files_to_copy:
@@ -170,17 +209,18 @@ def _copy_lv_generated_files(config):
 
 
 def _extract_lv_window_constraints(config):
-    """Extract LabVIEW FPGA constraints from the main constraints.xdc file.
+    """Extract LabVIEW FPGA constraints from the export's constraints XDC.
 
     This function finds the constraints section marked with BEGIN_LV_FPGA_CONSTRAINTS and
-    END_LV_FPGA_CONSTRAINTS in the constraints.xdc file, and creates a separate file
+    END_LV_FPGA_CONSTRAINTS in the family's constraints XDC (see
+    _LV_GENERATED_FILES_BY_FAMILY), and creates a separate file
     containing just those constraints in the Window folder, excluding the marker lines.
 
     Args:
         config (CommandConfiguration): Configuration settings object
 
     Raises:
-        FileNotFoundError: If NIProtectedFiles/constraints.xdc does not exist
+        FileNotFoundError: If the NIProtectedFiles constraints XDC does not exist
     """
     # Extract the parent directory path from the XPR path
     # The NIProtectedFiles folder is typically at the same level as VivadoProject
@@ -189,7 +229,8 @@ def _extract_lv_window_constraints(config):
     )
     protected_files_folder = os.path.join(project_export_base, "NIProtectedFiles")
 
-    source_file = os.path.join(protected_files_folder, "constraints.xdc")
+    constraints_xdc = _get_lv_generated_files(config.target_family)["constraints_xdc"]
+    source_file = os.path.join(protected_files_folder, constraints_xdc)
     destination_folder = config.lv_window_netlist_output_folder
     destination_file = os.path.join(destination_folder, "TheWindowConstraints.xdc")
 
@@ -216,7 +257,7 @@ def _extract_lv_window_constraints(config):
 
     # Check if markers were found
     if start_idx is None or end_idx is None:
-        reporter.warn("Warning: Could not find constraint markers in constraints.xdc")
+        reporter.warn(f"Warning: Could not find constraint markers in {constraints_xdc}")
         return
 
     # Extract the constraints EXCLUDING the marker lines
@@ -243,9 +284,18 @@ def _validate_ini(config):
     """
     missing_settings = common.collect_missing_settings(
         config,
-        [("lv_window_netlist_output_folder", "LVWindowNetlistSettings.LVWindowFolder")],
+        [
+            ("lv_window_netlist_output_folder", "LVWindowNetlistSettings.LVWindowFolder"),
+            ("target_family", "GeneralSettings.TargetFamily"),
+        ],
     )
     invalid_paths = []
+
+    if config.target_family and config.target_family not in _LV_GENERATED_FILES_BY_FAMILY:
+        invalid_paths.append(
+            f"GeneralSettings.TargetFamily - gen-window supports "
+            f"{', '.join(_LV_GENERATED_FILES_BY_FAMILY)}: {config.target_family}"
+        )
 
     # Check required paths for window netlist generation
     if not config.lv_window_vivado_project_export_xpr:

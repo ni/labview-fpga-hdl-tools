@@ -280,6 +280,8 @@ with the fixed-logic base coming from the target family:
 # generate_vhdl.py
 if target_family == "FlexRIO":
     return 4
+if target_family == "CompactRIO":
+    return 1
 ```
 
 So LabVIEW FPGA's usable DMA FIFOs = `kNumberOfDmaChannels -

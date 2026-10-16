@@ -157,7 +157,7 @@ def pre_all(context):
 
 | Setter | Description |
 | --- | --- |
-| `set_target_family(value)` | Device family (for example, "FlexRIO"). |
+| `set_target_family(value)` | Device family: `"FlexRIO"` or `"CompactRIO"`. |
 | `set_base_target(value)` | Base target model (for example, "PXIe-7903"). |
 | `set_dependencies(value)` | Path to dependencies.toml file. |
 | `set_skip_vivado(flag)` | Skip Vivado execution (validate only). |

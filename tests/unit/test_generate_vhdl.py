@@ -108,6 +108,9 @@ class TestGetNumFixedLogicDmaStreams:
     def test_given_flexrio__when_queried__then_four(self):
         assert generate_vhdl._get_num_fixed_logic_dma_streams("FlexRIO") == 4
 
+    def test_given_compactrio__when_queried__then_one(self):
+        assert generate_vhdl._get_num_fixed_logic_dma_streams("CompactRIO") == 1
+
     def test_given_unknown_family__when_queried__then_raises(self):
         with pytest.raises(ValueError):
             generate_vhdl._get_num_fixed_logic_dma_streams("Bogus")

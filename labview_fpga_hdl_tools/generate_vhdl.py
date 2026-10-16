@@ -151,6 +151,14 @@ def _generate_board_io_signal_assignments_example(csv_path, output_path):
         raise RuntimeError(f"Failed to generate Board IO signal assignments: {e}") from e
 
 
+# =============================================================================
+# HACK: the fixed-logic DMA stream count is hardcoded per target family below.
+#
+# This is a property of the target's fixed logic, so it does NOT belong in the
+# tool. Refactor it out into nihdlsettings.py (for example,
+# config.set_num_fixed_logic_dma_streams(...)) and delete this lookup.
+# Until then, every new target family needs a case here.
+# =============================================================================
 def _get_num_fixed_logic_dma_streams(target_family):
     """Return the number of DMA streams consumed by the fixed (non-user) logic.
 
@@ -160,11 +168,6 @@ def _get_num_fixed_logic_dma_streams(target_family):
     diagram may use. This count is the base of
     ``num_reserved_dma_stream_channel_ids`` in the generated target XML and feeds
     ``kNumFixedLogicDmaStreams`` in the generated PkgNiHdlSettings VHDL package.
-
-    This is currently a single per-target-family constant. In the future it can
-    be expanded to vary by ``set_target_family`` or ``set_base_target`` (for
-    example, a per-base-target lookup) if a family or board ever uses a
-    different number of fixed-logic DMA streams.
 
     Args:
         target_family (str): Target family, from ``set_target_family``.
@@ -178,6 +181,8 @@ def _get_num_fixed_logic_dma_streams(target_family):
     """
     if target_family == "FlexRIO":
         return 4
+    if target_family == "CompactRIO":
+        return 1
 
     raise ValueError(
         f"Number of fixed-logic DMA streams is not defined for target family "

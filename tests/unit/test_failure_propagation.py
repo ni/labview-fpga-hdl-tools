@@ -57,6 +57,7 @@ class TestCopyLvGeneratedFiles:
         config = SimpleNamespace(
             lv_window_vivado_project_export_xpr=str(tmp_path / "VivadoProject" / "proj.xpr"),
             lv_window_netlist_output_folder=str(output_folder),
+            target_family="FlexRIO",
         )
         assert get_window_netlist._copy_lv_generated_files(config) is False
         assert reporter.error_count >= 1

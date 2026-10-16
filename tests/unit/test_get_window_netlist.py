@@ -13,8 +13,10 @@ from labview_fpga_hdl_tools import get_window_netlist as gwn
 from labview_fpga_hdl_tools.command_config import CommandConfiguration
 
 
-def _make_config(export_base, out_folder, xdc_content=None):
-    """Build a config and, when given content, the NIProtectedFiles/constraints.xdc source.
+def _make_config(
+    export_base, out_folder, xdc_content=None, family="FlexRIO", xdc_name="constraints.xdc"
+):
+    """Build a config and, when given content, the NIProtectedFiles constraints XDC source.
 
     The extractor derives the protected-files folder as
     ``dirname(dirname(xpr))/NIProtectedFiles``, so the .xpr must live one level
@@ -23,7 +25,7 @@ def _make_config(export_base, out_folder, xdc_content=None):
     if xdc_content is not None:
         protected = os.path.join(export_base, "NIProtectedFiles")
         os.makedirs(protected, exist_ok=True)
-        with open(os.path.join(protected, "constraints.xdc"), "w", encoding="utf-8") as f:
+        with open(os.path.join(protected, xdc_name), "w", encoding="utf-8") as f:
             f.write(xdc_content)
 
     config = CommandConfiguration()
@@ -31,6 +33,7 @@ def _make_config(export_base, out_folder, xdc_content=None):
         export_base, "VivadoProject", "proj.xpr"
     )
     config.lv_window_netlist_output_folder = out_folder
+    config.target_family = family
     return config
 
 
@@ -70,3 +73,55 @@ class TestExtractLvWindowConstraints:
 
         with pytest.raises(FileNotFoundError):
             gwn._extract_lv_window_constraints(config)
+
+    def test_given_compactrio__when_extracted__then_reads_toplevel_gen_xdc(self, tmp_path):
+        out = tmp_path / "window"
+        xdc = "# BEGIN_LV_FPGA_CONSTRAINTS\nset_property KEEP 1\n# END_LV_FPGA_CONSTRAINTS\n"
+        export = str(tmp_path / "export")
+        config = _make_config(export, str(out), xdc, "CompactRIO", "toplevel_gen.xdc")
+
+        gwn._extract_lv_window_constraints(config)
+
+        assert (out / "TheWindowConstraints.xdc").read_text() == "set_property KEEP 1\n"
+
+
+class TestCopyLvGeneratedFiles:
+    """Tests for _copy_lv_generated_files()."""
+
+    def _make_export(self, tmp_path, names):
+        protected = tmp_path / "export" / "NIProtectedFiles"
+        protected.mkdir(parents=True)
+        for name in names:
+            (protected / name).write_text(name)
+        out = tmp_path / "window"
+        out.mkdir()
+        return out
+
+    def test_given_compactrio_export_without_pkglvfpgaconst__when_copied__then_succeeds(
+        self, tmp_path
+    ):
+        files = gwn._get_lv_generated_files("CompactRIO")["files"]
+        out = self._make_export(tmp_path, files)
+        config = _make_config(str(tmp_path / "export"), str(out), family="CompactRIO")
+
+        assert gwn._copy_lv_generated_files(config) is True
+        assert sorted(os.listdir(out)) == sorted(files)
+        assert "PkgLvFpgaConst.vhd" not in files
+
+    def test_given_flexrio_export_without_pkglvfpgaconst__when_copied__then_fails(
+        self, tmp_path, reporter
+    ):
+        files = gwn._get_lv_generated_files("CompactRIO")["files"]
+        out = self._make_export(tmp_path, files)
+        config = _make_config(str(tmp_path / "export"), str(out), family="FlexRIO")
+
+        assert gwn._copy_lv_generated_files(config) is False
+        assert reporter.error_count == 1
+
+
+class TestGetLvGeneratedFiles:
+    """Tests for _get_lv_generated_files()."""
+
+    def test_given_unknown_family__when_queried__then_raises(self):
+        with pytest.raises(ValueError):
+            gwn._get_lv_generated_files("Bogus")

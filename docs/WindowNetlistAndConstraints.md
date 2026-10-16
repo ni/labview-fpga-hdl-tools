@@ -66,14 +66,19 @@ without dragging along every source file and dependency.
 
 - `TheLvWindowFlatWrapper.v` — the Verilog netlist of the flat-wrapped window.
 - The LabVIEW-generated support packages copied from the export's
-  `NIProtectedFiles/` folder (for example `PkgLvFpgaConst.vhd`,
-  `PkgCommIntConfiguration.vhd`, `PkgDmaPortCommIfcRegs.vhd`,
-  `PkgDmaPortDmaFifos.vhd`, and `CodeGenerationResults.lvtxt`).
+  `NIProtectedFiles/` folder (`PkgCommIntConfiguration.vhd`,
+  `PkgDmaPortCommIfcRegs.vhd`, `PkgDmaPortDmaFifos.vhd`,
+  `CodeGenerationResults.lvtxt`, and on FlexRIO only `PkgLvFpgaConst.vhd`).
 - `TheWindowConstraints.xdc` — the window's timing constraints, extracted from the
-  export's `NIProtectedFiles/constraints.xdc` (everything between the
+  export's `NIProtectedFiles/constraints.xdc` (FlexRIO) or
+  `NIProtectedFiles/toplevel_gen.xdc` (CompactRIO) (everything between the
   `# BEGIN_LV_FPGA_CONSTRAINTS` / `# END_LV_FPGA_CONSTRAINTS` markers). These feed
   the Vivado compile flow's constraint processing (see
   [Part 2](#part-2--constraints-processing)).
+
+> **Temporary:** these per-family file names are hardcoded in
+> `get_window_netlist.py` (`_LV_GENERATED_FILES_BY_FAMILY`). They are planned to
+> move into `nihdlsettings.py`.
 
 You then point `set_lv_window_netlist_folder` at that folder so `gen-vivado` picks
 these files up. Because `gen-window` and `gen-vivado` are configured independently,
