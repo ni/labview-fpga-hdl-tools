@@ -84,6 +84,22 @@ class TestExtractLvWindowConstraints:
 
         assert (out / "TheWindowConstraints.xdc").read_text() == "set_property KEEP 1\n"
 
+    def test_given_non_utf8_bytes__when_extracted__then_written_as_utf8(self, tmp_path):
+        out = tmp_path / "window"
+        protected = tmp_path / "export" / "NIProtectedFiles"
+        protected.mkdir(parents=True)
+        (protected / "constraints.xdc").write_bytes(
+            b"# BEGIN_LV_FPGA_CONSTRAINTS\n#Clk40 _/\xaf\xaf\\_\nset_property KEEP 1\n"
+            b"# END_LV_FPGA_CONSTRAINTS\n"
+        )
+        config = _make_config(str(tmp_path / "export"), str(out))
+
+        gwn._extract_lv_window_constraints(config)
+
+        assert (out / "TheWindowConstraints.xdc").read_text(encoding="utf-8") == (
+            "#Clk40 _/\u00af\u00af\\_\nset_property KEEP 1\n"
+        )
+
 
 class TestCopyLvGeneratedFiles:
     """Tests for _copy_lv_generated_files()."""
@@ -125,3 +141,38 @@ class TestGetLvGeneratedFiles:
     def test_given_unknown_family__when_queried__then_raises(self):
         with pytest.raises(ValueError):
             gwn._get_lv_generated_files("Bogus")
+
+
+class TestWriteWindowNetlistWrapperTcl:
+    """Tests for _write_window_netlist_wrapper_tcl()."""
+
+    def test_given_vhe_files__when_written__then_adds_them_and_sources_target_tcl(self, tmp_path):
+        protected = tmp_path / "export" / "NIProtectedFiles"
+        protected.mkdir(parents=True)
+        (protected / "PkgCrioSideband.vhe").write_text("x")
+        (protected / "Other.vhd").write_text("x")
+        config = _make_config(str(tmp_path / "export"), str(tmp_path / "window"))
+        config.root_dir = str(tmp_path / "target")
+
+        wrapper = gwn._write_window_netlist_wrapper_tcl(
+            config, str(tmp_path / "GetWindowNetlist.tcl")
+        )
+
+        text = open(wrapper, encoding="utf-8").read()
+        assert "PkgCrioSideband.vhe" in text
+        assert "Other.vhd" not in text
+        assert "add_files -norecurse -fileset sources_1" in text
+        assert text.rstrip().endswith("GetWindowNetlist.tcl}")
+
+    def test_given_no_vhe_files__when_written__then_only_sources_target_tcl(self, tmp_path):
+        (tmp_path / "export" / "NIProtectedFiles").mkdir(parents=True)
+        config = _make_config(str(tmp_path / "export"), str(tmp_path / "window"))
+        config.root_dir = str(tmp_path / "target")
+
+        wrapper = gwn._write_window_netlist_wrapper_tcl(
+            config, str(tmp_path / "GetWindowNetlist.tcl")
+        )
+
+        text = open(wrapper, encoding="utf-8").read()
+        assert "set nihdl_vhe_files [list ]" in text
+        assert "GetWindowNetlist.tcl}" in text

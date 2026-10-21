@@ -61,7 +61,9 @@ without dragging along every source file and dependency.
 ### What `gen-window` produces
 
 `gen-window` runs Vivado on the exported project (pointed at by
-`set_lv_window_vivado_project_export_xpr`) and writes, into
+`set_lv_window_vivado_project_export_xpr`). Before synthesis it adds any Vivado-encrypted
+`.vhe` files from the export's `NIProtectedFiles/` folder to the project, because the export's
+XPR doesn't reference them (cRIO exports need them). It writes, into
 `set_lv_window_netlist_output_folder`:
 
 - `TheLvWindowFlatWrapper.v` — the Verilog netlist of the flat-wrapped window.
